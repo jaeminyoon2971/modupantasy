@@ -1,0 +1,4507 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>모두의 판타지</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --blue: #3182F6;
+  --blue-light: #EBF3FE;
+  --blue-dark: #1B64DA;
+  --bg: #F2F4F6;
+  --white: #FFFFFF;
+  --text: #191F28;
+  --sub: #6B7684;
+  --hint: #B0B8C1;
+  --border: #E5E8EB;
+  --card: #FFFFFF;
+  --green: #05C072;
+  --green-light: #E8FBF2;
+  --orange: #FF8B37;
+  --orange-light: #FFF3E8;
+  --red: #F04452;
+  --purple: #7B61FF;
+  --purple-light: #F0EEFF;
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-xl: 20px;
+  --r-2xl: 24px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* ── 폰 프레임 ── */
+.phone-frame {
+  width: 390px;
+  height: 780px;
+  background: var(--bg);
+  border-radius: 44px;
+  overflow: hidden;
+  position: relative;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+/* ── 화면 공통 ── */
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateX(30px);
+}
+.screen.active {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(0);
+}
+.screen.slide-out {
+  opacity: 0;
+  transform: translateX(-30px);
+}
+
+/* ══════════════════════════════════════
+   1. 스플래시 화면
+══════════════════════════════════════ */
+#splash {
+  background: linear-gradient(160deg, #080618 0%, #1a0e3a 40%, #0d1f3c 100%);
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  overflow: hidden;
+}
+
+/* ── 별 ── */
+.splash-stars { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.star {
+  position: absolute; border-radius: 50%; background: #fff;
+  animation: twinkle var(--dur, 3s) var(--delay, 0s) infinite ease-in-out;
+}
+@keyframes twinkle {
+  0%,100% { opacity: 0.08; transform: scale(0.7); }
+  50% { opacity: var(--max-op, 0.9); transform: scale(1.4); }
+}
+
+/* ── 유성 ── */
+.meteor {
+  position: absolute; height: 1px; border-radius: 1px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.9), transparent);
+  animation: meteor var(--dur, 4s) var(--delay, 0s) infinite ease-in;
+  opacity: 0;
+}
+@keyframes meteor {
+  0%   { opacity: 0; transform: translateX(0) translateY(0) rotate(-35deg); }
+  4%   { opacity: 1; }
+  18%  { opacity: 0; transform: translateX(-160px) translateY(80px) rotate(-35deg); }
+  100% { opacity: 0; }
+}
+
+/* ── 배경 성운 ── */
+.nebula {
+  position: absolute; border-radius: 50%; pointer-events: none; filter: blur(60px);
+  animation: nebula-drift var(--dur, 10s) var(--delay, 0s) ease-in-out infinite alternate;
+}
+@keyframes nebula-drift {
+  from { transform: translate(0, 0) scale(1); }
+  to   { transform: translate(var(--tx, 20px), var(--ty, 10px)) scale(1.12); }
+}
+
+/* ── 오브 래퍼 — 부유 ── */
+.orb-wrapper {
+  position: relative; z-index: 1;
+  width: 220px; height: 220px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 40px;
+  animation: orb-enter 1s 0.1s both cubic-bezier(0.34,1.56,0.64,1),
+             orb-float 6s 1.1s ease-in-out infinite;
+}
+@keyframes orb-enter {
+  from { opacity: 0; transform: scale(0.4) translateY(30px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes orb-float {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-14px); }
+}
+
+/* ── 오브 본체 ── */
+.splash-orb {
+  width: 180px; height: 180px; border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #c4aaff 0%, #7B61FF 30%, #3182F6 60%, #051535 100%);
+  box-shadow: 0 0 0 1px rgba(123,97,255,0.3),
+              0 0 30px rgba(123,97,255,0.6),
+              0 0 80px rgba(49,130,246,0.35),
+              0 0 140px rgba(123,97,255,0.15);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  animation: orb-glow 4s ease-in-out infinite;
+}
+@keyframes orb-glow {
+  0%,100% {
+    box-shadow: 0 0 0 1px rgba(123,97,255,0.3), 0 0 30px rgba(123,97,255,0.6),
+                0 0 80px rgba(49,130,246,0.35), 0 0 140px rgba(123,97,255,0.15);
+  }
+  50% {
+    box-shadow: 0 0 0 1px rgba(123,97,255,0.5), 0 0 50px rgba(123,97,255,0.9),
+                0 0 120px rgba(49,130,246,0.5), 0 0 200px rgba(123,97,255,0.25);
+  }
+}
+
+/* ── 오브 내부 빛 회전 ── */
+.splash-orb::before {
+  content: ''; position: absolute; inset: 0; border-radius: 50%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0%, rgba(255,255,255,0.2) 15%,
+    transparent 30%, rgba(255,255,255,0.08) 50%,
+    transparent 65%, rgba(255,255,255,0.18) 80%,
+    transparent 100%
+  );
+  animation: orb-rotate 5s linear infinite;
+}
+@keyframes orb-rotate { to { transform: rotate(360deg); } }
+
+/* ── 링 2개 ── */
+.splash-orb::after {
+  content: ''; position: absolute; inset: -14px; border-radius: 50%;
+  border: 1px solid rgba(123,97,255,0.3);
+  animation: ring-pulse 3.5s ease-in-out infinite;
+}
+@keyframes ring-pulse {
+  0%,100% { transform: scale(1); opacity: 0.7; }
+  50%     { transform: scale(1.12); opacity: 0.1; }
+}
+.orb-ring2 {
+  position: absolute; inset: -28px; border-radius: 50%;
+  border: 1px solid rgba(49,130,246,0.18);
+  animation: ring-pulse 3.5s 1s ease-in-out infinite;
+  pointer-events: none;
+}
+.orb-ring3 {
+  position: absolute; inset: -44px; border-radius: 50%;
+  border: 1px solid rgba(123,97,255,0.1);
+  animation: ring-pulse 3.5s 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+/* ── 공전 파티클 ── */
+.orb-orbit {
+  position: absolute; border-radius: 50%;
+  animation: orbit-spin var(--dur, 8s) var(--delay, 0s) linear infinite;
+  pointer-events: none;
+}
+.orb-orbit::before {
+  content: '';
+  position: absolute; top: -3px; left: 50%;
+  width: var(--ps, 5px); height: var(--ps, 5px);
+  border-radius: 50%;
+  background: var(--pc, rgba(255,255,255,0.9));
+  box-shadow: 0 0 8px var(--pc, rgba(255,255,255,0.9)), 0 0 16px var(--pc, rgba(255,255,255,0.5));
+  transform: translateX(-50%);
+}
+@keyframes orbit-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+/* ── 오브 아이콘 ── */
+.orb-inner {
+  font-size: 52px; line-height: 1; position: relative; z-index: 1;
+  filter: drop-shadow(0 0 14px rgba(255,255,255,0.9)) drop-shadow(0 0 30px rgba(180,140,255,0.7));
+  animation: orb-inner-breathe 4s ease-in-out infinite;
+}
+@keyframes orb-inner-breathe {
+  0%,100% { transform: scale(1) rotate(-5deg); }
+  50%     { transform: scale(1.14) rotate(5deg); }
+}
+
+/* ── 텍스트 ── */
+.splash-logo {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 34px; font-weight: 800; color: #fff;
+  letter-spacing: -0.8px; margin-bottom: 10px;
+  text-align: center; position: relative; z-index: 1;
+  animation: fade-up 0.9s 0.7s both cubic-bezier(0.22,1,0.36,1);
+  text-shadow: 0 0 30px rgba(123,97,255,0.6), 0 2px 12px rgba(0,0,0,0.4);
+}
+.splash-sub {
+  font-size: 15px; color: rgba(255,255,255,0.45);
+  text-align: center; line-height: 1.7;
+  position: relative; z-index: 1;
+  animation: fade-up 0.9s 0.9s both cubic-bezier(0.22,1,0.36,1);
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.splash-cta {
+  position: absolute; bottom: 44px; left: 24px; right: 24px;
+  z-index: 1;
+  animation: fade-up 0.9s 1.2s both cubic-bezier(0.22,1,0.36,1);
+}
+
+.btn-primary {
+  width: 100%;
+  padding: 16px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-xl);
+  font-size: 16px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  letter-spacing: -0.2px;
+  transition: opacity 0.15s, transform 0.1s;
+}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
+
+.splash-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+}
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.5);
+}
+.badge-dot {
+  width: 4px; height: 4px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+}
+
+/* ══════════════════════════════════════
+   공통 상단 내비 (토스 표준)
+══════════════════════════════════════ */
+.toss-nav {
+  background: var(--white);
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  z-index: 10;
+}
+.nav-back {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 50%;
+  transition: background 0.12s;
+}
+.nav-back:active { background: var(--bg); }
+.nav-back svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.nav-title { font-size: 17px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+.nav-right { width: 36px; display: flex; align-items: center; justify-content: flex-end; }
+.nav-icon-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; border: none; background: transparent; }
+.nav-icon-btn:active { background: var(--bg); }
+.nav-icon-btn svg { width: 20px; height: 20px; stroke: var(--text); fill: none; stroke-width: 2; stroke-linecap: round; }
+
+/* 스크롤 바디 */
+.scroll-body {
+  flex: 1;
+  overflow-y: auto;
+  background: var(--bg);
+}
+.scroll-body::-webkit-scrollbar { display: none; }
+
+/* ══════════════════════════════════════
+   2. 홈 화면
+══════════════════════════════════════ */
+#home { background: var(--bg); }
+
+.home-header {
+  background: var(--white);
+  padding: 20px 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+.home-greeting { font-size: 13px; color: var(--sub); margin-bottom: 4px; }
+.home-name { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; font-family: 'Noto Sans KR', sans-serif; }
+.home-name span { color: var(--blue); }
+
+/* 진척도 슬라이더 */
+.proj-slider-track {
+  display: flex;
+  transition: transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94);
+  will-change: transform;
+}
+.proj-slider-card {
+  min-width: 100%;
+  background: var(--blue);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+}
+.proj-slider-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+.slider-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.slider-dot.active {
+  background: var(--blue);
+  width: 18px;
+  border-radius: 3px;
+}
+
+  margin: 16px 20px 0;
+  background: var(--blue);
+  border-radius: var(--r-xl);
+  padding: 20px;
+  position: relative;
+  overflow: hidden;
+}
+.progress-card::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 160px; height: 160px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.07);
+}
+.progress-card::after {
+  content: '';
+  position: absolute;
+  bottom: -20px; left: 40px;
+  width: 100px; height: 100px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+}
+.pc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; position: relative; z-index: 1; }
+.pc-label { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 4px; }
+.pc-title { font-size: 17px; font-weight: 700; color: #fff; letter-spacing: -0.3px; }
+.pc-pct { font-size: 40px; font-weight: 800; color: #fff; line-height: 1; letter-spacing: -1px; }
+.pc-pct span { font-size: 18px; font-weight: 600; }
+.progress-bar-wrap { position: relative; z-index: 1; }
+.progress-track { height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; margin-bottom: 10px; }
+.progress-fill { height: 100%; background: #fff; border-radius: 3px; width: 0%; transition: width 1s ease; }
+.pc-stats { display: flex; gap: 20px; }
+.pc-stat { }
+.pc-stat-val { font-size: 15px; font-weight: 700; color: #fff; }
+.pc-stat-label { font-size: 11px; color: rgba(255,255,255,0.6); margin-top: 1px; }
+
+/* 섹션 타이틀 */
+.section-title {
+  padding: 20px 20px 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.section-more { font-size: 13px; font-weight: 500; color: var(--blue); cursor: pointer; }
+
+/* 최근 작업 카드 */
+.work-list { padding: 0 20px; display: flex; flex-direction: column; gap: 10px; }
+.work-card {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  cursor: pointer;
+  transition: transform 0.12s;
+  border: 1px solid var(--border);
+}
+.work-card:active { transform: scale(0.98); }
+.wc-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.wc-icon {
+  width: 44px; height: 44px;
+  border-radius: var(--r-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.wc-icon.fantasy { background: var(--purple-light); }
+.wc-icon.romance { background: #FFF0F3; }
+.wc-meta { flex: 1; }
+.wc-genre { font-size: 11px; font-weight: 600; color: var(--sub); margin-bottom: 2px; letter-spacing: 0.03em; }
+.wc-title { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; font-family: 'Noto Sans KR', sans-serif; }
+.wc-badge {
+  padding: 4px 9px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-writing { background: var(--blue-light); color: var(--blue); }
+.badge-done { background: var(--green-light); color: #018850; }
+.wc-progress { margin-bottom: 10px; }
+.wc-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.wc-fill { height: 100%; border-radius: 2px; }
+.fill-blue { background: var(--blue); }
+.fill-green { background: var(--green); }
+.wc-footer { display: flex; align-items: center; justify-content: space-between; }
+.wc-info { font-size: 12px; color: var(--hint); }
+.wc-pct { font-size: 13px; font-weight: 700; color: var(--sub); }
+
+/* 한줄 통계 */
+.stat-row { padding: 0 20px 16px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+.stat-card {
+  background: var(--white);
+  border-radius: var(--r-md);
+  padding: 14px 12px;
+  border: 1px solid var(--border);
+}
+.stat-val { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 2px; }
+.stat-label { font-size: 11px; color: var(--sub); font-weight: 500; }
+
+/* 오늘의 미션 */
+.mission-card {
+  margin: 0 20px 20px;
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  border: 1px solid var(--border);
+}
+.mission-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.mission-emoji { font-size: 16px; }
+.mission-title { font-size: 14px; font-weight: 700; color: var(--text); }
+.mission-list { display: flex; flex-direction: column; gap: 8px; }
+.mission-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--r-sm);
+}
+.mission-check {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.mission-check.done { background: var(--green); border-color: var(--green); }
+.mission-check.done::after { content: '✓'; font-size: 11px; color: #fff; font-weight: 700; }
+.mission-text { font-size: 13px; color: var(--text); flex: 1; }
+.mission-text.done-text { color: var(--hint); text-decoration: line-through; }
+.mission-pts { font-size: 12px; font-weight: 600; color: var(--orange); }
+
+/* 하단 탭바 */
+.tabbar {
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  height: 64px;
+  padding: 0 8px;
+}
+.tab-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  cursor: pointer;
+  padding: 8px 0;
+  border-radius: var(--r-sm);
+  transition: background 0.12s;
+}
+.tab-item:active { background: var(--bg); }
+.tab-item svg { width: 22px; height: 22px; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab-label { font-size: 10px; font-weight: 600; letter-spacing: -0.2px; }
+.tab-item.active svg { stroke: var(--blue); }
+.tab-item:not(.active) svg { stroke: var(--hint); }
+.tab-item.active .tab-label { color: var(--blue); }
+.tab-item:not(.active) .tab-label { color: var(--hint); }
+
+/* ══════════════════════════════════════
+   3. 작업공간 화면
+══════════════════════════════════════ */
+#workspace { background: var(--bg); }
+
+.ws-hero {
+  background: var(--white);
+  padding: 20px 20px 24px;
+}
+.ws-eyebrow { font-size: 12px; font-weight: 600; color: var(--blue); letter-spacing: 0.04em; text-transform: uppercase; margin-bottom: 4px; }
+.ws-headline { font-size: 22px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 6px; }
+.ws-desc { font-size: 14px; color: var(--sub); line-height: 1.6; }
+
+.ws-new-btn {
+  margin: 16px 20px 0;
+  width: calc(100% - 40px);
+  padding: 14px;
+  background: var(--blue);
+  color: #fff;
+  border: none;
+  border-radius: var(--r-lg);
+  font-size: 15px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+  transition: opacity 0.15s;
+}
+.ws-new-btn:active { opacity: 0.85; }
+
+/* 프로젝트 그리드 */
+.project-grid { padding: 0 20px; display: flex; flex-direction: column; gap: 12px; }
+
+.project-card {
+  background: var(--white);
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--border);
+  transition: transform 0.12s;
+}
+.project-card:active { transform: scale(0.98); }
+
+.pc-thumb {
+  height: 110px;
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.pc-thumb.theme-1 { background: linear-gradient(135deg, #1a1a2e 0%, #302b63 100%); }
+.pc-thumb.theme-2 { background: linear-gradient(135deg, #1a0533 0%, #6B1FA8 100%); }
+.pc-thumb.theme-3 { background: linear-gradient(135deg, #0D2137 0%, #1B5E8A 100%); }
+
+.pc-thumb-title {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
+  position: relative; z-index: 1;
+  padding: 0 20px;
+}
+.pc-thumb-glow {
+  position: absolute;
+  width: 120px; height: 120px;
+  border-radius: 50%;
+  opacity: 0.3;
+  filter: blur(30px);
+}
+.glow-1 { background: #7B61FF; top: -20px; right: 20px; }
+.glow-2 { background: #FF61D8; bottom: -20px; left: 20px; }
+
+.pc-body { padding: 14px 16px 16px; }
+.pc-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.pc-genre { font-size: 12px; font-weight: 600; color: var(--sub); }
+.pc-status { font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px; }
+.status-writing { background: var(--blue-light); color: var(--blue); }
+.status-new { background: var(--orange-light); color: var(--orange); }
+
+.pc-prog-row { display: flex; align-items: center; gap: 8px; }
+.pc-prog-track { flex: 1; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.pc-prog-fill { height: 100%; border-radius: 2px; }
+.pc-prog-pct { font-size: 12px; font-weight: 700; color: var(--sub); min-width: 32px; text-align: right; }
+
+.pc-meta-row { display: flex; gap: 16px; margin-top: 12px; }
+.pc-meta-item { display: flex; align-items: center; gap: 4px; }
+.pc-meta-item svg { width: 13px; height: 13px; stroke: var(--hint); fill: none; stroke-width: 2; stroke-linecap: round; }
+.pc-meta-text { font-size: 12px; color: var(--hint); }
+
+/* ══════════════════════════════════════
+   4. 실제 프로젝트 화면 (탭 4개)
+══════════════════════════════════════ */
+#project { background: var(--bg); overflow-y: auto; display: flex; flex-direction: column; }
+#project .proj-tabs { position: sticky; top: 0; z-index: 5; background: var(--white); }
+#project .tabbar { flex-shrink: 0; }
+
+/* 프로젝트 상단 헤더 */
+.proj-hero {
+  background: linear-gradient(160deg, #1a1a2e 0%, #302b63 100%);
+  padding: 20px 20px 28px;
+  position: relative;
+  overflow: visible;
+}
+.proj-hero::before {
+  content: '';
+  position: absolute;
+  top: -30px; right: -30px;
+  width: 140px; height: 140px;
+  border-radius: 50%;
+  background: rgba(123,97,255,0.2);
+  filter: blur(40px);
+}
+.proj-eyebrow { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 6px; position: relative; z-index: 1; }
+.proj-title { font-family: 'Noto Sans KR', sans-serif; font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; margin-bottom: 14px; position: relative; z-index: 1; }
+.proj-stats-row { display: flex; gap: 16px; position: relative; z-index: 1; }
+.proj-stat {
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--r-md);
+  padding: 10px 14px;
+  backdrop-filter: blur(10px);
+}
+.proj-stat-val { font-size: 18px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+.proj-stat-label { font-size: 11px; color: rgba(255,255,255,0.55); margin-top: 1px; }
+
+/* 탭 네비게이션 */
+.proj-tabs {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.proj-tab {
+  flex: 1;
+  padding: 14px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--hint);
+  text-align: center;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+  letter-spacing: -0.2px;
+}
+.proj-tab.active {
+  color: var(--blue);
+  border-bottom-color: var(--blue);
+}
+
+/* 탭 패널 */
+.tab-panels { overflow-y: auto; }
+.tab-panels::-webkit-scrollbar { display: none; }
+.tab-panel { display: none; padding: 0; }
+.tab-panel.active { display: block; }
+
+/* ── 작가설정 탭 ── */
+.setting-group {
+  margin: 16px 20px 0;
+  background: var(--white);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.sg-header {
+  padding: 14px 16px 12px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sg-icon {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.sg-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.sg-status { margin-left: auto; font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px; }
+.status-complete { background: var(--green-light); color: #018850; }
+.status-empty { background: var(--bg); color: var(--hint); border: 1px solid var(--border); }
+
+.sg-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.sg-row:last-child { border-bottom: none; }
+.sg-row:active { background: var(--bg); }
+.sg-row-label { font-size: 14px; color: var(--sub); }
+.sg-row-value { font-size: 14px; font-weight: 500; color: var(--text); display: flex; align-items: center; gap: 4px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sg-row-value svg { width: 14px; height: 14px; stroke: var(--hint); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+
+/* ── 글쓰기 스타일 설정 ── */
+.style-row {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.style-row:last-child { border-bottom: none; }
+.style-row-label { font-size: 13px; color: var(--sub); margin-bottom: 8px; }
+.style-chips { display: flex; gap: 6px; }
+.style-chip {
+  flex: 1;
+  padding: 7px 4px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--hint);
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s;
+  line-height: 1.3;
+}
+.style-chip.active {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  color: var(--blue);
+}
+.style-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 13px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  resize: none;
+  outline: none;
+  line-height: 1.6;
+  box-sizing: border-box;
+  transition: border-color 0.15s;
+}
+.style-textarea:focus { border-color: var(--blue); }
+
+/* 캐릭터 카드 미니 */
+.char-mini-row { padding: 12px 16px; border-bottom: 1px solid var(--border); }
+.char-mini-row:last-child { border-bottom: none; }
+.char-mini { display: flex; align-items: center; gap: 10px; width: 100%; min-width: 0; }
+.char-avatar-sm {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700;
+  flex-shrink: 0;
+}
+.av-purple { background: var(--purple-light); color: var(--purple); }
+.av-green { background: var(--green-light); color: #018850; }
+.av-orange { background: var(--orange-light); color: var(--orange); }
+.av-red { background: #FFF0F0; color: var(--red); }
+.av-blue { background: var(--blue-light); color: var(--blue); }
+.char-mini-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.char-mini-role { font-size: 12px; color: var(--hint); margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.char-mini-tags { display: flex; gap: 4px; margin-left: auto; flex-shrink: 0; }
+.char-tag { font-size: 11px; background: var(--bg); color: var(--sub); padding: 2px 7px; border-radius: 100px; border: 1px solid var(--border); white-space: nowrap; }
+
+/* ── 집필공간 탭 ── */
+.write-ep-list { padding: 16px 20px 0; display: flex; flex-direction: column; gap: 8px; }
+.ep-item {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.ep-item:active { transform: scale(0.98); }
+.ep-item.current { border-color: var(--blue); }
+.ep-item.done { border-color: var(--green, #22c55e); background: rgba(34,197,94,0.04); }
+.ep-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.ep-num-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 3px 9px; border-radius: 100px;
+}
+.ep-current { background: var(--blue); color: #fff; }
+.ep-draft { background: var(--bg); color: var(--sub); border: 1px solid var(--border); }
+.ep-done { background: #22c55e; color: #fff; }
+.ep-locked { background: var(--bg); color: var(--hint); border: 1px solid var(--border); }
+.ep-title-text { font-size: 16px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; font-family: 'Noto Sans KR', sans-serif; margin-bottom: 6px; }
+.ep-progress-row { display: flex; align-items: center; gap: 8px; }
+.ep-track { flex: 1; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.ep-fill { height: 100%; border-radius: 2px; background: var(--blue); }
+.ep-char-count { font-size: 12px; color: var(--hint); }
+
+.write-new-btn {
+  margin: 12px 20px 0;
+  width: calc(100% - 40px);
+  padding: 14px;
+  background: transparent;
+  color: var(--blue);
+  border: 1.5px dashed var(--blue);
+  border-radius: var(--r-lg);
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.write-new-btn:active { background: var(--blue-light); }
+
+/* ── 컨펌공간 탭 ── */
+.confirm-list { padding: 12px 16px 80px; display: flex; flex-direction: column; gap: 10px; }
+.confirm-card {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  transition: transform 0.12s;
+}
+.confirm-card:active { transform: scale(0.98); }
+.cc-header {
+  padding: 14px 16px 13px;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  cursor: pointer; user-select: none;
+}
+.cc-header-left { flex: 1; min-width: 0; }
+.cc-ep { font-size: 12px; font-weight: 700; color: var(--sub); margin-bottom: 3px; }
+.cc-preview {
+  font-size: 12px; color: var(--hint);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.cc-header-right { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.cc-status { font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 100px; white-space: nowrap; }
+.cc-pending  { background: var(--orange-light); color: var(--orange); }
+.cc-analyzing{ background: var(--blue-light);   color: var(--blue);   }
+.cc-toggle-btn {
+  background: none; border: 1px solid var(--border); border-radius: 20px;
+  cursor: pointer; padding: 3px 8px;
+  color: var(--sub); display: flex; align-items: center; gap: 3px;
+  font-size: 11px; font-weight: 600; font-family: 'Noto Sans KR', sans-serif;
+  white-space: nowrap;
+}
+.cc-toggle-chevron { display: inline-block; transition: transform 0.25s ease; font-style: normal; font-size: 9px; }
+.cc-toggle-chevron.open { transform: rotate(180deg); }
+.cc-checks {
+  padding: 12px 16px 14px; border-top: 1px solid var(--border);
+  display: flex; flex-direction: column; gap: 8px;
+}
+.cc-collapsible { overflow: hidden; transition: max-height 0.32s ease, opacity 0.25s ease; }
+.cc-collapsible.collapsed { max-height: 0 !important; opacity: 0; pointer-events: none; }
+.cc-check-item { display: flex; align-items: center; gap: 8px; }
+.cc-check-icon {
+  width: 20px; height: 20px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0;
+}
+.check-good { background: var(--green-light); color: #018850; }
+.check-warn  { background: var(--orange-light); color: var(--orange); }
+.check-bad   { background: #FFF0F0; color: var(--red); }
+.check-pending { background: var(--bg); border: 1px solid var(--border); }
+.cc-check-label { font-size: 13px; color: var(--text); flex: 1; }
+.cc-check-score { font-size: 12px; font-weight: 700; }
+
+/* ── 완성공간 탭 ── */
+.done-list { padding: 16px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+.done-card {
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+.done-card:active { transform: scale(0.98); }
+.done-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.done-num {
+  width: 40px; height: 40px;
+  border-radius: var(--r-md);
+  background: var(--green-light);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 800; color: #018850;
+  flex-shrink: 0;
+}
+.done-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; font-family: 'Noto Sans KR', sans-serif; }
+.done-ep-label { font-size: 12px; color: var(--hint); margin-top: 1px; }
+.done-bottom { display: flex; align-items: center; justify-content: space-between; }
+.done-chars { font-size: 13px; color: var(--sub); font-weight: 500; }
+.done-date { font-size: 12px; color: var(--hint); }
+.done-export-btn {
+  padding: 8px 14px;
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  font-size: 12px; font-weight: 600;
+  color: var(--sub);
+  cursor: pointer;
+  font-family: 'Noto Sans KR', sans-serif;
+}
+.done-export-btn:active { background: var(--border); }
+
+.done-empty {
+  margin: 20px 20px 0;
+  background: var(--white);
+  border-radius: var(--r-lg);
+  padding: 40px 20px;
+  border: 1px dashed var(--border);
+  text-align: center;
+}
+.done-empty-icon { font-size: 32px; margin-bottom: 10px; }
+.done-empty-text { font-size: 14px; color: var(--hint); line-height: 1.6; }
+
+/* ── 프로젝트 하단 고정 버튼 ── */
+.proj-footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  background: var(--white);
+  border-top: 1px solid var(--border);
+  padding: 12px 20px 16px;
+}
+
+/* ══════════════════════════════════════
+   바텀시트 (토스 스타일)
+══════════════════════════════════════ */
+.sheet-backdrop {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.45);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+.sheet-backdrop.open { opacity: 1; pointer-events: all; }
+
+.bottom-sheet {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  background: var(--white);
+  border-radius: 24px 24px 0 0;
+  z-index: 101;
+  transform: translateY(100%);
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
+  max-height: 82%;
+  display: flex;
+  flex-direction: column;
+}
+.bottom-sheet.open { transform: translateY(0); }
+
+.sheet-handle {
+  width: 36px; height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 4px;
+  flex-shrink: 0;
+}
+.sheet-header {
+  padding: 8px 20px 14px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sheet-title { font-size: 16px; font-weight: 700; color: var(--text); }
+.sheet-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--bg); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--sub);
+}
+.sheet-body { flex: 1; overflow-y: auto; padding: 16px 20px 24px; }
+.sheet-body::-webkit-scrollbar { display: none; }
+
+/* 칩 그리드 */
+.chip-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.chip-opt {
+  padding: 9px 16px;
+  border-radius: 100px;
+  border: 1.5px solid var(--border);
+  font-size: 14px; font-weight: 500;
+  color: var(--text);
+  background: var(--white);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.chip-opt.selected {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+/* 텍스트 입력 */
+.sheet-input {
+  width: 100%;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 15px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  padding: 13px 14px;
+  outline: none;
+  resize: none;
+  line-height: 1.65;
+  background: var(--bg);
+  transition: border-color 0.15s;
+}
+.sheet-input:focus { border-color: var(--blue); background: var(--white); }
+.sheet-input::placeholder { color: var(--hint); }
+
+.sheet-section-label {
+  font-size: 12px; font-weight: 600;
+  color: var(--sub); margin-bottom: 8px; margin-top: 16px;
+  letter-spacing: 0.03em;
+}
+.sheet-section-label:first-child { margin-top: 0; }
+
+/* 캐릭터 폼 */
+.char-form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+.char-form-input {
+  width: 100%; padding: 11px 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  background: var(--bg);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.char-form-input:focus { border-color: var(--blue); background: var(--white); }
+.char-form-input::placeholder { color: var(--hint); }
+
+/* 저장 버튼 */
+.sheet-save-btn {
+  width: 100%; padding: 15px;
+  background: var(--blue); color: #fff;
+  border: none; border-radius: var(--r-lg);
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; margin-top: 16px;
+  transition: opacity 0.15s;
+}
+.sheet-save-btn:active { opacity: 0.85; }
+
+/* 토스트 */
+.toast {
+  position: absolute;
+  bottom: 80px; left: 50%; transform: translateX(-50%) translateY(10px);
+  background: var(--text); color: #fff;
+  padding: 10px 18px; border-radius: 100px;
+  font-size: 13px; font-weight: 500;
+  white-space: nowrap; z-index: 200;
+  opacity: 0; pointer-events: none;
+  transition: all 0.25s ease;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* 캐릭터 삭제 버튼 */
+.char-del-btn {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: #FFF0F0; border: none;
+  color: var(--red); font-size: 14px;
+  cursor: pointer; display: flex;
+  align-items: center; justify-content: center;
+  margin-left: auto; flex-shrink: 0;
+}
+
+/* ══════════════════════════════════════
+   6. 집필 화면
+══════════════════════════════════════ */
+#writing { background: var(--bg); }
+
+.writing-manuscript {
+  background: var(--white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  height: 280px;
+  flex-shrink: 0;
+  transition: height 0.2s ease;
+}
+.wm-header {
+  padding: 10px 16px 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.wm-label { font-size: 11px; font-weight: 600; color: var(--sub); letter-spacing: 0.06em; text-transform: uppercase; }
+.wm-wc { font-size: 11px; font-weight: 600; color: var(--blue); background: var(--blue-light); padding: 2px 8px; border-radius: 100px; }
+.wm-resize-btn {
+  font-size: 11px; font-weight: 600; color: var(--hint);
+  background: none; border: none; cursor: pointer; padding: 2px 6px;
+  border-radius: 4px; transition: all 0.12s;
+}
+.wm-resize-btn:active { background: var(--bg); color: var(--sub); }
+.wm-body { flex: 1; overflow-y: auto; padding: 14px 16px; }
+.wm-body::-webkit-scrollbar { display: none; }
+.wm-text {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 14px; line-height: 2;
+  color: var(--text);
+  white-space: pre-wrap;
+  outline: none; min-height: 80px;
+  word-break: keep-all;
+}
+.wm-text:empty::before { content: attr(data-placeholder); color: var(--hint); font-size: 13px; }
+
+/* 드래그 리사이즈 핸들 */
+.wm-drag-handle {
+  height: 6px; background: var(--border); cursor: ns-resize;
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s;
+}
+.wm-drag-handle:hover { background: var(--blue); }
+.wm-drag-handle::after {
+  content: '';
+  width: 24px; height: 2px;
+  background: rgba(0,0,0,0.15);
+  border-radius: 1px;
+}
+
+.writing-chat {
+  flex: 1; display: flex; flex-direction: column; overflow: hidden;
+  min-height: 0;
+}
+.wc-quick {
+  padding: 8px 14px;
+  display: flex; gap: 6px; overflow-x: auto; flex-shrink: 0;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+.wc-quick::-webkit-scrollbar { display: none; }
+.wc-chip {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  font-size: 12px; font-weight: 600;
+  color: var(--sub);
+  cursor: pointer;
+  white-space: nowrap;
+  font-family: 'Noto Sans KR', sans-serif;
+  transition: all 0.12s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.wc-chip:active { background: var(--blue); border-color: var(--blue); color: #fff; transform: scale(0.96); }
+
+.wc-messages {
+  flex: 1; overflow-y: auto;
+  padding: 10px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+}
+.wc-messages::-webkit-scrollbar { display: none; }
+.wc-msg { display: flex; flex-direction: column; animation: msg-in 0.2s ease both; }
+@keyframes msg-in { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+.wc-msg.user { align-items: flex-end; }
+.wc-bubble {
+  max-width: 88%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-size: 13px; line-height: 1.6;
+  color: var(--text);
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-bottom-left-radius: 4px;
+  word-break: keep-all;
+}
+.wc-msg.user .wc-bubble {
+  background: var(--blue);
+  color: #fff;
+  border-color: var(--blue);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 4px;
+}
+.typing-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--hint);
+  animation: typing-bounce 1.2s ease-in-out infinite;
+}
+.typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.typing-dot:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typing-bounce {
+  0%,60%,100% { transform: translateY(0); opacity: 0.5; }
+  30% { transform: translateY(-6px); opacity: 1; }
+}
+
+.wc-input-row {
+  padding: 8px 14px 12px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: flex-end;
+  flex-shrink: 0; background: var(--white);
+}
+.wc-input {
+  flex: 1;
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-md);
+  font-size: 14px;
+  font-family: 'Noto Sans KR', sans-serif;
+  color: var(--text);
+  padding: 9px 13px;
+  outline: none; resize: none;
+  line-height: 1.5; min-height: 38px; max-height: 90px;
+  transition: border-color 0.15s;
+}
+.wc-input:focus { border-color: var(--blue); background: var(--white); }
+.wc-input::placeholder { color: var(--hint); }
+.wc-send {
+  width: 38px; height: 38px;
+  border-radius: var(--r-md);
+  background: var(--blue);
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: opacity 0.12s, transform 0.1s;
+}
+.wc-send:active { transform: scale(0.92); }
+.wc-send:disabled { opacity: 0.4; }
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(30px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+.animate-in { animation: slide-in-right 0.3s ease both; }
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to { background-position: 200% center; }
+}
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+
+  <!-- ══════════════ 1. 스플래시 ══════════════ -->
+  <div id="splash" class="screen active">
+    <div class="splash-stars" id="stars"></div>
+
+    <!-- 성운 배경 -->
+    <div class="nebula" style="width:300px;height:300px;background:rgba(123,97,255,0.12);top:-60px;right:-80px;--dur:12s;--delay:0s;--tx:-20px;--ty:15px;"></div>
+    <div class="nebula" style="width:200px;height:200px;background:rgba(49,130,246,0.1);bottom:80px;left:-60px;--dur:9s;--delay:2s;--tx:15px;--ty:-20px;"></div>
+    <div class="nebula" style="width:160px;height:160px;background:rgba(180,100,255,0.08);bottom:160px;right:-20px;--dur:14s;--delay:1s;--tx:-10px;--ty:10px;"></div>
+
+    <!-- 오브 래퍼 -->
+    <div class="orb-wrapper">
+      <!-- 공전 파티클 -->
+      <div class="orb-orbit" style="width:230px;height:230px;--dur:7s;--delay:0s;--pc:rgba(180,140,255,0.9);--ps:5px;"></div>
+      <div class="orb-orbit" style="width:210px;height:210px;--dur:11s;--delay:-4s;--pc:rgba(100,180,255,0.85);--ps:3px;"></div>
+      <div class="orb-orbit" style="width:250px;height:250px;--dur:9s;--delay:-2s;--pc:rgba(255,255,255,0.7);--ps:3px;"></div>
+      <div class="orb-orbit" style="width:195px;height:195px;--dur:5s;--delay:-1s;--pc:rgba(200,160,255,0.8);--ps:4px;transform:rotate(60deg);"></div>
+
+      <!-- 오브 본체 -->
+      <div class="splash-orb">
+        <div class="orb-ring2"></div>
+        <div class="orb-ring3"></div>
+        <div class="orb-inner">✦</div>
+      </div>
+    </div>
+
+    <div class="splash-logo">모두의 판타지</div>
+    <div class="splash-sub">아이디어가 곧 이야기가 되는 곳<br>AI 창작 파트너와 함께 써내려가세요</div>
+
+    <div class="splash-cta">
+      <button class="btn-primary" onclick="goTo('home')">시작하기</button>
+      <div class="splash-badge">
+        <span class="badge-item">✦ AI 창작 파트너</span>
+        <div class="badge-dot"></div>
+        <span class="badge-item">무료로 시작</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 2. 홈 ══════════════ -->
+  <div id="home" class="screen">
+    <div class="toss-nav">
+      <div style="width:36px"></div>
+      <div class="nav-title">모두의 판타지</div>
+      <button class="nav-icon-btn">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </button>
+    </div>
+
+    <div class="scroll-body">
+      <div class="home-header">
+        <div class="home-greeting">반가워요 👋</div>
+        <div class="home-name">오늘도 <span>글을</span> 써볼까요?</div>
+      </div>
+
+
+      <!-- 전체 진척도 — 스와이프 슬라이더 -->
+      <div style="margin-top:16px;padding:0 20px;position:relative;">
+        <div id="proj-card-slider" style="overflow:hidden;border-radius:var(--r-xl);"></div>
+        <!-- dot 인디케이터 -->
+        <div id="proj-card-dots" style="display:flex;justify-content:center;gap:6px;margin-top:10px;"></div>
+      </div>
+
+      <!-- 통계 -->
+      <div class="section-title" style="padding-top:20px">이번 달 현황</div>
+      <div class="stat-row">
+        <div class="stat-card">
+          <div class="stat-val" id="home-stat-days">0</div>
+          <div class="stat-label">집필일</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="home-stat-chars">0</div>
+          <div class="stat-label">이번달 글자</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val" id="home-stat-projects">0</div>
+          <div class="stat-label">작업 중인 작품</div>
+        </div>
+      </div>
+
+      <!-- 최근 작업 -->
+      <div class="section-title">
+        최근 작업
+        <span class="section-more" onclick="goTo('workspace')">전체보기</span>
+      </div>
+      <div class="work-list" id="home-work-list"></div>
+
+      <!-- 오늘의 미션 -->
+      <div class="section-title">오늘의 미션</div>
+      <div class="mission-card">
+        <div class="mission-head">
+          <span class="mission-emoji">🎯</span>
+          <span class="mission-title">오늘 할 일</span>
+        </div>
+        <div class="mission-list">
+          <div class="mission-item">
+            <div class="mission-check" id="mission-world"></div>
+            <span class="mission-text" id="mission-world-text">작가설정 완료하기</span>
+            <span class="mission-pts">+10p</span>
+          </div>
+          <div class="mission-item">
+            <div class="mission-check" id="mission-write"></div>
+            <span class="mission-text" id="mission-write-text">1,000자 이상 집필하기</span>
+            <span class="mission-pts">+20p</span>
+          </div>
+          <div class="mission-item">
+            <div class="mission-check"></div>
+            <span class="mission-text">컨펌 검수 1회 진행하기</span>
+            <span class="mission-pts">+15p</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">홈</span>
+      </div>
+      <div class="tab-item" onclick="goTo('workspace')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">작업공간</span>
+      </div>
+      <div class="tab-item" onclick="goTo('info')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="tab-label">정보</span>
+      </div>
+      <div class="tab-item" onclick="goTo('my')">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">MY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 3. 작업공간 ══════════════ -->
+  <div id="workspace" class="screen">
+    <div class="toss-nav">
+      <div class="nav-back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">작업공간</div>
+      <button class="nav-icon-btn">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+    </div>
+
+    <div class="scroll-body">
+      <div class="ws-hero">
+        <div class="ws-eyebrow">내 작품</div>
+        <div class="ws-headline">어떤 이야기를<br>써내려갈까요?</div>
+        <div class="ws-desc">AI 파트너와 함께라면<br>어떤 이야기도 써낼 수 있어요.</div>
+      </div>
+
+      <button class="ws-new-btn" onclick="openSheet('newproject')" >
+        <svg style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        새 작품 시작하기
+      </button>
+
+      <div class="section-title" style="margin-top:4px">내 작품 목록</div>
+
+      <div class="project-grid" id="ws-project-grid">
+        <div style="background:var(--white);border-radius:var(--r-xl);border:1.5px dashed var(--border);padding:40px 20px;text-align:center;cursor:pointer;" onclick="openSheet('newproject')">
+          <div style="font-size:32px;margin-bottom:10px">📖</div>
+          <div style="font-size:15px;font-weight:700;color:var(--sub);margin-bottom:4px">첫 작품을 시작해보세요</div>
+          <div style="font-size:13px;color:var(--hint)">위 버튼을 눌러 새 작품을 만들어요</div>
+        </div>
+      </div>
+
+      <div style="height:20px"></div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab-item" onclick="goTo('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">홈</span>
+      </div>
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">작업공간</span>
+      </div>
+      <div class="tab-item" onclick="goTo('info')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="tab-label">정보</span>
+      </div>
+      <div class="tab-item" onclick="goTo('my')">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">MY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 4. 실제 프로젝트 ══════════════ -->
+  <div id="project" class="screen">
+    <div class="toss-nav" style="background:transparent;border-bottom:1px solid rgba(255,255,255,0.1);position:absolute;top:0;left:0;right:0;z-index:20;">
+      <div class="nav-back" style="background:rgba(255,255,255,0.1);" onclick="goBack()">
+        <svg viewBox="0 0 24 24" style="stroke:#fff"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title" style="color:#fff" id="proj-nav-title">내 첫 작품</div>
+      <div style="position:relative;">
+        <button class="nav-icon-btn" style="background:rgba(255,255,255,0.1);" onclick="toggleProjMenu()" id="proj-more-btn">
+          <svg viewBox="0 0 24 24" style="stroke:#fff"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+        </button>
+        <div id="proj-menu" style="display:none;position:absolute;top:44px;right:0;background:#fff;border-radius:var(--r-lg);box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:150px;overflow:hidden;z-index:999;">
+          <button onclick="closeProjMenu(); confirmDeleteProject(DB.currentIdx);" style="width:100%;padding:14px 16px;background:none;border:none;text-align:left;font-size:14px;font-weight:600;color:var(--red);font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            작품 삭제
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 프로젝트 히어로 -->
+    <div class="proj-hero" style="padding-top:68px;padding-bottom:32px">
+      <div class="proj-eyebrow" id="proj-genre-label">장르 미설정</div>
+      <div class="proj-title" id="proj-title-label">내 첫 작품</div>
+      <div id="proj-logline-label" style="font-size:13px;color:rgba(255,255,255,0.55);margin-top:-8px;margin-bottom:14px;position:relative;z-index:1;line-height:1.5;display:none;"></div>
+      <div class="proj-stats-row">
+        <div class="proj-stat">
+          <div class="proj-stat-val" id="proj-stat-pct">0%</div>
+          <div class="proj-stat-label">전체 진행</div>
+        </div>
+        <div class="proj-stat">
+          <div class="proj-stat-val" id="proj-stat-done">0화</div>
+          <div class="proj-stat-label">완성</div>
+        </div>
+        <div class="proj-stat">
+          <div class="proj-stat-val" id="proj-stat-chars">0</div>
+          <div class="proj-stat-label">총 글자</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 탭 네비 -->
+    <div class="proj-tabs" style="position:sticky;top:0;z-index:5;">
+      <div class="proj-tab active" onclick="switchTab(0)">✍️ 작가설정</div>
+      <div class="proj-tab" onclick="switchTab(1)">📝 집필공간</div>
+      <div class="proj-tab" onclick="switchTab(2)">🔍 컨펌공간</div>
+      <div class="proj-tab" onclick="switchTab(3)">✅ 완성공간</div>
+    </div>
+
+    <!-- 탭 콘텐츠 -->
+    <div class="tab-panels">
+
+      <!-- 작가설정 탭 -->
+      <div class="tab-panel active" id="panel-0">
+        <div class="setting-group">
+          <div class="sg-header">
+            <div class="sg-icon" style="background:var(--purple-light)">🎭</div>
+            <span class="sg-title">장르 & 분위기</span>
+            <span class="sg-status" id="genre-status">미설정</span>
+          </div>
+          <div class="sg-row" onclick="openSheet('genre')">
+            <span class="sg-row-label">장르</span>
+            <span class="sg-row-value" id="disp-genre">선택하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('mood')">
+            <span class="sg-row-label">분위기</span>
+            <span class="sg-row-value" id="disp-mood">선택하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('target')">
+            <span class="sg-row-label">타겟 독자</span>
+            <span class="sg-row-value" id="disp-target">선택하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="sg-header">
+            <div class="sg-icon" style="background:#E8F4FE">🌍</div>
+            <span class="sg-title">세계관 설정</span>
+            <span class="sg-status" id="world-status">미설정</span>
+          </div>
+          <div class="sg-row" onclick="openSheet('era')">
+            <span class="sg-row-label">시대/배경</span>
+            <span class="sg-row-value" id="disp-era">입력하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('keywords')">
+            <span class="sg-row-label">핵심 키워드</span>
+            <span class="sg-row-value" id="disp-keywords">선택하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('worlddesc')">
+            <span class="sg-row-label">세계관 설명</span>
+            <span class="sg-row-value" id="disp-worlddesc">작성하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+        <div class="setting-group">
+          <div class="sg-header">
+            <div class="sg-icon" style="background:var(--orange-light)">👤</div>
+            <span class="sg-title">등장인물</span>
+            <span class="sg-status" id="char-status">미설정</span>
+          </div>
+          <div id="char-list-display"></div>
+          <div class="sg-row" style="justify-content:center" onclick="openSheet('addchar')">
+            <span style="font-size:14px;font-weight:600;color:var(--blue)">+ 캐릭터 추가</span>
+          </div>
+        </div>
+        <div class="setting-group" style="margin-bottom:0">
+          <div class="sg-header">
+            <div class="sg-icon" style="background:var(--green-light)">📖</div>
+            <span class="sg-title">스토리 방향</span>
+            <span class="sg-status" id="story-status">미설정</span>
+          </div>
+          <div class="sg-row" onclick="openSheet('logline')">
+            <span class="sg-row-label">한줄 소개</span>
+            <span class="sg-row-value" id="disp-logline">작성하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('plot')">
+            <span class="sg-row-label">전체 방향</span>
+            <span class="sg-row-value" id="disp-plot">작성하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('ep1start')">
+            <span class="sg-row-label">1화 시작 방식</span>
+            <span class="sg-row-value" id="disp-ep1start">선택하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+          <div class="sg-row" onclick="openSheet('totaleps')">
+            <span class="sg-row-label">총 예상 회차</span>
+            <span class="sg-row-value" id="disp-totaleps">설정하세요<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></span>
+          </div>
+        </div>
+        <!-- 글쓰기 스타일 설정 -->
+        <div class="setting-group" style="margin-bottom:0">
+          <div class="sg-header">
+            <div class="sg-icon" style="background:#F0EEFF">🖊️</div>
+            <span class="sg-title">글쓰기 스타일</span>
+            <span class="sg-status status-empty" id="style-status">미설정</span>
+          </div>
+
+          <!-- 서술 시점 -->
+          <div class="style-row">
+            <div class="style-row-label">📌 서술 시점</div>
+            <div class="style-chips" id="chips-pov">
+              <button class="style-chip" data-group="pov" data-val="1인칭" onclick="selectStyleChip('pov','1인칭',this)">1인칭<br><span style="font-size:10px;font-weight:400">"나는~"</span></button>
+              <button class="style-chip" data-group="pov" data-val="3인칭" onclick="selectStyleChip('pov','3인칭',this)">3인칭<br><span style="font-size:10px;font-weight:400">"그는~"</span></button>
+              <button class="style-chip" data-group="pov" data-val="자유" onclick="selectStyleChip('pov','자유',this)">자유<br><span style="font-size:10px;font-weight:400">AI 선택</span></button>
+            </div>
+          </div>
+
+          <!-- 문장 길이 -->
+          <div class="style-row">
+            <div class="style-row-label">✂️ 문장 길이</div>
+            <div class="style-chips" id="chips-sentence">
+              <button class="style-chip" data-group="sentence" data-val="짧게" onclick="selectStyleChip('sentence','짧게',this)">짧고 강하게<br><span style="font-size:10px;font-weight:400">빠른 호흡</span></button>
+              <button class="style-chip" data-group="sentence" data-val="보통" onclick="selectStyleChip('sentence','보통',this)">보통<br><span style="font-size:10px;font-weight:400">균형 있게</span></button>
+              <button class="style-chip" data-group="sentence" data-val="길게" onclick="selectStyleChip('sentence','길게',this)">길고 흐르듯<br><span style="font-size:10px;font-weight:400">문학적으로</span></button>
+            </div>
+          </div>
+
+          <!-- 묘사 비중 -->
+          <div class="style-row">
+            <div class="style-row-label">🎨 묘사 비중</div>
+            <div class="style-chips" id="chips-desc">
+              <button class="style-chip" data-group="desc" data-val="최소" onclick="selectStyleChip('desc','최소',this)">최소화<br><span style="font-size:10px;font-weight:400">사건 중심</span></button>
+              <button class="style-chip" data-group="desc" data-val="보통" onclick="selectStyleChip('desc','보통',this)">적당히<br><span style="font-size:10px;font-weight:400">균형</span></button>
+              <button class="style-chip" data-group="desc" data-val="풍부" onclick="selectStyleChip('desc','풍부',this)">풍부하게<br><span style="font-size:10px;font-weight:400">감각적으로</span></button>
+            </div>
+          </div>
+
+          <!-- 대사 비중 -->
+          <div class="style-row">
+            <div class="style-row-label">💬 대사 비중</div>
+            <div class="style-chips" id="chips-dialog">
+              <button class="style-chip" data-group="dialog" data-val="적게" onclick="selectStyleChip('dialog','적게',this)">적게<br><span style="font-size:10px;font-weight:400">서술 위주</span></button>
+              <button class="style-chip" data-group="dialog" data-val="보통" onclick="selectStyleChip('dialog','보통',this)">적당히<br><span style="font-size:10px;font-weight:400">균형</span></button>
+              <button class="style-chip" data-group="dialog" data-val="많게" onclick="selectStyleChip('dialog','많게',this)">많게<br><span style="font-size:10px;font-weight:400">대화 위주</span></button>
+            </div>
+          </div>
+
+          <!-- 전개 속도 -->
+          <div class="style-row">
+            <div class="style-row-label">⚡ 전개 속도</div>
+            <div class="style-chips" id="chips-pace">
+              <button class="style-chip" data-group="pace" data-val="빠르게" onclick="selectStyleChip('pace','빠르게',this)">빠르게<br><span style="font-size:10px;font-weight:400">사건 연속</span></button>
+              <button class="style-chip" data-group="pace" data-val="보통" onclick="selectStyleChip('pace','보통',this)">보통<br><span style="font-size:10px;font-weight:400">균형</span></button>
+              <button class="style-chip" data-group="pace" data-val="느리게" onclick="selectStyleChip('pace','느리게',this)">천천히<br><span style="font-size:10px;font-weight:400">감정 쌓기</span></button>
+            </div>
+          </div>
+
+          <!-- 감정 표현 -->
+          <div class="style-row">
+            <div class="style-row-label">❤️ 감정 표현</div>
+            <div class="style-chips" id="chips-emotion">
+              <button class="style-chip" data-group="emotion" data-val="절제" onclick="selectStyleChip('emotion','절제',this)">절제<br><span style="font-size:10px;font-weight:400">담담하게</span></button>
+              <button class="style-chip" data-group="emotion" data-val="보통" onclick="selectStyleChip('emotion','보통',this)">보통<br><span style="font-size:10px;font-weight:400">균형</span></button>
+              <button class="style-chip" data-group="emotion" data-val="풍부" onclick="selectStyleChip('emotion','풍부',this)">풍부하게<br><span style="font-size:10px;font-weight:400">감성적으로</span></button>
+            </div>
+          </div>
+
+          <!-- 자유 메모 -->
+          <div class="style-row" style="border-bottom:none">
+            <div class="style-row-label">✍️ 작가만의 스타일 메모 <span style="font-size:11px;color:var(--hint)">(선택)</span></div>
+            <textarea id="style-memo" class="style-textarea" rows="3"
+              placeholder="예: 독백이 많은 편이에요. 반전을 자주 넣어주세요. 주인공은 항상 쿨하게 말해요."
+              oninput="saveStyleMemo()"
+              onfocus="this.style.borderColor='var(--blue)'"
+              onblur="this.style.borderColor='var(--border)'"
+            ></textarea>
+          </div>
+        </div>
+
+        <div style="padding:12px 20px 16px;">
+          <button id="setting-cta-btn" onclick="goToWriting()" style="width:100%;padding:14px;border:none;border-radius:var(--r-lg);font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all 0.15s;">
+            집필공간으로 이동하기
+          </button>
+        </div>
+      </div>
+
+      <!-- 집필공간 탭 -->
+      <div class="tab-panel" id="panel-1">
+        <div class="write-ep-list" id="ep-list">
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px dashed var(--border);padding:32px 20px;text-align:center;">
+            <div style="font-size:28px;margin-bottom:8px">📝</div>
+            <div style="font-size:14px;font-weight:600;color:var(--sub);margin-bottom:4px">아직 집필한 회차가 없어요</div>
+            <div style="font-size:13px;color:var(--hint)">아래 버튼으로 첫 회차를 시작해보세요</div>
+          </div>
+        </div>
+        <button class="write-new-btn" onclick="openSheet('newep')">+ 새 회차 추가</button>
+      </div>
+
+      <!-- 컨펌공간 탭 -->
+      <div class="tab-panel" id="panel-2">
+        <div class="confirm-list" id="confirm-list"></div>
+      </div>
+
+      <!-- 완성공간 탭 -->
+      <div class="tab-panel" id="panel-3">
+        <div style="padding:16px 20px 8px;display:flex;align-items:center;justify-content:space-between;">
+          <span style="font-size:13px;font-weight:600;color:var(--sub)" id="done-count">완성된 회차 0편</span>
+          <span style="font-size:13px;font-weight:600;color:var(--blue);cursor:pointer" onclick="exportAllDone()">전체 내보내기</span>
+        </div>
+        <div class="done-list" id="done-list"></div>
+      </div>
+
+    </div><!-- tab-panels -->
+
+    <!-- 프로젝트 하단 탭바 -->
+    <div class="tabbar">
+      <div class="tab-item" onclick="goTo('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">홈</span>
+      </div>
+      <div class="tab-item" onclick="goTo('workspace')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">작업공간</span>
+      </div>
+      <div class="tab-item" onclick="goTo('info')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="tab-label">정보</span>
+      </div>
+      <div class="tab-item" onclick="goTo('my')">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">MY</span>
+      </div>
+    </div>
+  </div><!-- #project -->
+
+  <!-- ══════════════ 6. 집필 화면 ══════════════ -->
+  <div id="writing" class="screen">
+    <div class="toss-nav">
+      <div class="nav-back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title" id="writing-nav-title">1화 집필</div>
+      <div style="display:flex;align-items:center;gap:6px;">
+        <span id="usage-badge" onclick="onBadgeClick()" style="font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;cursor:pointer;background:#EBF3FF;color:var(--blue);">💬 5회 무료</span>
+        <button class="nav-icon-btn" onclick="saveEpisode()" title="저장">
+          <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- 원고 영역 -->
+    <div class="writing-manuscript" id="writing-manuscript">
+      <div class="wm-header">
+        <span class="wm-label">원고</span>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="wm-resize-btn" onclick="toggleManuscriptSize()" id="wm-resize-btn">크게 ↕</button>
+          <span class="wm-wc" id="wm-wc">0자</span>
+        </div>
+      </div>
+      <div class="wm-body">
+        <div class="wm-text" id="wm-text" contenteditable="true"
+          data-placeholder="AI와 대화하면 여기에 원고가 완성돼요."></div>
+      </div>
+      <div class="wm-drag-handle" id="wm-drag-handle"></div>
+    </div>
+
+    <!-- AI 채팅 영역 -->
+    <div class="writing-chat">
+      <!-- 이번 화 참고사항 메모창 -->
+      <div id="ep-memo-wrap" style="padding:8px 14px 0;border-top:1px solid var(--border);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.03em;">✏️ 이번 화 참고사항</span>
+          <button onclick="toggleMemo()" id="memo-toggle-btn" style="font-size:11px;color:var(--blue);background:none;border:none;cursor:pointer;padding:0;">접기</button>
+        </div>
+        <div id="ep-memo-body">
+          <textarea id="ep-memo-input" rows="2"
+            placeholder="AI에게 알려줄 이번 화 방향, 복선, 주의사항 등을 자유롭게 메모하세요..."
+            style="width:100%;padding:8px 10px;border:1.5px solid var(--border);border-radius:var(--r-md);font-size:12px;font-family:'Noto Sans KR',sans-serif;color:var(--text);background:var(--bg);resize:none;outline:none;line-height:1.6;transition:border-color 0.15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='var(--blue)'"
+            onblur="this.style.borderColor='var(--border)'"
+            oninput="saveMemo()"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- 빠른 액션 -->
+      <div class="wc-quick" id="wc-quick">
+        <button class="wc-chip" onclick="quickWrite('이 장면으로 시작해줘: 주인공이 일상적인 하루를 보내다 예상치 못한 사건과 마주친다')">일상 → 사건 시작</button>
+        <button class="wc-chip" onclick="quickWrite('긴장감 있는 액션 장면을 써줘')">액션 장면</button>
+        <button class="wc-chip" onclick="quickWrite('두 캐릭터가 처음 만나는 장면을 써줘')">첫 만남 장면</button>
+        <button class="wc-chip" onclick="quickWrite('지금까지 쓴 내용에 이어서 다음 장면을 써줘')">이어쓰기</button>
+        <button class="wc-chip" onclick="quickWrite('지금 원고의 문체를 웹소설 스타일로 다듬어줘. 템포감 있게, 대사는 자연스럽게.')">문체 다듬기</button>
+      </div>
+
+      <!-- 메시지 목록 -->
+      <div class="wc-messages" id="wc-messages">
+        <div class="wc-msg ai">
+          <div class="wc-bubble">설정 다 읽었어요! 이번 화 어떻게 시작할지 말씀해주세요. 위 빠른 버튼을 쓰거나 직접 입력해도 돼요 😊</div>
+        </div>
+        <div class="wc-typing" id="wc-typing" style="display:none">
+          <div class="wc-bubble" style="padding:10px 14px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span id="wc-loading-text" style="font-size:12px;color:var(--sub);">AI가 집필 중이에요</span>
+              <div style="display:flex;gap:4px;align-items:center">
+                <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 입력창 -->
+      <div class="wc-input-row">
+        <textarea class="wc-input" id="wc-input" placeholder="이번 장면 방향을 알려주세요..." rows="1"
+          onkeydown="handleWcKey(event)" oninput="autoResizeWc(this)"></textarea>
+        <button class="wc-send" id="wc-send" onclick="sendWritingMsg()">
+          <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 5. 정보 화면 ══════════════ -->
+  <div id="info" class="screen">
+    <div class="toss-nav">
+      <div class="nav-back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">정보</div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="scroll-body" style="padding-bottom:90px">
+
+      <!-- ── 공지사항 / 업데이트 ── -->
+      <div style="padding:20px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">📢 공지사항 · 업데이트</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+              <div style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px">NEW</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">v0.9 — 베타 서비스 시작</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.6">AI 집필 + 연속성 시스템 (에피소드 요약, 캐릭터 추적), 검수 시스템, 완성공간이 추가됐어요. 피드백은 언제든지 환영이에요 🙌</div>
+                <div style="font-size:11px;color:var(--hint);margin-top:6px">2025년</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+              <div style="background:var(--bg);color:var(--sub);font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px;border:1px solid var(--border)">업뎃</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">집필 횟수 시스템 도입</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 5회 제공 + 광고 시청으로 추가 충전 가능해요. 채팅 대화는 횟수 차감 없이 무제한이에요.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── 앱 사용 가이드 ── -->
+      <div style="padding:24px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">📖 앱 사용 가이드</div>
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">
+
+          <div onclick="toggleInfoSection('guide-1')" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:28px;height:28px;background:var(--blue-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">✍️</div>
+              <span style="font-size:14px;font-weight:600;color:var(--text)">STEP 1 · 작가 설정</span>
+            </div>
+            <span id="guide-1-chevron" style="color:var(--hint);font-size:12px;transition:transform 0.25s">▼</span>
+          </div>
+          <div id="guide-1" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease">
+            <div style="padding:14px 16px;background:var(--bg)">
+              <div style="font-size:13px;color:var(--sub);line-height:1.8">
+                작품탭 → 작가설정에서 <b>장르, 세계관, 캐릭터, 스토리 방향</b>을 입력해요.<br>
+                설정이 구체적일수록 AI가 더 일관된 글을 써줘요.<br>
+                나중에 언제든지 수정할 수 있어요.
+              </div>
+            </div>
+          </div>
+
+          <div onclick="toggleInfoSection('guide-2')" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:28px;height:28px;background:#FFF3EB;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">📝</div>
+              <span style="font-size:14px;font-weight:600;color:var(--text)">STEP 2 · AI와 집필</span>
+            </div>
+            <span id="guide-2-chevron" style="color:var(--hint);font-size:12px;transition:transform 0.25s">▼</span>
+          </div>
+          <div id="guide-2" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease">
+            <div style="padding:14px 16px;background:var(--bg)">
+              <div style="font-size:13px;color:var(--sub);line-height:1.8">
+                집필공간에서 회차를 선택하면 AI와 채팅창이 열려요.<br>
+                <b>"이 장면으로 시작해줘"</b>처럼 방향을 알려주면 AI가 원고를 써줘요.<br>
+                채팅 대화는 무제한, <b>원고 생성은 하루 5회 무료</b>예요.<br>
+                5,000자가 되면 AI가 자동으로 마무리를 도와줘요.
+              </div>
+            </div>
+          </div>
+
+          <div onclick="toggleInfoSection('guide-3')" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;border-bottom:1px solid var(--border)">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:28px;height:28px;background:var(--green-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">🔍</div>
+              <span style="font-size:14px;font-weight:600;color:var(--text)">STEP 3 · AI 검수</span>
+            </div>
+            <span id="guide-3-chevron" style="color:var(--hint);font-size:12px;transition:transform 0.25s">▼</span>
+          </div>
+          <div id="guide-3" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease">
+            <div style="padding:14px 16px;background:var(--bg)">
+              <div style="font-size:13px;color:var(--sub);line-height:1.8">
+                컨펌공간에서 원고를 AI에게 검수 맡길 수 있어요.<br>
+                <b>가독성, 개연성, 표현력</b> 세 항목을 점수로 평가하고 피드백을 줘요.<br>
+                마음에 들면 <b>"완성으로 확정"</b>을 눌러 완성공간으로 이동해요.
+              </div>
+            </div>
+          </div>
+
+          <div onclick="toggleInfoSection('guide-4')" style="padding:14px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:28px;height:28px;background:#F0F8FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px">🎉</div>
+              <span style="font-size:14px;font-weight:600;color:var(--text)">STEP 4 · 완성 & 내보내기</span>
+            </div>
+            <span id="guide-4-chevron" style="color:var(--hint);font-size:12px;transition:transform 0.25s">▼</span>
+          </div>
+          <div id="guide-4" style="max-height:0;overflow:hidden;transition:max-height 0.3s ease">
+            <div style="padding:14px 16px;background:var(--bg)">
+              <div style="font-size:13px;color:var(--sub);line-height:1.8">
+                완성공간에서 완성된 모든 회차를 모아볼 수 있어요.<br>
+                <b>"전체 내보내기"</b>로 원고를 텍스트로 한 번에 복사해요.<br>
+                계속 이어가려면 다시 집필공간에서 새 회차를 추가해요.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ── 웹소설 작성 팁 ── -->
+      <div style="padding:24px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">💡 웹소설 작성 팁</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">⚡ 1화는 무조건 사건으로 시작하세요</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.7">독자는 1화 첫 문단에서 이탈 여부를 결정해요. 배경 설명보다 <b>주인공이 위기에 처하거나 이상한 일이 벌어지는 장면</b>으로 시작하면 훨씬 효과적이에요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">🎭 대사로 캐릭터를 보여주세요</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.7">"그는 냉정한 사람이었다" 대신, 냉정한 대사를 쓰세요. 독자는 <b>설명보다 행동과 대사</b>로 캐릭터를 기억해요. AI에게 캐릭터 말투를 설정에서 구체적으로 입력할수록 좋아요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">🪝 클리프행어로 다음 화를 유도하세요</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.7">각 화의 마지막은 <b>답이 없는 질문이나 반전</b>으로 끝내면 독자가 자연스럽게 다음 화를 클릭해요. "다음 화에서 밝혀지는 충격적인 비밀" 같은 복선을 미리 깔아두세요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">📱 짧은 문장, 잦은 줄바꿈</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.7">모바일에서 읽는 독자를 위해 <b>한 문장은 2~3줄을 넘기지 않고</b>, 대화와 행동 사이에 자주 줄바꿈을 해주세요. 눈이 피로하지 않은 글이 더 많이 읽혀요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">🔄 AI 메모 기능을 활용하세요</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.7">집필창 상단 <b>"이번 화 참고사항"</b>에 이번 회차에서 꼭 넣고 싶은 장면이나 복선을 메모해두면, AI가 그 방향에 맞게 글을 써줘요.</div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- scroll-body end -->
+
+    <div class="tabbar">
+      <div class="tab-item" onclick="goTo('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">홈</span>
+      </div>
+      <div class="tab-item" onclick="goTo('workspace')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">작업공간</span>
+      </div>
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="tab-label">정보</span>
+      </div>
+      <div class="tab-item" onclick="goTo('my')">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">MY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 5. MY 화면 ══════════════ -->
+  <div id="my" class="screen">
+    <div class="toss-nav">
+      <div class="nav-back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+      <div class="nav-title">MY</div>
+      <div style="width:36px"></div>
+    </div>
+
+    <div class="scroll-body">
+      <!-- 서비스 연결 상태 -->
+      <div style="padding:20px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px">AI 서비스 상태</div>
+
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;">
+          <div style="padding:16px;display:flex;align-items:center;gap:14px;">
+            <div style="width:44px;height:44px;background:var(--green-light);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">🤖</div>
+            <div style="flex:1">
+              <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:3px;">Claude AI 연결됨</div>
+              <div style="font-size:13px;color:var(--sub);">AI 집필 · 검수 기능을 이용할 수 있어요</div>
+            </div>
+            <div style="width:10px;height:10px;background:var(--green);border-radius:50%;flex-shrink:0;box-shadow:0 0 0 3px var(--green-light);"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- 설정 백업/복원 -->
+      <div style="padding:0 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px">설정 백업 & 복원</div>
+
+        <div style="background:var(--blue-light);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
+          <div style="font-size:18px;flex-shrink:0">💡</div>
+          <div style="font-size:13px;color:var(--blue);line-height:1.6;">파일을 새로 받으면 설정이 초기화될 수 있어요. <b>내보내기</b>로 백업해두고, 새 파일에서 <b>불러오기</b>로 복원하세요.</div>
+        </div>
+
+        <!-- 내보내기 -->
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
+          <div style="padding:16px;border-bottom:1px solid var(--border);">
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">설정 내보내기</div>
+            <div style="font-size:13px;color:var(--sub);">현재 작가설정 전체를 파일로 저장해요</div>
+          </div>
+          <div style="padding:14px 16px;">
+            <button onclick="exportSettings()" style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
+              📥 설정 파일 내보내기 (.json)
+            </button>
+          </div>
+        </div>
+
+        <!-- 불러오기 -->
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
+          <div style="padding:16px;border-bottom:1px solid var(--border);">
+            <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">설정 불러오기</div>
+            <div style="font-size:13px;color:var(--sub);">내보낸 .json 파일을 선택해서 복원해요</div>
+          </div>
+          <div style="padding:14px 16px;">
+            <label style="display:block;width:100%;padding:13px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--r-md);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;color:var(--sub);">
+              📤 설정 파일 불러오기
+              <input type="file" accept=".json" onchange="importSettings(event)" style="display:none;">
+            </label>
+          </div>
+        </div>
+
+        <!-- 현재 저장 상태 -->
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
+          <div style="padding:16px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div>
+                <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;" id="my-status-title">현재 저장 상태</div>
+                <div style="font-size:13px;color:var(--sub);" id="my-status-desc">지금 저장된 설정 항목이에요</div>
+              </div>
+              <span id="my-proj-count-badge" style="display:none;background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:700;padding:4px 10px;border-radius:100px;"></span>
+            </div>
+          </div>
+          <div style="padding:14px 16px;" id="my-status-list"></div>
+        </div>
+
+        <!-- 초기화 -->
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:24px;">
+          <div style="padding:14px 16px;">
+            <button onclick="resetSettings()" style="width:100%;padding:13px;background:#FFF0F0;color:var(--red);border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
+              🗑 전체 설정 초기화
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════ 광고 팝업 ══════════════ -->
+  <div id="ad-backdrop" onclick="closeAdPopup()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:200;"></div>
+  <div id="ad-popup" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:24px 24px 0 0;z-index:201;padding:28px 20px 40px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:12px;" id="ad-icon">📺</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px;" id="ad-title">AI 사용권 충전</div>
+      <div style="font-size:14px;color:var(--sub);line-height:1.6;" id="ad-desc">짧은 광고를 시청하면<br>AI 집필을 <b>1회 더</b> 사용할 수 있어요</div>
+    </div>
+    <div id="ad-progress-wrap" style="display:none;margin-bottom:16px;">
+      <div style="height:4px;background:var(--border);border-radius:2px;overflow:hidden;">
+        <div id="ad-progress-bar" style="height:100%;background:var(--blue);width:0%;transition:width 0.1s linear;border-radius:2px;"></div>
+      </div>
+      <div style="text-align:center;margin-top:8px;font-size:12px;color:var(--sub);" id="ad-timer-text">광고 시청 중... <span id="ad-timer">5</span>초</div>
+    </div>
+    <button id="ad-watch-btn" onclick="startAdWatch()" style="width:100%;padding:15px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-lg);font-size:16px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:10px;">
+      광고 보기 →
+    </button>
+    <button onclick="closeAdPopup()" style="width:100%;padding:12px;background:none;color:var(--hint);border:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
+      닫기
+    </button>
+  </div>
+
+  <!-- ══════════════ 바텀시트 & 토스트 ══════════════ -->
+  <div class="sheet-backdrop" id="sheet-backdrop" onclick="closeSheet()"></div>
+  <div class="bottom-sheet" id="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-header">
+      <div class="sheet-title" id="sheet-title">설정</div>
+      <button class="sheet-close" onclick="closeSheet()">✕</button>
+    </div>
+    <div class="sheet-body" id="sheet-body"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+</div><!-- phone-frame -->
+
+<script>
+/* ────────────────────────────────────
+   별 & 유성 생성
+──────────────────────────────────── */
+const starsEl = document.getElementById('stars');
+// 별 생성 - 크기/밝기 다양하게
+for(let i = 0; i < 80; i++) {
+  const s = document.createElement('div');
+  s.className = 'star';
+  const size = Math.random() < 0.15 ? 3 : Math.random() < 0.4 ? 2 : 1;
+  const maxOp = size === 3 ? 1 : size === 2 ? 0.8 : 0.5;
+  s.style.cssText = `
+    left:${Math.random()*100}%;
+    top:${Math.random()*100}%;
+    width:${size}px; height:${size}px;
+    --dur:${2.5+Math.random()*4.5}s;
+    --delay:${Math.random()*5}s;
+    --max-op:${maxOp};
+  `;
+  starsEl.appendChild(s);
+}
+// 유성 생성
+for(let i = 0; i < 5; i++) {
+  const m = document.createElement('div');
+  m.className = 'meteor';
+  const w = 50 + Math.random() * 80;
+  m.style.cssText = `
+    left:${15+Math.random()*65}%;
+    top:${Math.random()*50}%;
+    width:${w}px;
+    --dur:${7+Math.random()*9}s;
+    --delay:${i*2.2+Math.random()*2}s;
+  `;
+  starsEl.appendChild(m);
+}
+
+/* ────────────────────────────────────
+   원고 영역 크기 조절
+──────────────────────────────────── */
+let manuscriptExpanded = false;
+function toggleManuscriptSize() {
+  const ms = document.getElementById('writing-manuscript');
+  const btn = document.getElementById('wm-resize-btn');
+  if (!ms) return;
+  manuscriptExpanded = !manuscriptExpanded;
+  ms.style.height = manuscriptExpanded ? '480px' : '280px';
+  btn.textContent = manuscriptExpanded ? '작게 ↕' : '크게 ↕';
+}
+
+// 드래그 리사이즈
+(function() {
+  let dragging = false, startY = 0, startH = 0;
+  document.addEventListener('touchstart', e => {
+    const handle = document.getElementById('wm-drag-handle');
+    if (!handle || !handle.contains(e.target)) return;
+    dragging = true;
+    startY = e.touches[0].clientY;
+    const ms = document.getElementById('writing-manuscript');
+    startH = ms ? ms.offsetHeight : 280;
+  }, { passive: true });
+  document.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const ms = document.getElementById('writing-manuscript');
+    if (!ms) return;
+    const dy = e.touches[0].clientY - startY;
+    const newH = Math.min(500, Math.max(120, startH + dy));
+    ms.style.height = newH + 'px';
+    ms.style.transition = 'none';
+  }, { passive: true });
+  document.addEventListener('touchend', () => {
+    dragging = false;
+    const ms = document.getElementById('writing-manuscript');
+    if (ms) ms.style.transition = 'height 0.2s ease';
+  });
+})();
+
+
+
+/* ────────────────────────────────────
+   화면 전환
+──────────────────────────────────── */
+let navHistory = [];
+function goTo(screenId) {
+  const current = document.querySelector('.screen.active');
+  if(current) {
+    current.classList.add('slide-out');
+    setTimeout(()=>{ current.classList.remove('active','slide-out'); }, 280);
+  }
+  navHistory.push(current ? current.id : null);
+  setTimeout(()=>{
+    document.getElementById(screenId).classList.add('active');
+  }, 80);
+  if(screenId === 'my') setTimeout(() => { renderMyStatus(); showApiKeyStatus(false); }, 120);
+  if(screenId === 'project') setTimeout(() => syncProjectHeader(), 120);
+  if(screenId === 'home') setTimeout(refreshHome, 80);
+  if(screenId === 'workspace') setTimeout(refreshWorkspaceCard, 80);
+}
+/* ────────────────────────────────────
+   정보 탭 — 가이드 아코디언
+──────────────────────────────────── */
+function toggleInfoSection(id) {
+  const body = document.getElementById(id);
+  const chevron = document.getElementById(id + '-chevron');
+  if (!body) return;
+  const isOpen = body.style.maxHeight && body.style.maxHeight !== '0px';
+  if (isOpen) {
+    body.style.maxHeight = '0';
+    if (chevron) { chevron.style.transform = ''; chevron.textContent = '▼'; }
+  } else {
+    body.style.maxHeight = body.scrollHeight + 'px';
+    if (chevron) { chevron.style.transform = 'rotate(180deg)'; chevron.textContent = '▼'; }
+  }
+}
+
+function goBack() {
+  const prev = navHistory.pop();
+  if(!prev) return;
+  const current = document.querySelector('.screen.active');
+  if(current) {
+    current.style.transition = 'opacity 0.25s, transform 0.25s';
+    current.style.opacity = '0';
+    current.style.transform = 'translateX(30px)';
+    setTimeout(()=>{
+      current.classList.remove('active');
+      current.style.transition = '';
+      current.style.opacity = '';
+      current.style.transform = '';
+    }, 250);
+  }
+  setTimeout(()=>{ document.getElementById(prev).classList.add('active'); }, 80);
+}
+
+/* ────────────────────────────────────
+   프로젝트 탭 전환
+──────────────────────────────────── */
+function switchTab(idx) {
+  document.querySelectorAll('.proj-tab').forEach((t,i) => t.classList.toggle('active', i===idx));
+  document.querySelectorAll('.tab-panel').forEach((p,i) => p.classList.toggle('active', i===idx));
+  if (idx === 0) updateSettingCTA();
+  if (idx === 1) refreshEpList();
+  if (idx === 2) refreshConfirmList();
+  if (idx === 3) refreshDoneList();
+}
+
+function goToWriting() {
+  const panels = document.querySelectorAll('.tab-panel');
+  const current = document.querySelector('.tab-panel.active');
+  if (current) {
+    current.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+    current.style.opacity = '0';
+    current.style.transform = 'translateX(-16px)';
+    setTimeout(() => {
+      current.style.transition = '';
+      current.style.opacity = '';
+      current.style.transform = '';
+      switchTab(1);
+      const next = document.getElementById('panel-1');
+      next.style.opacity = '0';
+      next.style.transform = 'translateX(16px)';
+      requestAnimationFrame(() => {
+        next.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+        next.style.opacity = '1';
+        next.style.transform = 'translateX(0)';
+        setTimeout(() => {
+          next.style.transition = '';
+          next.style.opacity = '';
+          next.style.transform = '';
+        }, 220);
+      });
+    }, 200);
+  } else {
+    switchTab(1);
+  }
+}
+
+function updateSettingCTA() {
+  const btn = document.getElementById('setting-cta-btn');
+  if (!btn) return;
+  const done = S.genres?.length && S.worlddesc && S.characters?.length && S.logline;
+  if (done) {
+    btn.style.background = 'var(--blue)';
+    btn.style.color = '#fff';
+    btn.style.opacity = '1';
+    btn.textContent = '집필공간으로 이동하기';
+  } else {
+    btn.style.background = 'var(--bg)';
+    btn.style.color = 'var(--hint)';
+    btn.style.opacity = '1';
+    btn.textContent = '설정을 더 채워주세요';
+  }
+}
+
+
+/* ────────────────────────────────────
+   로컬스토리지 설정 데이터
+──────────────────────────────────── */
+const STORE_KEY = 'mdpf_settings';
+let _raw = JSON.parse(localStorage.getItem(STORE_KEY) || '{}');
+
+// ── 멀티 프로젝트 구조로 자동 마이그레이션 ──
+if (!_raw.projects) {
+  // 기존 데이터가 있으면 첫 번째 프로젝트로 이전
+  const legacy = {
+    projectTitle: _raw.projectTitle || '',
+    genres:       _raw.genres       || [],
+    moods:        _raw.moods        || [],
+    target:       _raw.target       || '',
+    era:          _raw.era          || '',
+    keywords:     _raw.keywords     || [],
+    worlddesc:    _raw.worlddesc    || '',
+    characters:   _raw.characters   || [],
+    logline:      _raw.logline      || '',
+    plot:         _raw.plot         || '',
+    ep1start:     _raw.ep1start     || '',
+    episodes:     _raw.episodes     || [],
+  };
+  _raw = { projects: legacy.projectTitle || legacy.episodes.length ? [legacy] : [], currentIdx: 0 };
+  localStorage.setItem(STORE_KEY, JSON.stringify(_raw));
+}
+
+// 전역 상태
+let DB = _raw; // { projects: [], currentIdx: 0 }
+DB.projects   = DB.projects  || [];
+DB.currentIdx = DB.currentIdx ?? 0;
+
+// 현재 프로젝트 참조 (S는 현재 프로젝트 객체를 가리킴)
+let S = DB.projects[DB.currentIdx] || {};
+
+function ensureS() {
+  S.genres     = S.genres     || [];
+  S.moods      = S.moods      || [];
+  S.target     = S.target     || '';
+  S.era        = S.era        || '';
+  S.keywords   = S.keywords   || [];
+  S.worlddesc  = S.worlddesc  || '';
+  S.characters = S.characters || [];
+  S.logline    = S.logline    || '';
+  S.plot       = S.plot       || '';
+  S.ep1start   = S.ep1start   || '';
+  S.totalEps   = S.totalEps   || 0;
+  S.episodes     = S.episodes     || [];
+  S.writingStyle = S.writingStyle || {};
+}
+ensureS();
+
+function save() {
+  DB.projects[DB.currentIdx] = S;
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+  syncProjectHeader();
+  refreshHome();
+}
+
+/* ────────────────────────────────────
+   UI 갱신
+──────────────────────────────────── */
+const AV_COLORS = ['av-purple','av-green','av-orange'];
+const AV_LABELS_CSS = ['color:var(--purple)','color:#018850','color:var(--orange)'];
+
+function refreshAll() {
+  // 장르
+  const gEl = document.getElementById('disp-genre');
+  if(gEl) gEl.innerHTML = (S.genres.length ? S.genres.join(', ') : '선택하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const mEl = document.getElementById('disp-mood');
+  if(mEl) mEl.innerHTML = (S.moods.length ? S.moods.join(', ') : '선택하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const tEl = document.getElementById('disp-target');
+  if(tEl) tEl.innerHTML = (S.target || '선택하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const gSt = document.getElementById('genre-status');
+  if(gSt) {
+    const done = S.genres.length && S.moods.length && S.target;
+    gSt.textContent = done ? '완료' : '미설정';
+    gSt.className = 'sg-status ' + (done ? 'status-complete' : 'status-empty');
+  }
+
+  // 세계관
+  const eEl = document.getElementById('disp-era');
+  if(eEl) eEl.innerHTML = (S.era || '입력하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const kEl = document.getElementById('disp-keywords');
+  if(kEl) kEl.innerHTML = (S.keywords.length ? S.keywords.join(', ') : '선택하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const wEl = document.getElementById('disp-worlddesc');
+  if(wEl) wEl.innerHTML = (S.worlddesc ? S.worlddesc.slice(0,18)+'…' : '작성하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const wSt = document.getElementById('world-status');
+  if(wSt) {
+    const done = S.era && S.worlddesc;
+    wSt.textContent = done ? '완료' : '미설정';
+    wSt.className = 'sg-status ' + (done ? 'status-complete' : 'status-empty');
+  }
+
+  // 캐릭터
+  const cList = document.getElementById('char-list-display');
+  if(cList) {
+    cList.innerHTML = S.characters.map((c,i) => {
+      const roleColorMap = { '주인공':'av-purple', '히로인':'av-green', '빌런':'av-red', '악역':'av-red', '조연':'av-orange', '조력자':'av-blue' };
+      const avClass = roleColorMap[c.role] || AV_COLORS[i % AV_COLORS.length];
+      const initials = c.name ? c.name.slice(0,2) : '??';
+      const roleMap = { '주인공':'주인공', '히로인':'히로인', '빌런':'빌런', '악역':'악역', '조연':'조연', '조력자':'조력자' };
+      const avatarLabel = roleMap[c.role] || (c.role ? c.role.slice(0,3) : initials);
+      const roleLine = [c.role, c.age, c.grade].filter(Boolean).join(' · ');
+      return `
+      <div class="char-mini-row" onclick="openCharDetail(${i})" style="cursor:pointer">
+        <div class="char-mini">
+          <div class="char-avatar-sm ${avClass}" style="flex-shrink:0;font-size:10px;letter-spacing:-0.3px;">${avatarLabel}</div>
+          <div style="flex:1;min-width:0;">
+            <div class="char-mini-name">${c.name||'이름 없음'}</div>
+            <div class="char-mini-role">${roleLine || '역할 미설정'}</div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  const cSt = document.getElementById('char-status');
+  if(cSt) {
+    cSt.textContent = S.characters.length ? S.characters.length+'명' : '미설정';
+    cSt.className = 'sg-status ' + (S.characters.length ? 'status-complete' : 'status-empty');
+  }
+
+  // 스토리
+  const llEl = document.getElementById('disp-logline');
+  if(llEl) llEl.innerHTML = (S.logline ? S.logline.slice(0,18)+'…' : '작성하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const plEl = document.getElementById('disp-plot');
+  if(plEl) plEl.innerHTML = (S.plot ? S.plot.slice(0,18)+'…' : '작성하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const e1El = document.getElementById('disp-ep1start');
+  if(e1El) e1El.innerHTML = (S.ep1start || '선택하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const teEl = document.getElementById('disp-totaleps');
+  if(teEl) teEl.innerHTML = (S.totalEps ? S.totalEps + '화' : '설정하세요') + '<svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>';
+  const sSt = document.getElementById('story-status');
+  if(sSt) {
+    const done = S.logline && S.plot;
+    sSt.textContent = done ? '완료' : '미설정';
+    sSt.className = 'sg-status ' + (done ? 'status-complete' : 'status-empty');
+  }
+  updateSettingCTA();
+
+  // 글쓰기 스타일 칩 복원
+  loadStyleChips();
+}
+
+/* ────────────────────────────────────
+   글쓰기 스타일 설정
+──────────────────────────────────── */
+const STYLE_GROUPS = ['pov','sentence','desc','dialog','pace','emotion'];
+
+function selectStyleChip(group, val, el) {
+  // 해당 그룹의 칩 전체 초기화 후 선택
+  const container = document.getElementById('chips-' + group);
+  if (!container) return;
+  container.querySelectorAll('.style-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  // 저장
+  if (!S.writingStyle) S.writingStyle = {};
+  S.writingStyle[group] = val;
+  save();
+  updateStyleStatus();
+}
+
+function saveStyleMemo() {
+  const el = document.getElementById('style-memo');
+  if (!el) return;
+  if (!S.writingStyle) S.writingStyle = {};
+  S.writingStyle.memo = el.value;
+  save();
+  updateStyleStatus();
+}
+
+function loadStyleChips() {
+  const style = S.writingStyle || {};
+  STYLE_GROUPS.forEach(group => {
+    const container = document.getElementById('chips-' + group);
+    if (!container) return;
+    container.querySelectorAll('.style-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.val === style[group]);
+    });
+  });
+  const memoEl = document.getElementById('style-memo');
+  if (memoEl) memoEl.value = style.memo || '';
+  updateStyleStatus();
+}
+
+function updateStyleStatus() {
+  const style = S.writingStyle || {};
+  const setCount = STYLE_GROUPS.filter(g => style[g]).length;
+  const el = document.getElementById('style-status');
+  if (!el) return;
+  if (setCount === 0) {
+    el.textContent = '미설정';
+    el.className = 'sg-status status-empty';
+  } else if (setCount < STYLE_GROUPS.length) {
+    el.textContent = `${setCount}/${STYLE_GROUPS.length} 설정`;
+    el.className = 'sg-status status-empty';
+  } else {
+    el.textContent = '완료';
+    el.className = 'sg-status status-complete';
+  }
+}
+
+function openCharDetail(idx) {
+  const c = S.characters[idx];
+  if (!c) return;
+  const avClass = AV_COLORS[idx % AV_COLORS.length];
+  const initials = c.name ? c.name.slice(0,2) : '??';
+
+  const backdrop = document.getElementById('sheet-backdrop');
+  const sheet    = document.getElementById('bottom-sheet');
+  const titleEl  = document.getElementById('sheet-title');
+  const body     = document.getElementById('sheet-body');
+
+  titleEl.textContent = '캐릭터 정보';
+  body.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+      <div class="char-avatar-sm ${avClass}" style="width:48px;height:48px;font-size:16px">${initials}</div>
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">${c.name||'이름 없음'}</div>
+        <div style="font-size:13px;color:var(--hint);margin-top:2px">${[c.role, c.age, c.grade].filter(Boolean).join(' · ') || '역할 미설정'}</div>
+      </div>
+    </div>
+
+    ${c.personality || c.speech ? `
+    <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+      ${c.personality ? `<span style="background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${c.personality}</span>` : ''}
+      ${c.speech ? `<span style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${c.speech}</span>` : ''}
+    </div>` : ''}
+
+    ${c.desc ? `
+    <div style="background:var(--bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px">
+      <div style="font-size:11px;font-weight:600;color:var(--hint);letter-spacing:0.05em;margin-bottom:6px">캐릭터 설명 & 비밀</div>
+      <div style="font-size:14px;color:var(--text);line-height:1.7">${c.desc}</div>
+    </div>` : `
+    <div style="background:var(--bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px;text-align:center">
+      <div style="font-size:13px;color:var(--hint)">아직 설명이 없어요</div>
+    </div>`}
+
+    <div style="display:flex;gap:8px">
+      <button onclick="openEditChar(${idx})" style="flex:1;padding:13px;border-radius:var(--r-md);border:1.5px solid var(--border);background:transparent;font-size:14px;font-weight:600;color:var(--text);cursor:pointer">수정하기</button>
+      <button onclick="deleteChar(${idx})" style="padding:13px 16px;border-radius:var(--r-md);border:1.5px solid #FFE0E0;background:#FFF5F5;font-size:14px;font-weight:600;color:var(--red);cursor:pointer">삭제</button>
+    </div>
+  `;
+
+  backdrop.classList.add('open');
+  setTimeout(() => sheet.classList.add('open'), 10);
+}
+
+function openEditChar(idx) {
+  const c = S.characters[idx];
+  const titleEl = document.getElementById('sheet-title');
+  const body    = document.getElementById('sheet-body');
+
+  titleEl.textContent = '캐릭터 수정';
+  body.innerHTML = `
+    <p class="sheet-section-label">기본 정보</p>
+    <div class="char-form-grid">
+      <input class="char-form-input" id="cf-name" placeholder="이름 *" value="${c.name||''}">
+      <input class="char-form-input" id="cf-age"  placeholder="나이" value="${c.age||''}">
+    </div>
+    <div class="char-form-grid">
+      <input class="char-form-input" id="cf-grade" placeholder="등급/신분" value="${c.grade||''}">
+      <select class="char-form-input" id="cf-role" style="cursor:pointer">
+        <option value="">역할 선택</option>
+        ${['주인공','히로인','빌런','조연','악역','조력자'].map(r=>`<option ${c.role===r?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </div>
+    <p class="sheet-section-label">성격 & 말투</p>
+    <div class="char-form-grid">
+      <input class="char-form-input" id="cf-personality" placeholder="성격" value="${c.personality||''}">
+      <input class="char-form-input" id="cf-speech"      placeholder="말투" value="${c.speech||''}">
+    </div>
+    <p class="sheet-section-label">캐릭터 설명 & 비밀</p>
+    <textarea class="sheet-input" id="cf-desc" rows="5">${c.desc||''}</textarea>
+    <button class="sheet-save-btn" onclick="updateChar(${idx})">수정 저장하기</button>
+  `;
+}
+
+function updateChar(idx) {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) { showToast('이름은 필수예요'); return; }
+  S.characters[idx] = {
+    name,
+    age:         document.getElementById('cf-age').value.trim(),
+    grade:       document.getElementById('cf-grade').value.trim(),
+    role:        document.getElementById('cf-role').value,
+    personality: document.getElementById('cf-personality').value.trim(),
+    speech:      document.getElementById('cf-speech').value.trim(),
+    desc:        document.getElementById('cf-desc').value.trim(),
+  };
+  save(); refreshAll();
+  closeSheet();
+  showToast('수정됐어요 ✓');
+}
+
+function deleteChar(idx) {
+  S.characters.splice(idx, 1);
+  save(); refreshAll();
+  closeSheet();
+  showToast('캐릭터를 삭제했어요');
+}
+
+
+/* ────────────────────────────────────
+   바텀시트
+──────────────────────────────────── */
+let currentSheet = null;
+
+function openSheet(type) {
+  currentSheet = type;
+  const backdrop = document.getElementById('sheet-backdrop');
+  const sheet    = document.getElementById('bottom-sheet');
+  const title    = document.getElementById('sheet-title');
+  const body     = document.getElementById('sheet-body');
+
+  const configs = {
+    genre: {
+      title: '장르 선택',
+      options: ['판타지','현대판타지','로맨스','로맨스판타지','무협','SF','공포/스릴러','성장물','회귀/빙의','헌터물','이세계','학원물'],
+      multi: true, key: 'genres'
+    },
+    mood: {
+      title: '분위기 선택',
+      options: ['다크','액션','감성/치유','코믹','진지함','청량','긴장감','잔잔함'],
+      multi: true, key: 'moods'
+    },
+    target: {
+      title: '타겟 독자',
+      options: ['전체','10대','20대','30대 이상','성인(19+)'],
+      multi: false, key: 'target'
+    },
+    keywords: {
+      title: '핵심 키워드',
+      options: ['헌터/각성','던전','마법','길드','시스템창','계급/랭킹','숨겨진 능력','회귀','빙의','용사','마왕','드래곤','아포칼립스'],
+      multi: true, key: 'keywords'
+    },
+    ep1start: {
+      title: '1화 시작 방식',
+      options: ['일상 → 사건 발생','사건 한가운데서 시작','회상/프롤로그','주인공 독백','충격적 장면으로 시작'],
+      multi: false, key: 'ep1start'
+    }
+  };
+
+  if (configs[type]) {
+    const cfg = configs[type];
+    title.textContent = cfg.title;
+    const current = cfg.multi ? (S[cfg.key] || []) : (S[cfg.key] ? [S[cfg.key]] : []);
+    // 현재 선택값 중 옵션에 없는 것 = 기타로 입력된 값
+    const customVals = current.filter(v => !cfg.options.includes(v));
+    body.innerHTML = `
+      <div class="chip-grid" id="chip-grid">
+        ${cfg.options.map(o=>`
+          <div class="chip-opt ${current.includes(o)?'selected':''}" onclick="toggleChip(this,'${o}',${cfg.multi})">${o}</div>
+        `).join('')}
+        <div class="chip-opt ${customVals.length?'selected':''}" id="chip-etc" onclick="toggleEtc(this,${cfg.multi})">기타</div>
+      </div>
+      <div id="etc-input-wrap" style="display:${customVals.length?'block':'none'};margin-top:10px;">
+        <input class="sheet-input" id="inp-etc" placeholder="직접 입력하세요" value="${customVals.join(', ')}">
+      </div>
+      ${cfg.multi ? '<p style="font-size:12px;color:var(--hint);margin-top:8px">여러 개 선택 가능해요 · 기타는 쉼표로 구분해 입력</p>' : ''}
+      <button class="sheet-save-btn" onclick="saveChips('${cfg.key}',${cfg.multi})">저장하기</button>
+    `;
+  } else if (type === 'era') {
+    title.textContent = '시대/배경';
+    body.innerHTML = `
+      <p class="sheet-section-label">시대와 배경 장소를 입력해주세요</p>
+      <input class="sheet-input" id="inp-era" placeholder="예) 2040년 서울, 중세 유럽, 현대 한국" value="${S.era||''}">
+      <button class="sheet-save-btn" onclick="saveText('era','inp-era')">저장하기</button>
+    `;
+  } else if (type === 'worlddesc') {
+    title.textContent = '세계관 설명';
+    body.innerHTML = `
+      <p class="sheet-section-label">이 세계만의 규칙, 마법 시스템, 특수한 설정을 자유롭게 적어주세요</p>
+      <textarea class="sheet-input" id="inp-worlddesc" rows="7" placeholder="예) 2040년 서울. 10년 전 게이트가 열리면서 던전이 생겨났고, 일부 인간이 각성해 헌터가 됐다. 주인공은 각성에 실패한 평범한 직장인이지만...">${S.worlddesc||''}</textarea>
+      <button class="sheet-save-btn" onclick="saveText('worlddesc','inp-worlddesc')">저장하기</button>
+    `;
+  } else if (type === 'logline') {
+    title.textContent = '한줄 소개';
+    body.innerHTML = `
+      <p class="sheet-section-label">독자를 사로잡는 한 줄 소개를 써주세요</p>
+      <input class="sheet-input" id="inp-logline" placeholder="예) 각성에 실패한 줄 알았던 남자, 사실은 모두를 압도하는 숨겨진 S급이었다." value="${S.logline||''}">
+      <button class="sheet-save-btn" onclick="saveText('logline','inp-logline')">저장하기</button>
+    `;
+  } else if (type === 'plot') {
+    title.textContent = '전체 스토리 방향';
+    body.innerHTML = `
+      <p class="sheet-section-label">기승전결, 주요 이벤트, 엔딩 방향을 자유롭게 써주세요. AI가 이 방향을 기억하며 각 화를 함께 써드려요.</p>
+      <textarea class="sheet-input" id="inp-plot" rows="8" placeholder="초반: ...\n중반: ...\n후반: ...">${S.plot||''}</textarea>
+      <button class="sheet-save-btn" onclick="saveText('plot','inp-plot')">저장하기</button>
+    `;
+  } else if (type === 'totaleps') {
+    title.textContent = '총 예상 회차';
+    body.innerHTML = `
+      <p class="sheet-section-label">완결까지 몇 화로 계획하고 있나요? 진행판의 % 기준이 돼요.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        ${[50,100,150,200,250,300,500].map(n => `
+          <button onclick="document.getElementById('inp-totaleps').value=${n}"
+            style="padding:8px 14px;border:1.5px solid var(--border);border-radius:20px;background:var(--bg);font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+            ${n}화
+          </button>`).join('')}
+      </div>
+      <input class="sheet-input" id="inp-totaleps" type="number" placeholder="예) 250" min="1" max="9999" value="${S.totalEps||''}">
+      <button class="sheet-save-btn" onclick="saveTotalEps()">저장하기</button>
+    `;
+    setTimeout(() => document.getElementById('inp-totaleps')?.focus(), 350);
+  } else if (type === 'newep') {
+    title.textContent = '새 회차 추가';
+    const epNum = (S.episodes?.length || 0) + 1;
+    body.innerHTML = `
+      <p class="sheet-section-label">${epNum}화 제목</p>
+      <input class="sheet-input" id="inp-ep-title" placeholder="예) 각성에 실패한 남자, 운명의 시작..." autofocus>
+      <p style="font-size:12px;color:var(--hint);margin-top:8px">제목은 나중에 바꿀 수 있어요</p>
+      <button class="sheet-save-btn" onclick="createEpisode()">회차 만들고 집필 시작</button>
+    `;
+    setTimeout(() => document.getElementById('inp-ep-title')?.focus(), 350);
+  } else if (type === 'deleteproject') {
+    const proj = DB.projects[pendingDeleteIdx];
+    const projTitle = proj?.projectTitle || '이 작품';
+    const epCount = proj?.episodes?.length || 0;
+    title.textContent = '작품 삭제';
+    body.innerHTML = `
+      <div style="text-align:center;padding:8px 0 20px;">
+        <div style="font-size:36px;margin-bottom:12px">🗑️</div>
+        <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:8px">「${projTitle}」을 삭제할까요?</div>
+        <div style="font-size:13px;color:var(--sub);line-height:1.6;">
+          ${epCount > 0 ? `작성한 원고 <b>${epCount}화</b>를 포함해서<br>` : ''}모든 설정과 집필 내용이 <b style="color:var(--red)">영구 삭제</b>돼요.<br>삭제 후 복구할 수 없어요.
+        </div>
+      </div>
+      <button onclick="deleteProject()" style="width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:var(--r-lg);font-size:15px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:10px;">삭제하기</button>
+      <button onclick="closeSheet()" style="width:100%;padding:14px;background:var(--bg);color:var(--sub);border:none;border-radius:var(--r-lg);font-size:15px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">취소</button>
+    `;
+  } else if (type === 'newproject') {
+    title.textContent = '새 작품 시작하기';
+    body.innerHTML = `
+      <p class="sheet-section-label">작품 제목</p>
+      <input class="sheet-input" id="inp-proj-title" placeholder="제목을 입력하세요" style="font-size:17px;font-weight:700;" autofocus>
+      <p class="sheet-section-label" style="margin-top:14px">한줄 소개 (선택)</p>
+      <input class="sheet-input" id="inp-proj-logline" placeholder="예) 각성에 실패한 줄 알았던 남자의 이야기...">
+      <button class="sheet-save-btn" onclick="createProject()" style="margin-top:20px">작품 만들기 →</button>
+    `;
+    setTimeout(() => document.getElementById('inp-proj-title')?.focus(), 350);
+  } else if (type === 'addchar') {
+    title.textContent = '캐릭터 추가';
+    body.innerHTML = `
+      <p class="sheet-section-label">기본 정보</p>
+      <div class="char-form-grid">
+        <input class="char-form-input" id="cf-name" placeholder="이름 *">
+        <input class="char-form-input" id="cf-age" placeholder="나이 (예: 28세)">
+      </div>
+      <div class="char-form-grid">
+        <input class="char-form-input" id="cf-grade" placeholder="등급/신분 (예: S급)">
+        <select class="char-form-input" id="cf-role" style="cursor:pointer">
+          <option value="">역할 선택</option>
+          <option>주인공</option><option>히로인</option><option>빌런</option>
+          <option>조연</option><option>악역</option><option>조력자</option>
+        </select>
+      </div>
+      <p class="sheet-section-label">성격 & 말투</p>
+      <div class="char-form-grid">
+        <input class="char-form-input" id="cf-personality" placeholder="성격 (예: 냉소적)">
+        <input class="char-form-input" id="cf-speech" placeholder="말투 (예: 건조하게)">
+      </div>
+      <p class="sheet-section-label">캐릭터 설명 & 비밀</p>
+      <textarea class="sheet-input" id="cf-desc" rows="4" placeholder="캐릭터의 배경, 비밀, 동기 등을 자유롭게 적어주세요."></textarea>
+      <button class="sheet-save-btn" onclick="saveChar()">캐릭터 저장하기</button>
+    `;
+  }
+
+  backdrop.classList.add('open');
+  setTimeout(() => sheet.classList.add('open'), 10);
+}
+
+function closeSheet() {
+  document.getElementById('sheet-backdrop').classList.remove('open');
+  document.getElementById('bottom-sheet').classList.remove('open');
+  currentSheet = null;
+}
+
+/* ────────────────────────────────────
+   저장 함수들
+──────────────────────────────────── */
+function toggleChip(el, val, multi) {
+  if (!multi) {
+    document.querySelectorAll('#chip-grid .chip-opt').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+}
+
+function toggleEtc(el, multi) {
+  if (!multi) {
+    document.querySelectorAll('#chip-grid .chip-opt').forEach(c => c.classList.remove('selected'));
+    el.classList.add('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+  const wrap = document.getElementById('etc-input-wrap');
+  if (wrap) wrap.style.display = el.classList.contains('selected') ? 'block' : 'none';
+  if (el.classList.contains('selected')) {
+    setTimeout(() => document.getElementById('inp-etc')?.focus(), 100);
+  }
+}
+
+function saveChips(key, multi) {
+  const selected = [...document.querySelectorAll('#chip-grid .chip-opt.selected')]
+    .filter(c => c.id !== 'chip-etc')
+    .map(c => c.textContent);
+
+  // 기타 입력값 처리
+  const etcChip = document.getElementById('chip-etc');
+  const etcInput = document.getElementById('inp-etc');
+  if (etcChip && etcChip.classList.contains('selected') && etcInput) {
+    const etcVals = etcInput.value.split(',').map(v => v.trim()).filter(Boolean);
+    selected.push(...etcVals);
+  }
+
+  if (!selected.length) { showToast('최소 1개를 선택하거나 입력해주세요'); return; }
+  S[key] = multi ? selected : selected[0];
+  save(); refreshAll();
+  closeSheet();
+  showToast('저장됐어요 ✓');
+}
+
+function saveText(key, inputId) {
+  const val = document.getElementById(inputId).value.trim();
+  if (!val) { showToast('내용을 입력해주세요'); return; }
+  S[key] = val;
+  save(); refreshAll();
+  closeSheet();
+  showToast('저장됐어요 ✓');
+}
+
+function saveTotalEps() {
+  const val = parseInt(document.getElementById('inp-totaleps').value);
+  if (!val || val < 1) { showToast('1 이상의 숫자를 입력해주세요'); return; }
+  S.totalEps = val;
+  save(); refreshAll(); syncProjectHeader();
+  closeSheet();
+  showToast(`총 ${val}화로 설정됐어요 ✓`);
+}
+
+function saveChar() {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) { showToast('이름은 필수예요'); return; }
+  S.characters.push({
+    name,
+    age:         document.getElementById('cf-age').value.trim(),
+    grade:       document.getElementById('cf-grade').value.trim(),
+    role:        document.getElementById('cf-role').value,
+    personality: document.getElementById('cf-personality').value.trim(),
+    speech:      document.getElementById('cf-speech').value.trim(),
+    desc:        document.getElementById('cf-desc').value.trim(),
+  });
+  save(); refreshAll();
+  closeSheet();
+  showToast('캐릭터가 추가됐어요 ✓');
+}
+
+function createEpisode() {
+  const title = document.getElementById('inp-ep-title')?.value.trim();
+  if(!title) { showToast('제목을 입력해주세요'); return; }
+  S.episodes = S.episodes || [];
+  S.episodes.push({ title, manuscript: '', chatHistory: [], createdAt: new Date().toLocaleDateString('ko-KR') });
+  save();
+  refreshEpList();
+  closeSheet();
+  const newIdx = S.episodes.length - 1;
+  setTimeout(() => openWritingScreen(newIdx), 300);
+}
+
+
+function createProject() {
+  const titleVal = document.getElementById('inp-proj-title')?.value.trim();
+  if (!titleVal) { showToast('제목을 입력해주세요'); return; }
+  const loglineVal = document.getElementById('inp-proj-logline')?.value.trim();
+
+  // 새 프로젝트 객체 생성 (기존 작품과 완전히 독립)
+  const newProject = {
+    projectTitle: titleVal,
+    logline:      loglineVal || '',
+    genres: [], moods: [], target: '', era: '',
+    keywords: [], worlddesc: '', characters: [],
+    plot: '', ep1start: '', episodes: [],
+    createdAt: new Date().toLocaleDateString('ko-KR'),
+  };
+
+  DB.projects.push(newProject);
+  DB.currentIdx = DB.projects.length - 1;
+  S = DB.projects[DB.currentIdx];
+  ensureS();
+  save();
+  refreshAll();
+  refreshEpList();
+  refreshConfirmList();
+  refreshDoneList();
+  closeSheet();
+  syncProjectHeader();
+  showToast('새 작품이 만들어졌어요 ✓');
+  setTimeout(() => goTo('project'), 600);
+}
+
+let pendingDeleteIdx = null;
+
+function confirmDeleteProject(idx) {
+  pendingDeleteIdx = idx;
+  openSheet('deleteproject');
+}
+
+function deleteProject() {
+  if (pendingDeleteIdx === null) return;
+  const idx = pendingDeleteIdx;
+
+  if (DB.projects.length === 1) {
+    closeSheet();
+    showToast('마지막 작품은 삭제할 수 없어요');
+    return;
+  }
+
+  DB.projects.splice(idx, 1);
+
+  // currentIdx 조정
+  if (DB.currentIdx >= DB.projects.length) {
+    DB.currentIdx = DB.projects.length - 1;
+  } else if (DB.currentIdx === idx && idx > 0) {
+    DB.currentIdx = idx - 1;
+  }
+
+  S = DB.projects[DB.currentIdx] || {};
+  ensureS();
+  save();
+  closeSheet();
+  refreshAll();
+  refreshWorkspaceCard();
+  showToast('작품이 삭제됐어요');
+  pendingDeleteIdx = null;
+}
+
+function toggleProjMenu() {
+  const menu = document.getElementById('proj-menu');
+  if (!menu) return;
+  const isOpen = menu.style.display === 'block';
+  menu.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) {
+    // 메뉴 바깥 클릭 시 닫기
+    setTimeout(() => document.addEventListener('click', closeProjMenuOutside, { once: true }), 50);
+  }
+}
+
+function closeProjMenu() {
+  const menu = document.getElementById('proj-menu');
+  if (menu) menu.style.display = 'none';
+}
+
+function closeProjMenuOutside(e) {
+  const menu = document.getElementById('proj-menu');
+  const btn  = document.getElementById('proj-more-btn');
+  if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+    menu.style.display = 'none';
+  }
+}
+
+function switchProject(idx) {
+  DB.currentIdx = idx;
+  S = DB.projects[idx];
+  ensureS();
+  refreshAll();
+  refreshHome();
+  refreshEpList();
+  refreshConfirmList();
+  refreshDoneList();
+  syncProjectHeader();
+  goTo('project');
+}
+
+
+/* ────────────────────────────────────
+   컨펌공간
+──────────────────────────────────── */
+// 검수 카드 접힘 상태 (epIdx → true=펼침, false=접힘)
+const _confirmExpanded = {};
+
+function toggleConfirmCard(epIdx) {
+  _confirmExpanded[epIdx] = !_confirmExpanded[epIdx];
+  const body = document.getElementById(`cc-body-${epIdx}`);
+  const chevron = document.getElementById(`cc-chevron-${epIdx}`);
+  const btn = document.getElementById(`cc-toggle-btn-${epIdx}`);
+  if (!body) return;
+  if (_confirmExpanded[epIdx]) {
+    body.classList.remove('collapsed');
+    body.style.maxHeight = body.scrollHeight + 'px';
+    if (chevron) chevron.classList.add('open');
+    if (btn) btn.textContent = ''; // 아래에서 innerHTML로 갱신
+  } else {
+    body.style.maxHeight = body.scrollHeight + 'px'; // 현재 높이 고정 후
+    requestAnimationFrame(() => { body.classList.add('collapsed'); });
+    if (chevron) chevron.classList.remove('open');
+  }
+  // 버튼 텍스트 갱신
+  if (btn) {
+    btn.innerHTML = `<i class="cc-toggle-chevron ${_confirmExpanded[epIdx] ? 'open' : ''}" id="cc-chevron-${epIdx}">▼</i>${_confirmExpanded[epIdx] ? '접기' : '펼치기'}`;
+  }
+}
+
+function refreshConfirmList() {
+  const el = document.getElementById('confirm-list');
+  if (!el) return;
+  S.episodes = S.episodes || [];
+
+  const hasContent = S.episodes.some(ep => ep.manuscript && ep.manuscript.length > 0);
+  if (!hasContent) {
+    el.innerHTML = `
+      <div style="background:var(--white);border-radius:var(--r-lg);border:1px dashed var(--border);padding:32px 20px;text-align:center;margin:16px 20px 0">
+        <div style="font-size:28px;margin-bottom:8px">🔍</div>
+        <div style="font-size:14px;font-weight:600;color:var(--sub);margin-bottom:4px">검수할 회차가 없어요</div>
+        <div style="font-size:13px;color:var(--hint)">집필공간에서 원고를 작성하면<br>여기서 AI 검수를 받을 수 있어요</div>
+      </div>`;
+    return;
+  }
+
+  el.innerHTML = S.episodes.map((ep, i) => {
+    if (!ep.manuscript || ep.manuscript.length < 10) return '';
+    const r = ep.review;
+    const isDone = ep.status === 'done';
+    // 검수된 카드는 기본 접힘, 미검수 카드는 기본 펼침
+    if (_confirmExpanded[i] === undefined) _confirmExpanded[i] = !r;
+    const isOpen = _confirmExpanded[i];
+
+    const bodyContent = r ? `
+      <div class="cc-checks cc-collapsible${isOpen ? '' : ' collapsed'}" id="cc-body-${i}" style="max-height:${isOpen ? '600px' : '0'}">
+        <div class="cc-check-item">
+          <div class="cc-check-icon ${r.readability >= 80 ? 'check-good' : r.readability >= 60 ? 'check-warn' : 'check-bad'}">${r.readability >= 80 ? '✓' : r.readability >= 60 ? '!' : '✗'}</div>
+          <span class="cc-check-label">가독성</span>
+          <span class="cc-check-score" style="color:${r.readability >= 80 ? 'var(--green)' : r.readability >= 60 ? 'var(--orange)' : 'var(--red)'}">${r.readability}점</span>
+        </div>
+        <div class="cc-check-item">
+          <div class="cc-check-icon ${r.consistency >= 80 ? 'check-good' : r.consistency >= 60 ? 'check-warn' : 'check-bad'}">${r.consistency >= 80 ? '✓' : r.consistency >= 60 ? '!' : '✗'}</div>
+          <span class="cc-check-label">개연성</span>
+          <span class="cc-check-score" style="color:${r.consistency >= 80 ? 'var(--green)' : r.consistency >= 60 ? 'var(--orange)' : 'var(--red)'}">${r.consistency}점</span>
+        </div>
+        <div class="cc-check-item">
+          <div class="cc-check-icon ${r.expression >= 80 ? 'check-good' : r.expression >= 60 ? 'check-warn' : 'check-bad'}">${r.expression >= 80 ? '✓' : r.expression >= 60 ? '!' : '✗'}</div>
+          <span class="cc-check-label">표현</span>
+          <span class="cc-check-score" style="color:${r.expression >= 80 ? 'var(--green)' : r.expression >= 60 ? 'var(--orange)' : 'var(--red)'}">${r.expression}점</span>
+        </div>
+        ${r.feedback ? `<div style="background:var(--bg);border-radius:var(--r-sm);padding:10px 12px;margin-top:4px;font-size:13px;color:var(--sub);line-height:1.6">${r.feedback}</div>` : ''}
+        <div style="display:flex;gap:8px;margin-top:8px">
+          <button onclick="requestReview(${i})" style="flex:1;padding:10px;border-radius:var(--r-sm);border:1px solid var(--border);background:transparent;font-size:13px;font-weight:600;color:var(--sub);cursor:pointer;font-family:'Noto Sans KR',sans-serif">재검수</button>
+          ${!isDone ? `<button onclick="confirmDone(${i})" style="flex:2;padding:10px;border-radius:var(--r-sm);border:none;background:var(--blue);font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'Noto Sans KR',sans-serif">✅ 완성으로 확정</button>` : ''}
+        </div>
+      </div>` : `
+      <div class="cc-checks cc-collapsible${isOpen ? '' : ' collapsed'}" id="cc-body-${i}" style="max-height:${isOpen ? '200px' : '0'}">
+        <button onclick="requestReview(${i})" id="review-btn-${i}"
+          style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif">
+          🔍 AI 검수 시작하기
+        </button>
+      </div>`;
+
+    return `
+    <div class="confirm-card">
+      <div class="cc-header" onclick="toggleConfirmCard(${i})">
+        <div class="cc-header-left">
+          <div class="cc-ep">${i+1}화 · ${ep.title||'제목없음'}</div>
+          <div class="cc-preview">${ep.manuscript.replace(/<[^>]+>/g,'').slice(0,36)}…</div>
+        </div>
+        <div class="cc-header-right">
+          <span class="cc-status ${isDone ? '' : r ? 'cc-analyzing' : 'cc-pending'}"
+            style="${isDone ? 'background:var(--green-light);color:#018850;' : ''}">
+            ${isDone ? '✅ 완성' : r ? '검수 완료' : '검수 대기'}
+          </span>
+          <button class="cc-toggle-btn" id="cc-toggle-btn-${i}" onclick="event.stopPropagation();toggleConfirmCard(${i})">
+            <i class="cc-toggle-chevron ${isOpen ? 'open' : ''}" id="cc-chevron-${i}">▼</i>${isOpen ? '접기' : '펼치기'}
+          </button>
+        </div>
+      </div>
+      ${bodyContent}
+    </div>`;
+  }).join('');
+}
+
+function requestReview(epIdx) {
+  // 검수는 광고 1회 시청 후 사용
+  showAdPopup(() => runReview(epIdx));
+}
+
+async function runReview(epIdx) {
+  const ep = S.episodes[epIdx];
+  if (!ep?.manuscript) { showToast('원고가 없어요'); return; }
+
+  const btn = document.getElementById(`review-btn-${epIdx}`);
+  if (btn) { btn.textContent = '검수 중...'; btn.disabled = true; }
+  showToast('AI가 원고를 분석 중이에요...');
+
+  const prompt = `아래 웹소설 원고를 검수해주세요.
+
+[작품 설정]
+제목: ${S.projectTitle || '미설정'}
+장르: ${S.genres?.join(', ') || '미설정'}
+등장인물: ${S.characters?.map(c => c.name + '(' + (c.role||'') + ')').join(', ') || '미설정'}
+
+[원고]
+${ep.manuscript}
+
+다음 3가지를 각각 0~100점으로 평가하고, 개선 피드백을 2~3줄로 작성해주세요.
+반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
+{"readability": 점수, "consistency": 점수, "expression": 점수, "feedback": "피드백 내용"}`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const json = JSON.parse(text.replace(/```json|```/g, '').trim());
+    S.episodes[epIdx].review = json;
+    save();
+    refreshConfirmList();
+    showToast('검수 완료! ✓');
+  } catch(e) {
+    showToast('검수 중 오류가 났어요');
+    refreshConfirmList();
+  }
+}
+
+async function generateEpisodeSummary(epIdx) {
+  const ep = S.episodes[epIdx];
+  if (!ep?.manuscript || ep.manuscript.trim().length < 50) return;
+
+  const charNames = (S.characters || []).map(c => c.name).filter(Boolean);
+  const prompt = `아래 웹소설 원고를 읽고 두 가지를 JSON으로 응답해주세요.
+1. summary: 이 화의 핵심 사건·감정·복선을 200자 이내로 요약 (다음 화 AI가 읽을 용도)
+2. appearingChars: 이 화에 실제로 등장한 캐릭터 이름 배열 (후보: ${charNames.join(', ') || '없음'})
+
+[원고]
+${ep.manuscript.trim().slice(0, 3000)}
+
+반드시 아래 JSON 형식으로만 응답하세요. 다른 텍스트 없이 JSON만:
+{"summary": "요약 내용", "appearingChars": ["이름1", "이름2"]}`;
+
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const json = JSON.parse(text.replace(/```json|```/g, '').trim());
+    S.episodes[epIdx].summary = json.summary || '';
+    S.episodes[epIdx].appearingChars = json.appearingChars || [];
+    save();
+  } catch(e) {
+    // 요약 실패해도 완성 처리는 계속 진행
+  }
+}
+
+function confirmDone(epIdx) {
+  S.episodes[epIdx].status = 'done';
+  S.episodes[epIdx].doneAt = new Date().toLocaleDateString('ko-KR');
+  save();
+  refreshConfirmList();
+  refreshDoneList();
+  syncProjectHeader(); // 진행판 수치 즉시 반영
+  switchTab(3);
+  showToast('완성공간으로 이동했어요 🎉');
+  generateEpisodeSummary(epIdx);
+}
+
+/* ────────────────────────────────────
+   완성공간
+──────────────────────────────────── */
+function refreshDoneList() {
+  const el = document.getElementById('done-list');
+  const countEl = document.getElementById('done-count');
+  if (!el) return;
+
+  const doneEps = (S.episodes || []).filter(ep => ep.status === 'done');
+  if (countEl) countEl.textContent = `완성된 회차 ${doneEps.length}편`;
+
+  if (!doneEps.length) {
+    el.innerHTML = `
+      <div class="done-empty">
+        <div class="done-empty-icon">✅</div>
+        <div class="done-empty-text">아직 완성된 회차가 없어요<br>집필 → 컨펌을 거치면 여기에 쌓여요!</div>
+      </div>`;
+    return;
+  }
+
+  const doneIdxs = (S.episodes || []).map((ep,i) => ep.status === 'done' ? i : -1).filter(i => i >= 0);
+  el.innerHTML = doneIdxs.map((epIdx, order) => {
+    const ep = S.episodes[epIdx];
+    const r = ep.review;
+    const avgScore = r ? Math.round((r.readability + r.consistency + r.expression) / 3) : null;
+    return `
+    <div class="done-card">
+      <div class="done-card-top">
+        <div class="done-num">${epIdx+1}화</div>
+        <div style="flex:1;min-width:0">
+          <div class="done-title">${ep.title || '제목 없음'}</div>
+          <div class="done-ep-label">검수 완료 · ${ep.doneAt || ''}${avgScore ? ' · 평균 '+avgScore+'점' : ''}</div>
+        </div>
+      </div>
+      <div class="done-bottom">
+        <span class="done-chars">${(ep.manuscript?.length || 0).toLocaleString()}자</span>
+        <button onclick="exportEpisode(${epIdx})" class="done-export-btn">내보내기</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function exportEpisode(epIdx) {
+  const ep = S.episodes[epIdx];
+  if (!ep?.manuscript) { showToast('원고가 없어요'); return; }
+  const title = `${S.projectTitle || '모두의판타지'}_${epIdx+1}화_${ep.title || ''}`;
+  const content = `${title}\n${'='.repeat(30)}\n\n${ep.manuscript}`;
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${title}.txt`;
+  a.click();
+  showToast('내보내기 완료 ✓');
+}
+
+function exportAllDone() {
+  const doneEps = (S.episodes || []).filter(ep => ep.status === 'done');
+  if (!doneEps.length) { showToast('완성된 회차가 없어요'); return; }
+  const content = doneEps.map((ep, i) => {
+    const epIdx = S.episodes.indexOf(ep);
+    return `${epIdx+1}화. ${ep.title || '제목없음'}\n${'─'.repeat(30)}\n\n${ep.manuscript}`;
+  }).join('\n\n\n');
+  const blob = new Blob([`${S.projectTitle || '모두의판타지'}\n${'='.repeat(40)}\n\n${content}`], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${S.projectTitle || '모두의판타지'}_전체.txt`;
+  a.click();
+  showToast('전체 내보내기 완료 ✓');
+}
+
+
+const API_KEY_STORE = 'mdpf_api_key';
+const USAGE_STORE   = 'mdpf_usage';
+const FREE_LIMIT    = 5;
+const DAY_MAX       = 50;
+
+// ── 일일 사용량 관리 ──
+function getUsageData() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = JSON.parse(localStorage.getItem(USAGE_STORE) || '{}');
+    if (raw.date !== today) return { date: today, count: 0, extra: 0 };
+    return raw;
+  } catch { return { date: today, count: 0, extra: 0 }; }
+}
+
+function saveUsageData(data) {
+  localStorage.setItem(USAGE_STORE, JSON.stringify(data));
+}
+
+function getTodayCount() { return getUsageData().count; }
+function getTodayExtra() { return getUsageData().extra; }
+function getTodayTotal() { const d = getUsageData(); return d.count + d.extra; }
+
+function canUseAI() {
+  const d = getUsageData();
+  return (d.count + d.extra) < DAY_MAX;
+}
+
+function isFreeLeft() {
+  return getTodayCount() < FREE_LIMIT;
+}
+
+function incrementUsage() {
+  const d = getUsageData();
+  if (d.count < FREE_LIMIT) {
+    d.count++;
+  } else {
+    d.extra = Math.max(0, d.extra - 1);
+  }
+  saveUsageData(d);
+  updateUsageBadge();
+}
+
+function addExtraUsage() {
+  const d = getUsageData();
+  d.extra = Math.min(d.extra + 1, DAY_MAX - d.count);
+  saveUsageData(d);
+  updateUsageBadge();
+}
+
+function updateUsageBadge() {
+  const badge = document.getElementById('usage-badge');
+  if (!badge) return;
+  const d = getUsageData();
+  const used = d.count + d.extra;
+  const remaining = Math.max(0, DAY_MAX - used);
+  const freeLeft = Math.max(0, FREE_LIMIT - d.count);
+
+  if (freeLeft > 0) {
+    badge.textContent = `💬 ${freeLeft}회 무료`;
+    badge.style.color = 'var(--blue)';
+    badge.style.background = '#EBF3FF';
+  } else if (remaining > 0) {
+    badge.textContent = `💬 +${d.extra}회`;
+    badge.style.color = '#FF6B00';
+    badge.style.background = '#FFF3EB';
+  } else {
+    badge.textContent = `💬 오늘 한도 초과`;
+    badge.style.color = 'var(--hint)';
+    badge.style.background = 'var(--border)';
+  }
+}
+
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORE) || '';
+}
+
+// ── 광고 팝업 ──
+let adCallback = null;
+
+function onBadgeClick() {
+  if (isFreeLeft()) {
+    const left = FREE_LIMIT - getTodayCount();
+    showToast(`오늘 무료 ${left}회 남았어요 😊`);
+  } else {
+    showAdPopup();
+  }
+}
+
+function showAdPopup(callback) {
+  if (!canUseAI() && !callback) {
+    // 한도 초과 시 알림만
+    showToast('오늘 최대 사용량(50회)에 도달했어요. 내일 다시 시도해주세요.');
+    return;
+  }
+  adCallback = callback || null;
+  const d = getUsageData();
+  const freeLeft = Math.max(0, FREE_LIMIT - d.count);
+
+  // 무료 횟수 남은 경우 vs 소진한 경우 문구 구분
+  const titleEl = document.getElementById('ad-title');
+  const descEl = document.getElementById('ad-desc');
+  const iconEl = document.getElementById('ad-icon');
+  if (freeLeft === 0 && !callback) {
+    // 배지 클릭 시 (충전 안내)
+    titleEl.textContent = '무료 횟수를 모두 사용했어요';
+    descEl.innerHTML = `광고 1회 시청 = AI 집필 1회 충전<br>하루 최대 <b>50회</b>까지 사용 가능해요`;
+    iconEl.textContent = '🎬';
+  } else {
+    titleEl.textContent = 'AI 사용권 충전';
+    descEl.innerHTML = `짧은 광고를 시청하면<br>AI 집필을 <b>1회 더</b> 사용할 수 있어요`;
+    iconEl.textContent = '📺';
+  }
+
+  document.getElementById('ad-backdrop').style.display = 'block';
+  document.getElementById('ad-popup').style.display = 'block';
+  document.getElementById('ad-progress-wrap').style.display = 'none';
+  document.getElementById('ad-watch-btn').disabled = false;
+  document.getElementById('ad-watch-btn').textContent = '광고 보기 →';
+}
+
+function closeAdPopup() {
+  document.getElementById('ad-backdrop').style.display = 'none';
+  document.getElementById('ad-popup').style.display = 'none';
+  adCallback = null;
+}
+
+function startAdWatch() {
+  const btn = document.getElementById('ad-watch-btn');
+  btn.disabled = true;
+  btn.textContent = '광고 시청 중...';
+  document.getElementById('ad-progress-wrap').style.display = 'block';
+
+  const AD_DURATION = 15;
+  let sec = AD_DURATION;
+  document.getElementById('ad-timer').textContent = sec;
+  document.getElementById('ad-progress-bar').style.width = '0%';
+
+  const interval = setInterval(() => {
+    sec--;
+    document.getElementById('ad-timer').textContent = sec;
+    document.getElementById('ad-progress-bar').style.width = `${((AD_DURATION - sec) / AD_DURATION) * 100}%`;
+    if (sec <= 0) {
+      clearInterval(interval);
+      onAdComplete();
+    }
+  }, 1000);
+}
+
+function onAdComplete() {
+  const callback = adCallback; // closeAdPopup이 adCallback을 null로 만들기 전에 저장
+  addExtraUsage();
+  closeAdPopup();
+  showToast('충전 완료! AI 1회 사용권이 추가됐어요 ✓');
+  if (callback) callback();
+}
+
+function saveApiKey() {
+  const val = document.getElementById('api-key-input').value.trim();
+  if (!val) { showToast('API 키를 입력해주세요'); return; }
+  if (!val.startsWith('sk-ant-')) { showToast('올바른 Claude API 키 형식이 아니에요 (sk-ant-로 시작해야 해요)'); return; }
+  localStorage.setItem(API_KEY_STORE, val);
+  showApiKeyStatus(true);
+  showToast('API 키가 저장됐어요 ✓');
+}
+
+function toggleApiKeyVisible() {
+  const input = document.getElementById('api-key-input');
+  const icon = document.getElementById('eye-icon');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.innerHTML = '<path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/>';
+  } else {
+    input.type = 'password';
+    icon.innerHTML = '<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>';
+  }
+}
+
+function showApiKeyStatus(saved) {
+  const statusEl = document.getElementById('api-key-status');
+  const inputEl = document.getElementById('api-key-input');
+  if (!statusEl || !inputEl) return;
+  const key = getApiKey();
+  if (key) {
+    statusEl.style.display = 'block';
+    statusEl.innerHTML = `<span style="color:var(--green);font-weight:600;">✓ API 키 저장됨</span> <span style="color:var(--hint)">(${key.slice(0,12)}...)</span>`;
+    inputEl.value = key;
+  } else {
+    statusEl.style.display = 'none';
+  }
+}
+
+
+let currentEpIdx = null;
+let writingHistory = [];
+let writingLoading = false;
+
+function buildSystemPrompt() {
+  const s = S;
+  const epIdx = currentEpIdx;
+  const allEps = s.episodes || [];
+
+  // ── 1. 전체 회차 요약 누적 (AI 자동 생성된 summary 사용) ──
+  const prevEpsWithSummary = allEps
+    .slice(0, epIdx)
+    .map((ep, i) => ({ ep, num: i + 1 }))
+    .filter(({ ep }) => ep.summary || (ep.manuscript && ep.manuscript.length > 10));
+
+  let prevEpSection = '';
+  if (prevEpsWithSummary.length > 0) {
+    prevEpSection = '\n[이전 회차 요약 — 개연성 유지용]\n';
+    prevEpSection += prevEpsWithSummary.map(({ ep, num }) => {
+      const summary = ep.summary
+        ? ep.summary
+        : (ep.manuscript.length > 200 ? ep.manuscript.slice(0, 200) + '…' : ep.manuscript);
+      const chars = ep.appearingChars?.length ? ` (등장: ${ep.appearingChars.join(', ')})` : '';
+      return `▶ ${num}화 「${ep.title || '제목없음'}」${chars}\n${summary}`;
+    }).join('\n\n');
+  }
+
+  // ── 2. 직전 회차 원고 전체 (문체/분위기 이어받기) ──
+  let prevFullSection = '';
+  if (epIdx > 0) {
+    const prevEp = allEps[epIdx - 1];
+    if (prevEp?.manuscript && prevEp.manuscript.trim().length > 10) {
+      prevFullSection = `\n[직전 화(${epIdx}화) 원고 전체 — 문체·감정선 이어받기]\n${prevEp.manuscript.trim()}`;
+    }
+  }
+
+  // ── 3. 현재 화차 원고 ──
+  const currentEp = allEps[epIdx];
+  const currentManuscript = currentEp?.manuscript?.trim() || '';
+  const currentEpSection = currentManuscript
+    ? `\n[현재 화차(${epIdx + 1}화) 작성된 원고 — 반드시 이어서 쓸 것]\n${currentManuscript}`
+    : `\n[현재 화차(${epIdx + 1}화) 원고]\n아직 작성된 원고가 없습니다. 처음부터 시작해주세요.`;
+
+  // ── 4. 작가 메모 (이번 화 참고사항) ──
+  const memo = currentEp?.memo?.trim() || '';
+  const memoSection = memo ? `\n[작가 메모 — 이번 화 참고사항]\n${memo}` : '';
+
+  // ── 5. 캐릭터 등장 빈도 요약 ──
+  const charAppearMap = {};
+  allEps.slice(0, epIdx).forEach((ep, i) => {
+    (ep.appearingChars || []).forEach(name => {
+      if (!charAppearMap[name]) charAppearMap[name] = [];
+      charAppearMap[name].push(i + 1);
+    });
+  });
+  const charAppearSection = Object.keys(charAppearMap).length
+    ? '\n[캐릭터 등장 이력]\n' + Object.entries(charAppearMap)
+        .map(([name, eps]) => `- ${name}: ${eps.join('화, ')}화 등장`)
+        .join('\n')
+    : '';
+
+  // ── 6. 작가 스타일 섹션 ──
+  const ws = s.writingStyle || {};
+  const styleLines = [];
+  if (ws.pov && ws.pov !== '자유') styleLines.push(`- 서술 시점: ${ws.pov === '1인칭' ? '1인칭("나는~" 시점으로 일관되게)' : '3인칭("그는~/그녀는~" 시점으로 일관되게)'}`);
+  if (ws.sentence) {
+    const map = { '짧게': '문장은 짧고 강렬하게. 호흡이 빠르도록 끊어 써주세요', '보통': '문장 길이는 보통으로 자연스럽게', '길게': '문장을 길고 흐르듯이. 문학적인 리듬감을 살려주세요' };
+    styleLines.push(`- 문장 길이: ${map[ws.sentence]}`);
+  }
+  if (ws.desc) {
+    const map = { '최소': '묘사는 최소화하고 사건과 행동 중심으로', '보통': '묘사와 서술의 균형을 맞춰서', '풍부': '장면 묘사를 풍부하고 감각적으로 써주세요' };
+    styleLines.push(`- 묘사 비중: ${map[ws.desc]}`);
+  }
+  if (ws.dialog) {
+    const map = { '적게': '대사는 최소화하고 서술 위주로', '보통': '대사와 서술 비율을 균형 있게', '많게': '대사 위주로 써주세요. 캐릭터가 많이 말하게 해주세요' };
+    styleLines.push(`- 대사 비중: ${map[ws.dialog]}`);
+  }
+  if (ws.pace) {
+    const map = { '빠르게': '전개는 빠르게. 사건이 연속으로 이어지도록', '보통': '전개 속도는 보통으로', '느리게': '천천히 감정을 쌓아가며 전개해주세요' };
+    styleLines.push(`- 전개 속도: ${map[ws.pace]}`);
+  }
+  if (ws.emotion) {
+    const map = { '절제': '감정 표현은 절제하고 담담하게', '보통': '감정 표현은 보통으로', '풍부': '감정 표현을 풍부하고 감성적으로 써주세요' };
+    styleLines.push(`- 감정 표현: ${map[ws.emotion]}`);
+  }
+  if (ws.memo && ws.memo.trim()) styleLines.push(`- 작가 특별 요청: ${ws.memo.trim()}`);
+  const styleSection = styleLines.length
+    ? `\n[작가 글쓰기 스타일 — 반드시 이 스타일로 써주세요]\n${styleLines.join('\n')}`
+    : '';
+
+  return `당신은 한국 웹소설 전문 창작 파트너 AI입니다. 사용자와 함께 웹소설을 써내려갑니다.
+
+[작품 정보]
+- 제목: ${s.projectTitle || '제목 미설정'}
+- 장르: ${s.genres?.join(', ') || '미설정'}
+- 분위기: ${s.moods?.join(', ') || '미설정'}
+- 타겟 독자: ${s.target || '전체'}
+
+[세계관]
+- 시대/배경: ${s.era || '미설정'}
+- 핵심 키워드: ${s.keywords?.join(', ') || '없음'}
+- 세계관 설명: ${s.worlddesc || '미설정'}
+
+[등장인물]
+${s.characters?.length ? s.characters.map(c =>
+  `- ${c.name}(${c.role || '역할미설정'}, ${c.age || '나이미설정'}): 성격-${c.personality || '미설정'}, 말투-${c.speech || '미설정'}${c.desc ? ', '+c.desc : ''}`
+).join('\n') : '- 등장인물 미설정'}
+${charAppearSection}
+[스토리 방향]
+- 한줄 소개: ${s.logline || '미설정'}
+- 전체 방향: ${s.plot || '미설정'}
+- 1화 시작: ${s.ep1start || '미설정'}
+${prevEpSection}
+${prevFullSection}
+${currentEpSection}
+${memoSection}
+${styleSection}
+
+[집필 원칙]
+1. 웹소설 특유의 템포감 있는 문체로 써주세요. 너무 문학적이지 않게, 빠르게 읽히도록.
+2. 장면 묘사는 구체적으로. 대사는 캐릭터 성격에 맞게.
+3. 원고를 쓴 후에는 현재 원고 분량이 5,000자 미만이면 "어떤가요?" 또는 "다음은 어떻게 이어갈까요?" 처럼 짧게 다음 방향을 물어봐 주세요.
+4. 원고 내용은 반드시 [원고시작]...[원고끝] 태그로 감싸주세요. 설명/대화는 태그 밖에 써주세요.
+5. 한 번에 너무 길게 쓰지 말고 500~1000자 단위로 나눠서 써주세요.
+6. 현재 화차에 이미 원고가 있다면, 반드시 그 내용과 자연스럽게 이어지게 써주세요. 절대 앞 내용을 무시하거나 다시 쓰지 마세요.
+${currentManuscript.length >= 5000
+  ? `\n⚠️ [이번 화 완성 안내 — 최우선 지시] 현재 원고가 ${currentManuscript.length}자로 이번 화 목표 분량(5,000자)을 완전히 달성했습니다. 지금부터는 절대로 원고를 추가하거나 이어쓰지 마세요. 추가 집필 요청이 와도 거절하고, 반드시 아래 형식으로만 응답해주세요:\n"✅ 이번 화 원고가 완성됐어요! 원고 탭에서 마음에 안 드는 부분을 직접 수정하거나, 검수 탭으로 이동해서 AI 검수를 받아보세요. 다음 화를 시작하려면 집필 목록에서 새 회차를 추가해보세요 😊"`
+  : currentManuscript.length >= 4500
+  ? `\n📝 [마무리 유도] 현재 원고가 ${currentManuscript.length}자입니다. 목표 분량(5,000자)까지 약 ${5000 - currentManuscript.length}자 남았어요. 이번 응답에서 이 화를 자연스럽게 마무리 짓는 방향으로 써주세요. 클리프행어나 다음 화 복선을 남기며 끝내면 좋아요. 원고를 마무리한 뒤에는 "다음 방향" 같은 말 없이 완성 안내만 해주세요.`
+  : ''}`;
+}
+
+function openWritingScreen(epIdx) {
+  currentEpIdx = epIdx;
+  const ep = S.episodes[epIdx];
+
+  // 헤더 제목
+  document.getElementById('writing-nav-title').textContent = `${epIdx+1}화 집필`;
+
+  // 원고 복원
+  const wmText = document.getElementById('wm-text');
+  wmText.innerText = ep.manuscript || '';
+  updateWmWc();
+
+  // 채팅 복원
+  const msgEl = document.getElementById('wc-messages');
+  writingHistory = ep.chatHistory || [];
+  msgEl.innerHTML = '';
+
+  // wc-typing 인디케이터 재생성 (innerHTML 클리어 시 삭제되므로)
+  const typingDiv = document.createElement('div');
+  typingDiv.className = 'wc-typing';
+  typingDiv.id = 'wc-typing';
+  typingDiv.style.display = 'none';
+  typingDiv.innerHTML = `
+    <div class="wc-bubble" style="padding:10px 14px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <span id="wc-loading-text" style="font-size:12px;color:var(--sub);">AI가 집필 중이에요</span>
+        <div style="display:flex;gap:4px;align-items:center">
+          <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+        </div>
+      </div>
+    </div>`;
+  msgEl.appendChild(typingDiv);
+
+  // 저장된 채팅 히스토리 먼저 복원 (오래된 순서대로 위쪽에)
+  writingHistory.forEach(m => {
+    if(m.role !== 'system') addWcMsg(m.role === 'user' ? 'user' : 'ai', m.content, false);
+  });
+
+  // 초기(재진입) 인사 메세지는 항상 맨 아래에
+  const hasManuscript = ep.manuscript && ep.manuscript.trim().length > 10;
+  const hasPrevEp = epIdx > 0 && (S.episodes || []).slice(0, epIdx).some(e => e.manuscript && e.manuscript.length > 10);
+  let initMsg;
+  if (hasManuscript) {
+    initMsg = `${epIdx+1}화 「${ep.title || '제목 없음'}」 이어쓰기 모드예요!<br>현재 <b>${ep.manuscript.trim().length.toLocaleString()}자</b> 작성됐어요. 이어서 써볼까요? 😊`;
+  } else if (hasPrevEp) {
+    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}<br>이전 화 내용을 참고해서 자연스럽게 이어질 수 있도록 도와드릴게요 📖`;
+  } else {
+    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}<br>어떤 장면부터 써볼까요? 위 버튼을 눌러도 되고, 직접 말씀해주세요 😊`;
+  }
+  addWcMsg('ai', initMsg); // scroll=true → 자동으로 맨 아래로
+
+  // 렌더링 완료 후 맨 아래 스크롤 보장
+  requestAnimationFrame(() => { msgEl.scrollTop = msgEl.scrollHeight; });
+
+  wmText.addEventListener('input', updateWmWc);
+  loadMemo();
+  updateUsageBadge();
+  updateWritingInputState(); // 화면 진입 시 사용 가능 여부 즉시 반영
+  goTo('writing');
+}
+
+function updateWmWc() {
+  const text = document.getElementById('wm-text').innerText.trim();
+  const n = text.length;
+  document.getElementById('wm-wc').textContent = n.toLocaleString() + '자';
+}
+
+function addWcMsg(role, text, scroll = true) {
+  const msgEl = document.getElementById('wc-messages');
+  const typing = document.getElementById('wc-typing');
+  const div = document.createElement('div');
+  div.className = 'wc-msg ' + role;
+  div.innerHTML = `<div class="wc-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  msgEl.insertBefore(div, typing);
+  if(scroll) msgEl.scrollTop = msgEl.scrollHeight;
+}
+
+let _loadingMsgTimer = null;
+const _loadingMsgs = [
+  'AI가 집필 중이에요',
+  '원고를 작성하고 있어요',
+  '문장을 다듬는 중이에요',
+  '조금만 기다려 주세요',
+  '거의 다 됐어요!'
+];
+function setWritingLoading(v) {
+  writingLoading = v;
+  const sendBtn = document.getElementById('wc-send');
+  const typing = document.getElementById('wc-typing');
+  const messages = document.getElementById('wc-messages');
+  const loadingText = document.getElementById('wc-loading-text');
+  if(sendBtn) sendBtn.disabled = v;
+  if(typing) typing.style.display = v ? 'flex' : 'none';
+  if(v && messages) messages.scrollTop = 999999;
+  if(v && loadingText) {
+    let msgIdx = 0;
+    loadingText.textContent = _loadingMsgs[0];
+    _loadingMsgTimer = setInterval(() => {
+      msgIdx = (msgIdx + 1) % _loadingMsgs.length;
+      if(loadingText) loadingText.textContent = _loadingMsgs[msgIdx];
+    }, 2500);
+  } else {
+    if(_loadingMsgTimer) { clearInterval(_loadingMsgTimer); _loadingMsgTimer = null; }
+  }
+}
+
+/* ── 타이핑 애니메이션 ── */
+function addWcMsgAnimated(role, text) {
+  const msgEl = document.getElementById('wc-messages');
+  const typingEl = document.getElementById('wc-typing');
+  const div = document.createElement('div');
+  div.className = 'wc-msg ' + role;
+  const bubble = document.createElement('div');
+  bubble.className = 'wc-bubble';
+  div.appendChild(bubble);
+  msgEl.insertBefore(div, typingEl);
+
+  if (role !== 'ai' || !text) {
+    bubble.innerHTML = text.replace(/\n/g, '<br>');
+    msgEl.scrollTop = msgEl.scrollHeight;
+    return;
+  }
+
+  // 글자 수에 따라 속도 조절: 길수록 빠르게
+  const len = text.length;
+  const batchSize = len > 600 ? 4 : len > 200 ? 2 : 1;
+  const delay = 22;
+  const chars = [...text]; // 유니코드(한글 자모 등) 안전 분리
+  let i = 0;
+  let html = '';
+
+  function tick() {
+    if (i >= chars.length) return;
+    for (let j = 0; j < batchSize && i < chars.length; j++, i++) {
+      const ch = chars[i];
+      if (ch === '\n') html += '<br>';
+      else html += ch.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+    bubble.innerHTML = html;
+    msgEl.scrollTop = msgEl.scrollHeight;
+    setTimeout(tick, delay);
+  }
+  tick();
+}
+
+function extractManuscript(text) {
+  const m = text.match(/\[원고시작\]([\s\S]*?)\[원고끝\]/);
+  if(m) {
+    const newContent = m[1].trim();
+    const wmText = document.getElementById('wm-text');
+    const current = wmText.innerText.trim();
+    wmText.innerText = current ? current + '\n\n' + newContent : newContent;
+    updateWmWc();
+    return text.replace(/\[원고시작\][\s\S]*?\[원고끝\]/, '').trim();
+  }
+  return text;
+}
+
+// ── 집필 가능 여부: 무료 or 충전분 있을 때만 true ──
+function canWriteNow() {
+  return isFreeLeft() || getTodayExtra() > 0;
+}
+
+// ── 입력창 활성/비활성 + 안내 배너 ──
+function updateWritingInputState() {
+  const sendBtn  = document.getElementById('wc-send');
+  const inputEl  = document.getElementById('wc-input');
+  const quickWrap = document.getElementById('wc-quick');
+  if (!sendBtn || !inputEl) return;
+
+  if (!canWriteNow()) {
+    sendBtn.disabled  = true;
+    inputEl.disabled  = true;
+    inputEl.placeholder = '오늘 집필 횟수를 모두 사용했어요. 광고를 보고 충전하세요.';
+    if (quickWrap) quickWrap.style.opacity = '0.35';
+    // 차단 배너가 없으면 삽입
+    if (!document.getElementById('wc-limit-banner')) {
+      const banner = document.createElement('div');
+      banner.id = 'wc-limit-banner';
+      banner.style.cssText = 'background:#FFF3EB;border:1px solid #FFD0A0;border-radius:12px;padding:12px 14px;margin:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
+      banner.innerHTML = `
+        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 5회를 모두 사용했어요 😅</span>
+        <button onclick="showAdPopupForWrite()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">광고 보기 →</button>`;
+      const msgEl = document.getElementById('wc-messages');
+      const inputRow = document.querySelector('.wc-input-row');
+      if (inputRow) inputRow.parentNode.insertBefore(banner, inputRow);
+    }
+  } else {
+    sendBtn.disabled  = false;
+    inputEl.disabled  = false;
+    inputEl.placeholder = '이번 장면 방향을 알려주세요...';
+    if (quickWrap) quickWrap.style.opacity = '';
+    const banner = document.getElementById('wc-limit-banner');
+    if (banner) banner.remove();
+  }
+}
+
+function showAdPopupForWrite() {
+  showAdPopup(() => { updateWritingInputState(); });
+}
+
+async function callWritingAI(userMsg) {
+  // ── 1차 관문: 총 한도 초과 ──
+  if (!canUseAI()) {
+    addWcMsgAnimated('ai', '오늘 최대 사용량(50회)에 도달했어요. 내일 다시 집필을 이어가요! 💤');
+    updateWritingInputState();
+    return;
+  }
+  // ── 2차 관문: 무료 + 충전분 모두 소진 → API 호출 완전 차단 ──
+  if (!canWriteNow()) {
+    updateWritingInputState(); // 배너 + 버튼 비활성화
+    return;
+  }
+
+  _execWritingAI(userMsg);
+}
+
+async function _execWritingAI(userMsg) {
+  // 방어 코드: 혹시 이 시점에도 사용 불가면 중단
+  if (!canUseAI() || !canWriteNow()) {
+    updateWritingInputState();
+    return;
+  }
+
+  writingHistory.push({ role: 'user', content: userMsg });
+
+  const MAX_HISTORY = 20;
+  const trimmedHistory = writingHistory.length > MAX_HISTORY
+    ? writingHistory.slice(-MAX_HISTORY)
+    : writingHistory;
+
+  const systemPrompt = buildSystemPrompt();
+
+  setWritingLoading(true);
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 2000,
+        system: systemPrompt,
+        messages: trimmedHistory
+      })
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      const errMsg = err.error?.message || `HTTP ${res.status}`;
+      if (res.status === 429) throw new Error('요청이 너무 많아요. 잠깐 기다렸다가 다시 시도해주세요.');
+      if (res.status === 400) throw new Error(`요청 오류: ${errMsg}`);
+      throw new Error(errMsg);
+    }
+    const data = await res.json();
+    const reply = data.content?.[0]?.text || '오류가 발생했어요. 다시 시도해주세요.';
+    writingHistory.push({ role: 'assistant', content: reply });
+    const chatText = extractManuscript(reply);
+    if (chatText) {
+      // 원고 생성 → 차감 + 남은 횟수 표시
+      incrementUsage();
+      addWcMsgAnimated('ai', chatText);
+      autoSaveEpisode();
+      // 남은 횟수 안내
+      const ms = document.getElementById('wm-text')?.innerText?.trim() || '';
+      if (ms.length >= 5000) {
+        // 5000자 달성 → 채팅창에 안내 메세지 (토스트는 사라지니 채팅으로)
+        setTimeout(() => addWcMsg('ai',
+          '🎉 이번 화 목표 분량(5,000자)을 달성했어요!<br>검수 탭에서 원고를 확인하고 완성 처리해보세요 😊'), 400);
+      } else {
+        // 아직 5000자 미만 → 남은 집필 횟수 토스트
+        const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
+        const extraLeft = getTodayExtra();
+        if (freeLeft > 0) {
+          setTimeout(() => showToast(`오늘 무료 집필 ${freeLeft}회 남았어요`), 800);
+        } else if (extraLeft > 0) {
+          setTimeout(() => showToast(`충전 집필 ${extraLeft}회 남았어요`), 800);
+        }
+      }
+    } else {
+      // 순수 대화 → 차감 없이 타이핑 애니메이션
+      addWcMsgAnimated('ai', reply);
+    }
+  } catch(e) {
+    addWcMsg('ai', `오류가 났어요: ${e.message}<br>API 키를 확인해주세요.`);
+    writingHistory.pop();
+  }
+  setWritingLoading(false);
+  updateWritingInputState(); // 사용 후 항상 상태 갱신
+}
+
+async function sendWritingMsg() {
+  const input = document.getElementById('wc-input');
+  const text = input.value.trim();
+  if(!text || writingLoading) return;
+  // 한국어 IME 마지막 글자 잔류 방지: 즉시 + 다음 틱에 한 번 더 클리어
+  input.value = ''; input.style.height = 'auto';
+  setTimeout(() => { input.value = ''; input.style.height = 'auto'; }, 0);
+  addWcMsg('user', text);
+  await callWritingAI(text);
+}
+
+async function quickWrite(text) {
+  if(writingLoading) return;
+  addWcMsg('user', text);
+  await callWritingAI(text);
+}
+
+function handleWcKey(e) {
+  if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendWritingMsg(); }
+}
+
+function autoResizeWc(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 90) + 'px';
+}
+
+function autoSaveEpisode() {
+  if(currentEpIdx === null) return;
+  const wmText = document.getElementById('wm-text');
+  S.episodes[currentEpIdx].manuscript = wmText.innerText.trim();
+  S.episodes[currentEpIdx].chatHistory = writingHistory;
+  S.episodes[currentEpIdx].updatedAt = new Date().toLocaleDateString('ko-KR');
+  save();
+  refreshEpList();
+}
+
+function saveMemo() {
+  if(currentEpIdx === null) return;
+  const memo = document.getElementById('ep-memo-input')?.value || '';
+  S.episodes[currentEpIdx].memo = memo;
+  save();
+}
+
+let memoOpen = true;
+function toggleMemo() {
+  memoOpen = !memoOpen;
+  const body = document.getElementById('ep-memo-body');
+  const btn = document.getElementById('memo-toggle-btn');
+  if(body) body.style.display = memoOpen ? 'block' : 'none';
+  if(btn) btn.textContent = memoOpen ? '접기' : '펼치기';
+}
+
+function loadMemo() {
+  if(currentEpIdx === null) return;
+  const input = document.getElementById('ep-memo-input');
+  if(input) input.value = S.episodes[currentEpIdx]?.memo || '';
+}
+
+function saveEpisode() {
+  autoSaveEpisode();
+  showToast('저장됐어요 ✓');
+}
+
+/* ────────────────────────────────────
+   회차 관리
+──────────────────────────────────── */
+function refreshEpList() {
+  const el = document.getElementById('ep-list');
+  if(!el) return;
+  S.episodes = S.episodes || [];
+  if(!S.episodes.length) {
+    el.innerHTML = `
+      <div style="background:var(--white);border-radius:var(--r-lg);border:1px dashed var(--border);padding:32px 20px;text-align:center;">
+        <div style="font-size:28px;margin-bottom:8px">📝</div>
+        <div style="font-size:14px;font-weight:600;color:var(--sub);margin-bottom:4px">아직 집필한 회차가 없어요</div>
+        <div style="font-size:13px;color:var(--hint)">아래 버튼으로 첫 회차를 시작해보세요</div>
+      </div>`;
+    return;
+  }
+  el.innerHTML = S.episodes.map((ep, i) => {
+    const charCount = ep.manuscript?.length || 0;
+    const isDone    = ep.status === 'done';
+    const pct = Math.min(100, Math.round(charCount / 70));
+    const badgeClass = isDone ? 'ep-done' : charCount > 0 ? 'ep-current' : 'ep-draft';
+    const badgeLabel = isDone ? '✓ 완성' : charCount > 0 ? '집필 중' : '시작 전';
+    const itemClass  = isDone ? 'done' : charCount > 0 ? 'current' : '';
+    const actionLabel = isDone ? '보기 →' : '집필하기 →';
+    return `
+    <div class="ep-item ${itemClass}" onclick="openWritingScreen(${i})">
+      <div class="ep-top">
+        <span class="ep-num-badge ${badgeClass}">${i+1}화 · ${badgeLabel}</span>
+        <span style="font-size:12px;color:var(--blue);font-weight:600;">${actionLabel}</span>
+      </div>
+      <div class="ep-title-text">${ep.title || '제목 없음'}</div>
+      <div class="ep-progress-row">
+        <div class="ep-track"><div class="ep-fill" style="width:${pct}%"></div></div>
+        <span class="ep-char-count">${charCount.toLocaleString()}자${ep.updatedAt ? ' · '+ep.updatedAt : ''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+
+/* ── 홈 슬라이더 상태 ── */
+let homeSliderIdx = DB.currentIdx || 0;
+
+function calcProjStats(proj) {
+  const eps          = proj.episodes || [];
+  const totalChars   = eps.reduce((sum, ep) => sum + (ep.manuscript?.length || 0), 0);
+  const doneEps      = eps.filter(ep => ep.status === 'done').length;
+  const writingEps   = eps.filter(ep => (ep.manuscript?.length || 0) > 0 && ep.status !== 'done').length;
+  const reviewedEps  = eps.filter(ep => ep.review).length;
+  const settingItems = [proj.genres?.length, proj.moods?.length, proj.target, proj.era, proj.worlddesc, proj.characters?.length > 0, proj.logline, proj.plot];
+  const settingPct   = Math.round(settingItems.filter(Boolean).length / settingItems.length * 25);
+  const writingPct   = eps.length ? Math.min(50, Math.round(Math.min(totalChars,50000)/50000*50)) : 0;
+  const confirmPct   = eps.length ? Math.round(reviewedEps / Math.max(eps.length,1) * 15) : 0;
+  const donePct      = eps.length ? Math.round(doneEps / Math.max(eps.length,1) * 10) : 0;
+  const fallbackPct  = Math.min(100, settingPct + writingPct + confirmPct + donePct);
+  const plannedTotal = proj.totalEps || 0;
+  const totalPct     = plannedTotal > 0 ? Math.min(100, Math.round((doneEps / plannedTotal) * 100)) : fallbackPct;
+  return { eps, totalChars, doneEps, writingEps, totalPct };
+}
+
+function buildSliderCard(proj, idx) {
+  const { eps, totalChars, doneEps, writingEps, totalPct } = calcProjStats(proj);
+  const hasProj = !!(proj.projectTitle || proj.genres?.length);
+  const isCurrent = idx === DB.currentIdx;
+  return `
+  <div class="proj-slider-card" onclick="homeSliderGoProject(${idx})">
+    <div class="pc-top">
+      <div>
+        <div class="pc-label" style="color:rgba(255,255,255,0.65)">
+          ${isCurrent ? '✦ 현재 작업 중' : `작품 ${idx+1}`}
+        </div>
+        <div class="pc-title">${proj.projectTitle || '작품을 시작해보세요'}</div>
+      </div>
+      <div class="pc-pct">${totalPct}<span>%</span></div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-track"><div class="progress-fill" style="width:${totalPct}%"></div></div>
+      <div class="pc-stats">
+        <div class="pc-stat"><div class="pc-stat-val">${doneEps}화</div><div class="pc-stat-label">완성</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${writingEps}화</div><div class="pc-stat-label">집필 중</div></div>
+        <div class="pc-stat"><div class="pc-stat-val">${totalChars.toLocaleString()}</div><div class="pc-stat-label">총 글자</div></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderSlider() {
+  const sliderEl = document.getElementById('proj-card-slider');
+  const dotsEl   = document.getElementById('proj-card-dots');
+  if (!sliderEl || !dotsEl) return;
+
+  const projects = DB.projects || [];
+
+  if (!projects.length) {
+    sliderEl.innerHTML = `
+      <div class="proj-slider-card" onclick="goTo('workspace')" style="cursor:pointer">
+        <div class="pc-top"><div><div class="pc-label" style="color:rgba(255,255,255,0.65)">시작하기</div><div class="pc-title">첫 작품을 만들어보세요</div></div><div class="pc-pct">0<span>%</span></div></div>
+        <div class="progress-bar-wrap"><div class="progress-track"><div class="progress-fill" style="width:0%"></div></div></div>
+      </div>`;
+    dotsEl.innerHTML = '';
+    return;
+  }
+
+  // 슬라이더 트랙
+  sliderEl.innerHTML = `<div class="proj-slider-track" id="slider-track">
+    ${projects.map((p,i) => buildSliderCard(p,i)).join('')}
+  </div>`;
+
+  // dot 인디케이터
+  dotsEl.innerHTML = projects.map((_, i) =>
+    `<div class="slider-dot ${i === homeSliderIdx ? 'active' : ''}" onclick="goSlide(${i})"></div>`
+  ).join('');
+
+  // 초기 위치
+  setSlide(homeSliderIdx, false);
+  initSliderSwipe();
+}
+
+function setSlide(idx, animate = true) {
+  homeSliderIdx = Math.max(0, Math.min(idx, (DB.projects?.length||1)-1));
+  const track = document.getElementById('slider-track');
+  if (track) {
+    track.style.transition = animate ? 'transform 0.35s cubic-bezier(0.25,0.46,0.45,0.94)' : 'none';
+    track.style.transform = `translateX(-${homeSliderIdx * 100}%)`;
+  }
+  // dots 갱신
+  document.querySelectorAll('.slider-dot').forEach((d,i) => {
+    d.className = 'slider-dot' + (i === homeSliderIdx ? ' active' : '');
+  });
+  // 이번달 통계 갱신
+  refreshHomeStats(homeSliderIdx);
+}
+
+function goSlide(idx) { setSlide(idx); }
+
+function homeSliderGoProject(idx) {
+  switchProject(idx);
+}
+
+function initSliderSwipe() {
+  const slider = document.getElementById('proj-card-slider');
+  if (!slider || slider.dataset.swipeInit) return;
+  slider.dataset.swipeInit = '1';
+  let startX = 0, startY = 0, isDragging = false, isHoriz = null;
+
+  slider.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDragging = true; isHoriz = null;
+  }, { passive: true });
+
+  slider.addEventListener('touchmove', e => {
+    if (!isDragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (isHoriz === null) isHoriz = Math.abs(dx) > Math.abs(dy);
+    if (!isHoriz) { isDragging = false; return; }
+    e.preventDefault();
+  }, { passive: false });
+
+  slider.addEventListener('touchend', e => {
+    if (!isDragging || !isHoriz) { isDragging = false; return; }
+    const dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 40) {
+      setSlide(dx < 0 ? homeSliderIdx + 1 : homeSliderIdx - 1);
+    }
+    isDragging = false;
+  });
+}
+
+function refreshHomeStats(projIdx) {
+  const proj = (DB.projects || [])[projIdx];
+  if (!proj) return;
+  const { eps, totalChars, doneEps } = calcProjStats(proj);
+  const statDays  = document.getElementById('home-stat-days');
+  const statChars = document.getElementById('home-stat-chars');
+  const statProjs = document.getElementById('home-stat-projects');
+  if (statDays)  statDays.textContent  = eps.filter(ep => ep.updatedAt).length;
+  if (statChars) statChars.textContent = totalChars.toLocaleString();
+  if (statProjs) statProjs.textContent = (DB.projects||[]).length;
+}
+
+function refreshHome() {
+  const projects = DB.projects || [];
+  const hasAny   = projects.length > 0;
+
+  // 슬라이더 인덱스를 현재 프로젝트 기준으로 맞추기
+  homeSliderIdx = DB.currentIdx || 0;
+  renderSlider();
+
+  // 이번달 통계 — 현재 프로젝트 기준
+  refreshHomeStats(homeSliderIdx);
+
+  // ── 최근 작업 카드 — 모든 작품 최근순 ──
+  const workList = document.getElementById('home-work-list');
+  if (workList) {
+    if (!hasAny) {
+      workList.innerHTML = `
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px dashed var(--border);padding:32px 20px;text-align:center;">
+          <div style="font-size:28px;margin-bottom:8px">✍️</div>
+          <div style="font-size:14px;font-weight:600;color:var(--sub);margin-bottom:4px">아직 작품이 없어요</div>
+          <div style="font-size:13px;color:var(--hint)">작업공간에서 첫 작품을 시작해보세요</div>
+        </div>`;
+    } else {
+      workList.innerHTML = projects.map((proj, idx) => {
+        const { eps, totalChars, totalPct, writingEps, doneEps } = calcProjStats(proj);
+        const genres = proj.genres?.length ? proj.genres.slice(0,2).join(' · ') : '장르 미설정';
+        const statusLabel = doneEps === eps.length && eps.length > 0 ? '완성' : writingEps > 0 ? '집필 중' : '설정 중';
+        const badgeClass  = statusLabel === '완성' ? 'badge-done' : 'badge-writing';
+        const latestEp    = eps.length ? eps[eps.length-1] : null;
+        return `
+        <div class="work-card" onclick="switchProject(${idx})">
+          <div class="wc-header">
+            <div class="wc-icon fantasy">📖</div>
+            <div class="wc-meta">
+              <div class="wc-genre">${genres}</div>
+              <div class="wc-title">${proj.projectTitle || '제목 미설정'}</div>
+            </div>
+            <span class="wc-badge ${badgeClass}">${statusLabel}</span>
+          </div>
+          ${proj.logline ? `<div style="font-size:12px;color:var(--sub);margin-bottom:10px;line-height:1.5;">${proj.logline}</div>` : ''}
+          <div class="wc-progress">
+            <div class="wc-track"><div class="wc-fill fill-blue" style="width:${totalPct}%"></div></div>
+          </div>
+          <div class="wc-footer">
+            <span class="wc-info">${eps.length ? eps.length+'화 · '+totalChars.toLocaleString()+'자' : '작가설정 중'} · ${latestEp?.updatedAt || proj.createdAt || '오늘'}</span>
+            <span class="wc-pct">${totalPct}%</span>
+          </div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // ── 미션 체크 (현재 프로젝트 기준) ──
+  const missionWorld = document.getElementById('mission-world');
+  const missionWorldText = document.getElementById('mission-world-text');
+  if (missionWorld) {
+    const done = !!(S.genres?.length && S.worlddesc && S.characters?.length);
+    missionWorld.className = 'mission-check' + (done ? ' done' : '');
+    if (missionWorldText) missionWorldText.className = 'mission-text' + (done ? ' done-text' : '');
+  }
+  const missionWrite = document.getElementById('mission-write');
+  const missionWriteText = document.getElementById('mission-write-text');
+  if (missionWrite) {
+    const { totalChars } = calcProjStats(S);
+    const done = totalChars >= 1000;
+    missionWrite.className = 'mission-check' + (done ? ' done' : '');
+    if (missionWriteText) missionWriteText.className = 'mission-text' + (done ? ' done-text' : '');
+  }
+
+  refreshWorkspaceCard();
+}
+
+
+function refreshWorkspaceCard() {
+  const grid = document.getElementById('ws-project-grid');
+  if (!grid) return;
+
+  const projects = DB.projects || [];
+
+  if (!projects.length) {
+    grid.innerHTML = `
+      <div style="background:var(--white);border-radius:var(--r-xl);border:1.5px dashed var(--border);padding:40px 20px;text-align:center;cursor:pointer;" onclick="openSheet('newproject')">
+        <div style="font-size:32px;margin-bottom:10px">📖</div>
+        <div style="font-size:15px;font-weight:700;color:var(--sub);margin-bottom:4px">첫 작품을 시작해보세요</div>
+        <div style="font-size:13px;color:var(--hint)">위 버튼을 눌러 새 작품을 만들어요</div>
+      </div>`;
+    return;
+  }
+
+  const themes = ['theme-1','theme-2','theme-3'];
+  const cards = projects.map((proj, idx) => {
+    const eps        = proj.episodes || [];
+    const totalChars = eps.reduce((sum, ep) => sum + (ep.manuscript?.length || 0), 0);
+    const doneEps    = eps.filter(ep => ep.status === 'done').length;
+    const settingItems = [proj.genres?.length, proj.moods?.length, proj.target, proj.era, proj.worlddesc, proj.characters?.length > 0, proj.logline, proj.plot];
+    const settingPct = Math.round(settingItems.filter(Boolean).length / settingItems.length * 25);
+    const writingPct = eps.length ? Math.min(50, Math.round(Math.min(totalChars,50000)/50000*50)) : 0;
+    const totalPct   = Math.min(100, settingPct + writingPct + Math.round(doneEps/Math.max(eps.length,1)*25));
+    const genres     = proj.genres?.length ? proj.genres.slice(0,2).join(' · ') : '장르 미설정';
+    const isCurrent  = idx === DB.currentIdx;
+    const theme      = themes[idx % themes.length];
+    return `
+    <div class="project-card" onclick="switchProject(${idx})" style="${isCurrent ? 'border:2px solid var(--blue);' : ''}">
+      <div class="pc-thumb ${theme}">
+        <div class="pc-thumb-glow glow-1"></div>
+        <div class="pc-thumb-glow glow-2"></div>
+        <div class="pc-thumb-title">${proj.projectTitle || '제목 미설정'}</div>
+        ${isCurrent ? '<div style="position:absolute;top:8px;right:8px;background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;">현재</div>' : ''}
+        <button onclick="event.stopPropagation(); confirmDeleteProject(${idx})" style="position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,0.35);border:none;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(4px);" title="삭제">
+          <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
+      </div>
+      <div class="pc-body">
+        <div class="pc-row">
+          <span class="pc-genre">${genres}</span>
+          <span class="pc-status status-writing">${eps.length ? eps.length+'화' : '설정 중'}</span>
+        </div>
+        <div class="pc-prog-row">
+          <div class="pc-prog-track"><div class="pc-prog-fill fill-blue" style="width:${totalPct}%"></div></div>
+          <span class="pc-prog-pct">${totalPct}%</span>
+        </div>
+        <div class="pc-meta-row">
+          <div class="pc-meta-item">
+            <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <span class="pc-meta-text">${doneEps}화 완성 · ${totalChars.toLocaleString()}자</span>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+
+  grid.innerHTML = cards + `
+    <div class="project-card" style="border-style:dashed;cursor:pointer;" onclick="openSheet('newproject')">
+      <div class="pc-thumb theme-3" style="background:none;border-bottom:1px dashed var(--border);">
+        <svg style="width:32px;height:32px;stroke:var(--hint);fill:none;stroke-width:1.5;stroke-linecap:round;" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </div>
+      <div class="pc-body">
+        <div style="text-align:center;padding:4px 0">
+          <div style="font-size:14px;font-weight:600;color:var(--hint)">새 작품 만들기</div>
+          <div style="font-size:12px;color:var(--hint);margin-top:2px">아이디어를 이야기로</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+
+
+function exportSettings() {
+  const data = localStorage.getItem(STORE_KEY);
+  if (!data || data === '{}') { showToast('저장된 설정이 없어요'); return; }
+
+  // 1순위: 파일 다운로드
+  try {
+    const blob = new Blob([data], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `모두의판타지_백업.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    showToast('내보내기 완료 ✓');
+  } catch(e) {
+    // 2순위: 클립보드 복사
+    navigator.clipboard.writeText(data).then(() => {
+      showToast('설정이 클립보드에 복사됐어요! 메모장에 붙여넣어 저장하세요.');
+    }).catch(() => {
+      // 3순위: 화면에 표시
+      showExportModal(data);
+    });
+  }
+}
+
+function showExportModal(data) {
+  const existing = document.getElementById('export-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'export-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:20px;width:100%;max-width:360px;">
+      <div style="font-size:15px;font-weight:700;margin-bottom:4px;">설정 백업 데이터</div>
+      <div style="font-size:12px;color:#6B7684;margin-bottom:12px;">아래 전체를 복사해서 메모장에 저장하세요</div>
+      <textarea id="export-textarea" readonly style="width:100%;height:160px;font-size:11px;border:1px solid #E5E8EB;border-radius:8px;padding:10px;resize:none;font-family:monospace;">${data}</textarea>
+      <button onclick="document.getElementById('export-textarea').select();document.execCommand('copy');showToast('복사됐어요 ✓');" style="width:100%;margin-top:10px;padding:12px;background:#3182F6;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">전체 복사</button>
+      <button onclick="document.getElementById('export-modal').remove();" style="width:100%;margin-top:8px;padding:12px;background:#F2F4F6;color:#6B7684;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">닫기</button>
+    </div>
+  `;
+  document.body.appendChild(modal);
+}
+
+function importSettings(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const parsed = JSON.parse(ev.target.result);
+      // 새 구조(projects 배열) 또는 구 구조 모두 처리
+      if (parsed.projects) {
+        DB = parsed;
+        DB.projects = DB.projects || [];
+        DB.currentIdx = DB.currentIdx ?? 0;
+      } else {
+        // 구 구조면 마이그레이션
+        DB = { projects: [parsed], currentIdx: 0 };
+      }
+      S = DB.projects[DB.currentIdx] || {};
+      ensureS();
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      refreshAll(); syncProjectHeader(); renderMyStatus(); refreshWorkspaceCard();
+      showToast('설정을 불러왔어요 ✓');
+    } catch { showToast('파일을 읽을 수 없어요'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+function resetSettings() {
+  if (!confirm('정말 현재 작품 설정을 초기화할까요?\n이 작업은 되돌릴 수 없어요.')) return;
+  S = { genres:[], moods:[], target:'', era:'', keywords:[],
+        worlddesc:'', characters:[], logline:'', plot:'', ep1start:'', projectTitle:'', episodes:[] };
+  DB.projects[DB.currentIdx] = S;
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+  refreshAll(); syncProjectHeader(); renderMyStatus();
+  showToast('초기화 완료');
+}
+
+function renderMyStatus() {
+  const el = document.getElementById('my-status-list');
+  if (!el) return;
+
+  const projects = DB.projects || [];
+
+  // 헤더 텍스트/배지 업데이트
+  const titleEl = document.getElementById('my-status-title');
+  const descEl  = document.getElementById('my-status-desc');
+  const badgeEl = document.getElementById('my-proj-count-badge');
+  if (titleEl) titleEl.textContent = projects.length > 1 ? '내 작품 현황' : '현재 저장 상태';
+  if (descEl)  descEl.textContent  = projects.length > 1 ? '모든 작품의 진행 상태를 한눈에 볼 수 있어요' : '지금 저장된 설정 항목이에요';
+  if (badgeEl) {
+    if (projects.length > 1) { badgeEl.style.display = ''; badgeEl.textContent = `총 ${projects.length}개 작품`; }
+    else { badgeEl.style.display = 'none'; }
+  }
+
+  if (projects.length === 0) {
+    el.innerHTML = `<div style="text-align:center;padding:20px 0;">
+      <div style="font-size:28px;margin-bottom:8px">📖</div>
+      <div style="font-size:13px;color:var(--hint);">아직 작품이 없어요</div>
+    </div>`;
+    return;
+  }
+
+  // 단일 작품 → 상세 row 뷰
+  if (projects.length === 1) {
+    const proj = projects[0];
+    const items = [
+      { label: '작품 제목',   val: proj.projectTitle },
+      { label: '장르',        val: proj.genres?.join(', ') },
+      { label: '분위기',      val: proj.moods?.join(', ') },
+      { label: '타겟 독자',   val: proj.target },
+      { label: '시대/배경',   val: proj.era },
+      { label: '핵심 키워드', val: proj.keywords?.join(', ') },
+      { label: '세계관 설명', val: proj.worlddesc ? proj.worlddesc.slice(0,22)+'…' : '' },
+      { label: '등장인물',    val: proj.characters?.length ? proj.characters.length+'명 등록됨' : '' },
+      { label: '한줄 소개',   val: proj.logline ? proj.logline.slice(0,22)+'…' : '' },
+      { label: '스토리 방향', val: proj.plot ? '작성됨' : '' },
+      { label: '1화 시작',    val: proj.ep1start },
+    ];
+    el.innerHTML = items.map((it, i) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 0;${i < items.length-1 ? 'border-bottom:1px solid var(--border);' : ''}">
+        <span style="font-size:13px;color:var(--sub);">${it.label}</span>
+        <span style="font-size:13px;font-weight:600;color:${it.val ? 'var(--text)' : 'var(--hint)'};">${it.val || '미설정'}</span>
+      </div>
+    `).join('');
+    return;
+  }
+
+  // 복수 작품 → 작품별 카드 리스트
+  el.innerHTML = projects.map((proj, idx) => {
+    const { eps, totalChars, doneEps, writingEps, totalPct } = calcProjStats(proj);
+    const isCurrent = idx === DB.currentIdx;
+    const genre = proj.genres?.length ? proj.genres.slice(0,2).join(' · ') : '장르 미설정';
+    const totalEps = eps.length;
+    const charStr = totalChars >= 10000
+      ? (totalChars / 10000).toFixed(1) + '만자'
+      : totalChars.toLocaleString() + '자';
+    const settingItems = [proj.genres?.length, proj.moods?.length, proj.target, proj.era,
+      proj.worlddesc, proj.characters?.length > 0, proj.logline, proj.plot];
+    const settingDone = settingItems.filter(Boolean).length;
+    const settingTotal = settingItems.length;
+
+    return `
+    <div style="border-radius:var(--r-md);border:1.5px solid ${isCurrent ? 'var(--blue)' : 'var(--border)'};background:${isCurrent ? 'var(--blue-light)' : 'var(--bg)'};padding:14px 16px;margin-bottom:${idx < projects.length-1 ? '10px' : '0'};">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;">
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px;">
+            ${isCurrent ? `<span style="font-size:10px;font-weight:700;color:var(--blue);background:#fff;border:1px solid var(--blue);border-radius:100px;padding:2px 7px;">현재 작업 중</span>` : `<span style="font-size:10px;font-weight:600;color:var(--hint);background:var(--white);border:1px solid var(--border);border-radius:100px;padding:2px 7px;">작품 ${idx+1}</span>`}
+          </div>
+          <div style="font-size:15px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${proj.projectTitle || '(제목 미설정)'}</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:2px;">${genre}</div>
+        </div>
+        <button onclick="switchProjectAndGo(${idx})" style="margin-left:10px;flex-shrink:0;padding:6px 12px;background:${isCurrent ? 'var(--blue)' : 'var(--white)'};color:${isCurrent ? '#fff' : 'var(--sub)'};border:1px solid ${isCurrent ? 'var(--blue)' : 'var(--border)'};border-radius:var(--r-sm);font-size:12px;font-weight:600;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">${isCurrent ? '작업 중' : '이동 →'}</button>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;">
+        <div style="background:var(--white);border-radius:var(--r-sm);padding:8px 10px;text-align:center;">
+          <div style="font-size:16px;font-weight:800;color:var(--text);">${doneEps}</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:1px;">완성 화</div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--r-sm);padding:8px 10px;text-align:center;">
+          <div style="font-size:16px;font-weight:800;color:var(--text);">${totalEps}</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:1px;">전체 화</div>
+        </div>
+        <div style="background:var(--white);border-radius:var(--r-sm);padding:8px 10px;text-align:center;">
+          <div style="font-size:16px;font-weight:800;color:var(--text);">${totalChars > 0 ? charStr : '0자'}</div>
+          <div style="font-size:10px;color:var(--hint);margin-top:1px;">총 원고량</div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <span style="font-size:11px;color:var(--sub);">전체 진행률</span>
+          <span style="font-size:11px;font-weight:700;color:${isCurrent ? 'var(--blue)' : 'var(--text)'};">${totalPct}%</span>
+        </div>
+        <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden;">
+          <div style="height:100%;width:${totalPct}%;background:${isCurrent ? 'var(--blue)' : 'var(--sub)'};border-radius:3px;transition:width 0.4s ease;"></div>
+        </div>
+        <div style="font-size:11px;color:var(--hint);margin-top:5px;">작가설정 ${settingDone}/${settingTotal} 항목 완성</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchProjectAndGo(idx) {
+  if (idx === DB.currentIdx) {
+    goTo('project');
+    return;
+  }
+  switchProject(idx);
+  showToast('✅ 작품이 전환됐어요');
+}
+
+// MY 화면 진입 시 상태 갱신
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* ────────────────────────────────────
+   초기 렌더
+──────────────────────────────────── */
+function syncProjectHeader() {
+  const genres = S.genres && S.genres.length ? S.genres.join(' · ') : '장르 미설정';
+  const title  = S.projectTitle || '내 첫 작품';
+  const logline = S.logline || '';
+  const gl = document.getElementById('proj-genre-label');
+  const tl = document.getElementById('proj-title-label');
+  const nt = document.getElementById('proj-nav-title');
+  const ll = document.getElementById('proj-logline-label');
+  if(gl) gl.textContent = genres;
+  if(tl) tl.textContent = title;
+  if(nt) nt.textContent = title;
+  if(ll) {
+    if(logline) { ll.textContent = logline; ll.style.display = 'block'; }
+    else { ll.style.display = 'none'; }
+  }
+
+  // ── 진행판 수치 업데이트 ──
+  const eps = S.episodes || [];
+  const plannedTotal = S.totalEps || 0;  // 작가가 설정한 총 예상 회차
+  const doneEps    = eps.filter(ep => ep.status === 'done').length;
+  const totalChars = eps.reduce((sum, ep) => sum + (ep.manuscript ? ep.manuscript.trim().length : 0), 0);
+  // 진행률: 예상회차 설정 시 → 완성화 / 예상회차, 미설정 시 → '-'
+  const pct = plannedTotal > 0 ? Math.min(100, Math.round((doneEps / plannedTotal) * 100)) : null;
+
+  const elPct   = document.getElementById('proj-stat-pct');
+  const elDone  = document.getElementById('proj-stat-done');
+  const elChars = document.getElementById('proj-stat-chars');
+  if(elPct)   elPct.textContent   = pct !== null ? `${pct}%` : '-';
+  if(elDone)  elDone.textContent  = plannedTotal > 0 ? `${doneEps}/${plannedTotal}화` : `${doneEps}화`;
+  if(elChars) elChars.textContent = totalChars >= 10000
+    ? `${(totalChars / 10000).toFixed(1)}만`
+    : totalChars.toLocaleString();
+}
+
+refreshAll();
+refreshHome();
+refreshEpList();
+refreshConfirmList();
+refreshDoneList();
+syncProjectHeader();
+
+</script>
+</body>
+</html>
