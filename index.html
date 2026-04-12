@@ -318,6 +318,7 @@ body {
 /* 스크롤 바디 */
 .scroll-body {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   background: var(--bg);
 }
@@ -1729,7 +1730,7 @@ body {
       </div>
       <div class="nav-title" id="writing-nav-title">1화 집필</div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span id="usage-badge" onclick="onBadgeClick()" style="font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;cursor:pointer;background:#EBF3FF;color:var(--blue);">💬 5회 무료</span>
+        <span id="usage-badge" onclick="onBadgeClick()" style="font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;cursor:pointer;background:#EBF3FF;color:var(--blue);">💬 3회 무료</span>
         <button class="nav-icon-btn" onclick="saveEpisode()" title="저장">
           <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         </button>
@@ -1818,7 +1819,7 @@ body {
       <div style="width:36px"></div>
     </div>
 
-    <div class="scroll-body" style="padding-bottom:90px">
+    <div class="scroll-body">
 
       <!-- ── 공지사항 / 업데이트 ── -->
       <div style="padding:20px 20px 0">
@@ -1838,10 +1839,20 @@ body {
 
           <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">
             <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+              <div style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px">업뎃</div>
+              <div>
+                <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">수익 모델 개편 · 집필권 구매 도입</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 집필 <b>3회</b> 제공. 초과 시 이용권(100원/1회, 990원/10회) 구매로 계속 사용할 수 있어요. 앱인토스 출시 시 결제 활성화 예정이에요.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden">
+            <div style="padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
               <div style="background:var(--bg);color:var(--sub);font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px;border:1px solid var(--border)">업뎃</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">집필 횟수 시스템 도입</div>
-                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 5회 제공 + 광고 시청으로 추가 충전 가능해요. 채팅 대화는 횟수 차감 없이 무제한이에요.</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 3회 제공. 채팅 대화는 횟수 차감 없이 무제한이에요.</div>
               </div>
             </div>
           </div>
@@ -1883,7 +1894,7 @@ body {
               <div style="font-size:13px;color:var(--sub);line-height:1.8">
                 집필공간에서 회차를 선택하면 AI와 채팅창이 열려요.<br>
                 <b>"이 장면으로 시작해줘"</b>처럼 방향을 알려주면 AI가 원고를 써줘요.<br>
-                채팅 대화는 무제한, <b>원고 생성은 하루 5회 무료</b>예요.<br>
+                채팅 대화는 무제한, <b>원고 생성은 하루 3회 무료</b>예요.<br>
                 5,000자가 되면 AI가 자동으로 마무리를 도와줘요.
               </div>
             </div>
@@ -1984,9 +1995,7 @@ body {
   <!-- ══════════════ 5. MY 화면 ══════════════ -->
   <div id="my" class="screen">
     <div class="toss-nav">
-      <div class="nav-back" onclick="goBack()">
-        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      </div>
+      <div style="width:36px"></div>
       <div class="nav-title">MY</div>
       <div style="width:36px"></div>
     </div>
@@ -2069,6 +2078,25 @@ body {
         </div>
       </div>
     </div>
+
+    <div class="tabbar">
+      <div class="tab-item" onclick="goTo('home')">
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        <span class="tab-label">홈</span>
+      </div>
+      <div class="tab-item" onclick="goTo('workspace')">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span class="tab-label">작업공간</span>
+      </div>
+      <div class="tab-item" onclick="goTo('info')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <span class="tab-label">정보</span>
+      </div>
+      <div class="tab-item active">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="tab-label">MY</span>
+      </div>
+    </div>
   </div>
 
   <!-- ══════════════ 광고 팝업 ══════════════ -->
@@ -2089,6 +2117,35 @@ body {
       광고 보기 →
     </button>
     <button onclick="closeAdPopup()" style="width:100%;padding:12px;background:none;color:var(--hint);border:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
+      닫기
+    </button>
+  </div>
+
+  <!-- ══════════════ IAP 구매 팝업 (집필권) ══════════════ -->
+  <div id="iap-backdrop" onclick="closeIAPPopup()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.55);z-index:200;"></div>
+  <div id="iap-popup" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:24px 24px 0 0;z-index:201;padding:28px 20px 40px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:36px;margin-bottom:12px">✨</div>
+      <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px">AI 집필권 구매</div>
+      <div style="font-size:14px;color:var(--sub);line-height:1.6">오늘 무료 집필 3회를 모두 사용했어요.<br>추가 이용권을 구매해 계속 쓰세요.</div>
+    </div>
+    <div style="display:flex;gap:10px;margin-bottom:16px;">
+      <button onclick="purchaseIAP(1)" style="flex:1;padding:16px 12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;">
+        <div style="font-size:22px;font-weight:800;color:var(--blue)">1회</div>
+        <div style="font-size:16px;font-weight:700;color:var(--blue);margin:4px 0">100원</div>
+        <div style="font-size:11px;color:var(--sub)">즉시 사용 가능</div>
+      </button>
+      <button onclick="purchaseIAP(10)" style="flex:1;padding:16px 12px;background:#FFF3EB;border:2px solid var(--orange);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;position:relative;">
+        <div style="position:absolute;top:-1px;right:-1px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 var(--r-lg) 0 10px;">추천</div>
+        <div style="font-size:22px;font-weight:800;color:#C05000">10회</div>
+        <div style="font-size:16px;font-weight:700;color:#C05000;margin:4px 0">990원</div>
+        <div style="font-size:11px;color:var(--sub)">회당 99원 · 10% 할인</div>
+      </button>
+    </div>
+    <div style="background:var(--bg);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--sub);text-align:center;line-height:1.7;">
+      💡 결제 기능은 <b>앱인토스 서비스 출시 시</b> 활성화돼요.<br>지금은 준비 중이에요.
+    </div>
+    <button onclick="closeIAPPopup()" style="width:100%;padding:12px;background:none;color:var(--hint);border:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
       닫기
     </button>
   </div>
@@ -3111,7 +3168,7 @@ ${ep.manuscript}
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-3-5-20241022',
         max_tokens: 500,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -3149,7 +3206,7 @@ ${ep.manuscript.trim().slice(0, 3000)}
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-3-5-20241022',
         max_tokens: 300,
         messages: [{ role: 'user', content: prompt }]
       })
@@ -3249,73 +3306,78 @@ function exportAllDone() {
 
 
 const API_KEY_STORE = 'mdpf_api_key';
-const USAGE_STORE   = 'mdpf_usage';
-const FREE_LIMIT    = 5;
-const DAY_MAX       = 50;
+const USAGE_STORE   = 'mdpf_usage';   // 하루 무료 집필 횟수 (날짜 리셋)
+const EXTRA_STORE   = 'mdpf_extra';   // 구매한 집필권 잔여 (날짜 무관, 영구 유지)
+const FREE_LIMIT    = 3;
 
-// ── 일일 사용량 관리 ──
+// ── 일일 무료 사용량 (자정에 리셋) ──
 function getUsageData() {
   const today = new Date().toISOString().slice(0, 10);
   try {
     const raw = JSON.parse(localStorage.getItem(USAGE_STORE) || '{}');
-    if (raw.date !== today) return { date: today, count: 0, extra: 0 };
+    if (raw.date !== today) return { date: today, count: 0 };
     return raw;
-  } catch { return { date: today, count: 0, extra: 0 }; }
+  } catch { return { date: today, count: 0 }; }
 }
 
 function saveUsageData(data) {
   localStorage.setItem(USAGE_STORE, JSON.stringify(data));
 }
 
-function getTodayCount() { return getUsageData().count; }
-function getTodayExtra() { return getUsageData().extra; }
-function getTodayTotal() { const d = getUsageData(); return d.count + d.extra; }
-
-function canUseAI() {
-  const d = getUsageData();
-  return (d.count + d.extra) < DAY_MAX;
+// ── 구매한 집필권 잔여 (자정에도 사라지지 않음) ──
+function getExtraCount() {
+  return Math.max(0, parseInt(localStorage.getItem(EXTRA_STORE) || '0', 10));
 }
+
+function saveExtraCount(n) {
+  localStorage.setItem(EXTRA_STORE, Math.max(0, n).toString());
+}
+
+function getTodayCount() { return getUsageData().count; }
+function getTodayExtra() { return getExtraCount(); }
 
 function isFreeLeft() {
   return getTodayCount() < FREE_LIMIT;
 }
 
+function canUseAI() {
+  return isFreeLeft() || getExtraCount() > 0;
+}
+
 function incrementUsage() {
   const d = getUsageData();
   if (d.count < FREE_LIMIT) {
+    // 무료 먼저 차감
     d.count++;
+    saveUsageData(d);
   } else {
-    d.extra = Math.max(0, d.extra - 1);
+    // 무료 소진 → 구매한 집필권 차감
+    saveExtraCount(getExtraCount() - 1);
   }
-  saveUsageData(d);
   updateUsageBadge();
 }
 
-function addExtraUsage() {
-  const d = getUsageData();
-  d.extra = Math.min(d.extra + 1, DAY_MAX - d.count);
-  saveUsageData(d);
+function addExtraUsage(n) {
+  saveExtraCount(getExtraCount() + (n || 1));
   updateUsageBadge();
 }
 
 function updateUsageBadge() {
   const badge = document.getElementById('usage-badge');
   if (!badge) return;
-  const d = getUsageData();
-  const used = d.count + d.extra;
-  const remaining = Math.max(0, DAY_MAX - used);
-  const freeLeft = Math.max(0, FREE_LIMIT - d.count);
+  const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
+  const extra = getExtraCount();
 
   if (freeLeft > 0) {
     badge.textContent = `💬 ${freeLeft}회 무료`;
     badge.style.color = 'var(--blue)';
     badge.style.background = '#EBF3FF';
-  } else if (remaining > 0) {
-    badge.textContent = `💬 +${d.extra}회`;
+  } else if (extra > 0) {
+    badge.textContent = `💬 +${extra}회 남음`;
     badge.style.color = '#FF6B00';
     badge.style.background = '#FFF3EB';
   } else {
-    badge.textContent = `💬 오늘 한도 초과`;
+    badge.textContent = `💬 집필권 소진`;
     badge.style.color = 'var(--hint)';
     badge.style.background = 'var(--border)';
   }
@@ -3333,7 +3395,7 @@ function onBadgeClick() {
     const left = FREE_LIMIT - getTodayCount();
     showToast(`오늘 무료 ${left}회 남았어요 😊`);
   } else {
-    showAdPopup();
+    showIAPPopup();
   }
 }
 
@@ -3746,7 +3808,7 @@ function updateWritingInputState() {
   if (!canWriteNow()) {
     sendBtn.disabled  = true;
     inputEl.disabled  = true;
-    inputEl.placeholder = '오늘 집필 횟수를 모두 사용했어요. 광고를 보고 충전하세요.';
+    inputEl.placeholder = '오늘 무료 집필 3회를 모두 사용했어요. 이용권을 구매하세요.';
     if (quickWrap) quickWrap.style.opacity = '0.35';
     // 차단 배너가 없으면 삽입
     if (!document.getElementById('wc-limit-banner')) {
@@ -3754,8 +3816,8 @@ function updateWritingInputState() {
       banner.id = 'wc-limit-banner';
       banner.style.cssText = 'background:#FFF3EB;border:1px solid #FFD0A0;border-radius:12px;padding:12px 14px;margin:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
       banner.innerHTML = `
-        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 5회를 모두 사용했어요 😅</span>
-        <button onclick="showAdPopupForWrite()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">광고 보기 →</button>`;
+        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 3회를 모두 사용했어요 😅</span>
+        <button onclick="showIAPPopup()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">구매하기 →</button>`;
       const msgEl = document.getElementById('wc-messages');
       const inputRow = document.querySelector('.wc-input-row');
       if (inputRow) inputRow.parentNode.insertBefore(banner, inputRow);
@@ -3770,29 +3832,35 @@ function updateWritingInputState() {
   }
 }
 
-function showAdPopupForWrite() {
-  showAdPopup(() => { updateWritingInputState(); });
+// ── IAP 팝업 (집필권 구매) ──
+function showIAPPopup() {
+  document.getElementById('iap-backdrop').style.display = 'block';
+  document.getElementById('iap-popup').style.display = 'block';
+}
+
+function closeIAPPopup() {
+  document.getElementById('iap-backdrop').style.display = 'none';
+  document.getElementById('iap-popup').style.display = 'none';
+}
+
+function purchaseIAP(count) {
+  // 앱인토스 연동 전 안내 (추후 실결제 연동 예정)
+  closeIAPPopup();
+  showToast('결제 기능은 앱인토스 서비스 출시 후 이용 가능해요 😊');
 }
 
 async function callWritingAI(userMsg) {
-  // ── 1차 관문: 총 한도 초과 ──
-  if (!canUseAI()) {
-    addWcMsgAnimated('ai', '오늘 최대 사용량(50회)에 도달했어요. 내일 다시 집필을 이어가요! 💤');
+  // 무료 or 구매한 집필권 모두 소진 → 차단
+  if (!canWriteNow()) {
     updateWritingInputState();
     return;
   }
-  // ── 2차 관문: 무료 + 충전분 모두 소진 → API 호출 완전 차단 ──
-  if (!canWriteNow()) {
-    updateWritingInputState(); // 배너 + 버튼 비활성화
-    return;
-  }
-
   _execWritingAI(userMsg);
 }
 
 async function _execWritingAI(userMsg) {
-  // 방어 코드: 혹시 이 시점에도 사용 불가면 중단
-  if (!canUseAI() || !canWriteNow()) {
+  // 방어 코드: 이 시점에도 사용 불가면 중단
+  if (!canWriteNow()) {
     updateWritingInputState();
     return;
   }
@@ -3812,7 +3880,7 @@ async function _execWritingAI(userMsg) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-haiku-3-5-20241022',
         max_tokens: 2000,
         system: systemPrompt,
         messages: trimmedHistory
