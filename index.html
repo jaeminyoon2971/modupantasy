@@ -2358,6 +2358,19 @@ function updateSettingCTA() {
 
 
 /* ────────────────────────────────────
+   유틸: HTML 이스케이프 (XSS 방지)
+──────────────────────────────────── */
+function esc(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/* ────────────────────────────────────
    로컬스토리지 설정 데이터
 ──────────────────────────────────── */
 const STORE_KEY = 'mdpf_settings';
@@ -2464,10 +2477,10 @@ function refreshAll() {
       return `
       <div class="char-mini-row" onclick="openCharDetail(${i})" style="cursor:pointer">
         <div class="char-mini">
-          <div class="char-avatar-sm ${avClass}" style="flex-shrink:0;font-size:10px;letter-spacing:-0.3px;">${avatarLabel}</div>
+          <div class="char-avatar-sm ${avClass}" style="flex-shrink:0;font-size:10px;letter-spacing:-0.3px;">${esc(avatarLabel)}</div>
           <div style="flex:1;min-width:0;">
-            <div class="char-mini-name">${c.name||'이름 없음'}</div>
-            <div class="char-mini-role">${roleLine || '역할 미설정'}</div>
+            <div class="char-mini-name">${esc(c.name)||'이름 없음'}</div>
+            <div class="char-mini-role">${esc(roleLine) || '역할 미설정'}</div>
           </div>
         </div>
       </div>`;
@@ -2572,23 +2585,23 @@ function openCharDetail(idx) {
   titleEl.textContent = '캐릭터 정보';
   body.innerHTML = `
     <div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)">
-      <div class="char-avatar-sm ${avClass}" style="width:48px;height:48px;font-size:16px">${initials}</div>
+      <div class="char-avatar-sm ${avClass}" style="width:48px;height:48px;font-size:16px">${esc(initials)}</div>
       <div>
-        <div style="font-size:18px;font-weight:700;color:var(--text)">${c.name||'이름 없음'}</div>
-        <div style="font-size:13px;color:var(--hint);margin-top:2px">${[c.role, c.age, c.grade].filter(Boolean).join(' · ') || '역할 미설정'}</div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">${esc(c.name)||'이름 없음'}</div>
+        <div style="font-size:13px;color:var(--hint);margin-top:2px">${esc([c.role, c.age, c.grade].filter(Boolean).join(' · ')) || '역할 미설정'}</div>
       </div>
     </div>
 
     ${c.personality || c.speech ? `
     <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-      ${c.personality ? `<span style="background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${c.personality}</span>` : ''}
-      ${c.speech ? `<span style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${c.speech}</span>` : ''}
+      ${c.personality ? `<span style="background:var(--blue-light);color:var(--blue);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${esc(c.personality)}</span>` : ''}
+      ${c.speech ? `<span style="background:var(--purple-light);color:var(--purple);font-size:12px;font-weight:600;padding:4px 10px;border-radius:100px">${esc(c.speech)}</span>` : ''}
     </div>` : ''}
 
     ${c.desc ? `
     <div style="background:var(--bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px">
       <div style="font-size:11px;font-weight:600;color:var(--hint);letter-spacing:0.05em;margin-bottom:6px">캐릭터 설명 & 비밀</div>
-      <div style="font-size:14px;color:var(--text);line-height:1.7">${c.desc}</div>
+      <div style="font-size:14px;color:var(--text);line-height:1.7">${esc(c.desc)}</div>
     </div>` : `
     <div style="background:var(--bg);border-radius:var(--r-md);padding:14px;margin-bottom:16px;text-align:center">
       <div style="font-size:13px;color:var(--hint)">아직 설명이 없어요</div>
@@ -3118,8 +3131,8 @@ function refreshConfirmList() {
     <div class="confirm-card">
       <div class="cc-header" onclick="toggleConfirmCard(${i})">
         <div class="cc-header-left">
-          <div class="cc-ep">${i+1}화 · ${ep.title||'제목없음'}</div>
-          <div class="cc-preview">${ep.manuscript.replace(/<[^>]+>/g,'').slice(0,36)}…</div>
+          <div class="cc-ep">${i+1}화 · ${esc(ep.title)||'제목없음'}</div>
+          <div class="cc-preview">${esc(ep.manuscript.replace(/<[^>]+>/g,'').slice(0,36))}…</div>
         </div>
         <div class="cc-header-right">
           <span class="cc-status ${isDone ? '' : r ? 'cc-analyzing' : 'cc-pending'}"
@@ -3264,7 +3277,7 @@ function refreshDoneList() {
       <div class="done-card-top">
         <div class="done-num">${epIdx+1}화</div>
         <div style="flex:1;min-width:0">
-          <div class="done-title">${ep.title || '제목 없음'}</div>
+          <div class="done-title">${esc(ep.title) || '제목 없음'}</div>
           <div class="done-ep-label">검수 완료 · ${ep.doneAt || ''}${avgScore ? ' · 평균 '+avgScore+'점' : ''}</div>
         </div>
       </div>
@@ -3923,7 +3936,20 @@ async function _execWritingAI(userMsg) {
       addWcMsgAnimated('ai', reply);
     }
   } catch(e) {
-    addWcMsg('ai', `오류가 났어요: ${e.message}<br>API 키를 확인해주세요.`);
+    const msg = e.message || '';
+    let errText;
+    if (msg.includes('429') || msg.includes('너무 많아요')) {
+      errText = '요청이 너무 많아요. 잠깐 기다렸다가 다시 시도해주세요 🙏';
+    } else if (msg.includes('401') || msg.includes('authentication') || msg.includes('api_key')) {
+      errText = 'API 키가 올바르지 않아요. Vercel 환경변수를 다시 확인해주세요.';
+    } else if (msg.includes('500') || msg.includes('서버 오류')) {
+      errText = '서버에 일시적인 오류가 생겼어요. 잠시 후 다시 시도해주세요.';
+    } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+      errText = '네트워크 연결을 확인해주세요.';
+    } else {
+      errText = '일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
+    }
+    addWcMsg('ai', `⚠️ ${errText}`);
     writingHistory.pop();
   }
   setWritingLoading(false);
@@ -4023,7 +4049,7 @@ function refreshEpList() {
         <span class="ep-num-badge ${badgeClass}">${i+1}화 · ${badgeLabel}</span>
         <span style="font-size:12px;color:var(--blue);font-weight:600;">${actionLabel}</span>
       </div>
-      <div class="ep-title-text">${ep.title || '제목 없음'}</div>
+      <div class="ep-title-text">${esc(ep.title) || '제목 없음'}</div>
       <div class="ep-progress-row">
         <div class="ep-track"><div class="ep-fill" style="width:${pct}%"></div></div>
         <span class="ep-char-count">${charCount.toLocaleString()}자${ep.updatedAt ? ' · '+ep.updatedAt : ''}</span>
