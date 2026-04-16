@@ -1699,6 +1699,19 @@ body {
           <span style="font-size:13px;font-weight:600;color:var(--sub)" id="done-count">완성된 회차 0편</span>
           <span style="font-size:13px;font-weight:600;color:var(--blue);cursor:pointer" onclick="exportAllDone()">전체 내보내기</span>
         </div>
+
+        <!-- 백업 안내 배너 -->
+        <div style="margin:0 20px 12px;background:linear-gradient(135deg,#FFF8E8,#FFF3DC);border:1.5px solid #FFD876;border-radius:14px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;">
+          <div style="font-size:22px;flex-shrink:0;margin-top:1px;">🔒</div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#7A5200;margin-bottom:4px;">소중한 작품을 안전하게 보관하세요</div>
+            <div style="font-size:12px;color:#9A6800;line-height:1.6;">앱 업데이트나 예기치 못한 오류로 데이터가 손실될 수 있어요. 완성된 회차는 즉시 파일로 저장해두세요.</div>
+            <button onclick="exportAllDone()" style="margin-top:10px;width:100%;padding:10px;background:#F5A800;border:none;border-radius:10px;font-size:13px;font-weight:700;color:#fff;cursor:pointer;font-family:'Noto Sans KR',sans-serif;letter-spacing:-0.2px;">
+              📥 전체 원고 백업 다운로드
+            </button>
+          </div>
+        </div>
+
         <div class="done-list" id="done-list"></div>
       </div>
 
@@ -3250,6 +3263,7 @@ function confirmDone(epIdx) {
   syncProjectHeader(); // 진행판 수치 즉시 반영
   switchTab(3);
   showToast('완성공간으로 이동했어요 🎉');
+  setTimeout(() => showToast('📥 파일 저장 버튼으로 원고를 백업해두세요!'), 2200);
   generateEpisodeSummary(epIdx);
 }
 
@@ -3289,7 +3303,7 @@ function refreshDoneList() {
       </div>
       <div class="done-bottom">
         <span class="done-chars">${(ep.manuscript?.length || 0).toLocaleString()}자</span>
-        <button onclick="exportEpisode(${epIdx})" class="done-export-btn">내보내기</button>
+        <button onclick="exportEpisode(${epIdx})" class="done-export-btn" style="background:var(--blue-light);color:var(--blue);border-color:var(--blue-light);">📥 파일 저장</button>
       </div>
     </div>`;
   }).join('');
