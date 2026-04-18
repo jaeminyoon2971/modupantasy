@@ -2791,6 +2791,14 @@ function goBack() {
   const prev = navHistory.pop();
   if(!prev) return;
   const current = document.querySelector('.screen.active');
+
+  // ✅ 집필 화면에서 나갈 때: 상태 초기화
+  if(current && current.id === 'writing') {
+    writingLoading = false;
+    writingHistory = [];
+    currentEpIdx = null;
+  }
+
   if(current) {
     current.style.transition = 'opacity 0.25s, transform 0.25s';
     current.style.opacity = '0';
