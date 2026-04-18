@@ -32,7 +32,7 @@ export default async function handler(req, res) {
 
     // [전부 실패] 친절한 에러 + 횟수 미차감
     return res.status(503).json({
-      error: 'AI 서버가 일시적으로 불안정해요. 사용 횟수는 차감되지 않았어요 🙏',
+      error: 'AI 서버가 일시적으로 불안정해요',
       deductCount: false,
       timestamp: new Date().toISOString(),
     });
