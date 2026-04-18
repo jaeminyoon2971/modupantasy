@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
 <title>모두의 판타지</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
@@ -34,23 +34,22 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
-  background: #1a1a2e;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
+  background: var(--bg);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   font-family: 'Noto Sans KR', sans-serif;
 }
 
-/* ── 폰 프레임 ── */
+/* ── 폰 프레임 → 전체화면 ── */
 .phone-frame {
-  width: 390px;
-  height: 780px;
+  width: 100%;
+  height: 100vh;
+  height: 100dvh;
   background: var(--bg);
-  border-radius: 44px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.1);
 }
 
 /* ── 화면 공통 ── */
@@ -254,7 +253,7 @@ body {
 .btn-primary {
   width: 100%;
   padding: 16px;
-  background: var(--blue);
+  background: linear-gradient(160deg, #4fa3f9 0%, var(--blue) 50%, #1558d6 100%);
   color: #fff;
   border: none;
   border-radius: var(--r-xl);
@@ -291,13 +290,16 @@ body {
    공통 상단 내비 (토스 표준)
 ══════════════════════════════════════ */
 .toss-nav {
-  background: var(--white);
+  background: rgba(255,255,255,0.94);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 0 20px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
   flex-shrink: 0;
   z-index: 10;
 }
@@ -322,6 +324,191 @@ body {
   overflow-y: auto;
   background: var(--bg);
 }
+
+/* ══ 온보딩 슬라이드 ══ */
+.ob-overlay {
+  display: none;
+  position: absolute; inset: 0; z-index: 400;
+  flex-direction: column; overflow: hidden;
+  background: #fff;
+}
+.ob-overlay.ob-visible { display: flex; }
+
+.ob-bg {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #EBF3FF 0%, #fff 65%);
+  transition: background 0.5s ease;
+  pointer-events: none;
+}
+.ob-header {
+  position: relative; z-index: 10;
+  display: flex; justify-content: flex-end;
+  padding: 56px 20px 0;
+}
+.ob-skip-btn {
+  background: rgba(0,0,0,0.06); border: none;
+  border-radius: 100px; padding: 7px 16px;
+  font-size: 13px; font-weight: 600; color: var(--sub);
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  transition: background 0.15s;
+}
+.ob-skip-btn:active { background: rgba(0,0,0,0.12); }
+
+/* 슬라이드 트랙 */
+.ob-outer {
+  position: relative; z-index: 2;
+  flex: 1; overflow: hidden;
+}
+.ob-track {
+  display: flex; height: 100%;
+  transition: transform 0.42s cubic-bezier(0.34, 1.2, 0.64, 1);
+  will-change: transform;
+}
+.ob-slide {
+  min-width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 20px 36px 16px;
+  text-align: center; gap: 0;
+}
+
+/* 아이콘 */
+.ob-icon {
+  width: 108px; height: 108px;
+  border-radius: 30px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 52px;
+  margin-bottom: 24px;
+  opacity: 0;
+  transform: scale(0.65) translateY(24px);
+  transition: none;
+}
+.ob-slide.ob-anim .ob-icon {
+  animation: obIconIn 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s forwards;
+}
+@keyframes obIconIn {
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.ob-icon-blue   { background: linear-gradient(135deg,#4fa3f9,#1558d6); box-shadow: 0 14px 44px rgba(49,130,246,0.32); }
+.ob-icon-orange { background: linear-gradient(135deg,#FF9F43,#FF6B00); box-shadow: 0 14px 44px rgba(255,107,0,0.28); }
+.ob-icon-green  { background: linear-gradient(135deg,#38d9a9,#12b886); box-shadow: 0 14px 44px rgba(18,184,134,0.28); }
+.ob-icon-purple { background: linear-gradient(135deg,#b07bfa,#7950f2); box-shadow: 0 14px 44px rgba(121,80,242,0.28); }
+
+/* 배지 */
+.ob-badge-row {
+  display: flex; gap: 6px; flex-wrap: wrap;
+  justify-content: center; margin-bottom: 20px;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-badge-row {
+  animation: obFadeUp 0.4s ease 0.22s forwards;
+}
+.ob-badge {
+  padding: 4px 11px; border-radius: 100px;
+  font-size: 12px; font-weight: 700;
+}
+.ob-badge-blue { background: #EBF3FF; color: var(--blue); }
+
+/* 스텝 pill */
+.ob-step-pill {
+  font-size: 11px; font-weight: 800; letter-spacing: 0.1em;
+  color: var(--blue); background: #EBF3FF;
+  padding: 4px 12px; border-radius: 100px;
+  margin-bottom: 16px;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-step-pill { animation: obFadeUp 0.4s ease 0.18s forwards; }
+.ob-step-green { color: #12b886; background: #E6FCF5; }
+.ob-step-purple { color: #7950f2; background: #F3F0FF; }
+
+/* 타이틀 / 설명 */
+.ob-title {
+  font-size: 26px; font-weight: 900;
+  color: var(--text); letter-spacing: -0.8px; line-height: 1.3;
+  margin-bottom: 12px;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-title { animation: obFadeUp 0.4s ease 0.25s forwards; }
+
+.ob-desc {
+  font-size: 15px; color: var(--sub); line-height: 1.75;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-desc { animation: obFadeUp 0.4s ease 0.32s forwards; }
+
+@keyframes obFadeUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 팁 카드 */
+.ob-tip-card {
+  margin-top: 22px;
+  display: flex; align-items: center; gap: 10px;
+  background: #EBF3FF; border-radius: 14px;
+  padding: 13px 18px; width: 100%;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-tip-card { animation: obFadeUp 0.4s ease 0.4s forwards; }
+.ob-tip-icon { font-size: 20px; flex-shrink: 0; }
+.ob-tip-text { font-size: 13px; color: var(--blue); line-height: 1.5; text-align: left; }
+
+/* 스탯 */
+.ob-stat-row {
+  margin-top: 22px;
+  display: flex; align-items: center;
+  background: var(--white); border-radius: 18px;
+  border: 1px solid var(--border); overflow: hidden;
+  width: 100%;
+  opacity: 0; transform: translateY(14px);
+}
+.ob-slide.ob-anim .ob-stat-row { animation: obFadeUp 0.4s ease 0.4s forwards; }
+.ob-stat { flex: 1; padding: 18px 12px; text-align: center; }
+.ob-stat-num { font-size: 24px; font-weight: 900; }
+.ob-stat-label { font-size: 12px; color: var(--sub); margin-top: 2px; }
+.ob-stat-blue .ob-stat-num { color: var(--blue); }
+.ob-stat-orange .ob-stat-num { color: var(--orange); }
+.ob-stat-divider { width: 1px; height: 40px; background: var(--border); flex-shrink: 0; }
+
+/* 시작 버튼 */
+.ob-start-btn {
+  margin-top: 26px; width: 100%;
+  padding: 18px;
+  background: linear-gradient(160deg, #4fa3f9 0%, #1558d6 100%);
+  color: #fff; border: none; border-radius: var(--r-xl);
+  font-size: 17px; font-weight: 800;
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  letter-spacing: -0.3px;
+  box-shadow: 0 8px 24px rgba(49,130,246,0.35);
+  opacity: 0; transform: translateY(14px);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ob-slide.ob-anim .ob-start-btn { animation: obFadeUp 0.4s ease 0.45s forwards; }
+.ob-start-btn:active { transform: scale(0.97); box-shadow: 0 4px 12px rgba(49,130,246,0.25); }
+
+/* 푸터 */
+.ob-footer {
+  position: relative; z-index: 2;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px;
+  padding-bottom: calc(20px + env(safe-area-inset-bottom, 0px));
+}
+.ob-dots { display: flex; gap: 7px; align-items: center; }
+.ob-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: #D1D5E0;
+  transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.ob-dot-active { width: 24px; border-radius: 4px; background: var(--blue); }
+.ob-next-btn {
+  background: var(--blue); color: #fff; border: none;
+  border-radius: 100px; padding: 13px 28px;
+  font-size: 15px; font-weight: 700;
+  font-family: 'Noto Sans KR', sans-serif; cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
+  box-shadow: 0 4px 16px rgba(49,130,246,0.3);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.ob-next-btn:active { transform: scale(0.95); box-shadow: 0 2px 8px rgba(49,130,246,0.2); }
 .scroll-body::-webkit-scrollbar { display: none; }
 
 /* ══════════════════════════════════════
@@ -330,9 +517,10 @@ body {
 #home { background: var(--bg); }
 
 .home-header {
-  background: var(--white);
+  background: linear-gradient(160deg, #ffffff 0%, #f5f8ff 100%);
   padding: 20px 20px 24px;
   border-bottom: 1px solid var(--border);
+  box-shadow: 0 2px 16px rgba(49,130,246,0.07);
 }
 .home-greeting { font-size: 13px; color: var(--sub); margin-bottom: 4px; }
 .home-name { font-size: 24px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; font-family: 'Noto Sans KR', sans-serif; }
@@ -470,7 +658,8 @@ body {
   background: var(--white);
   border-radius: var(--r-md);
   padding: 14px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset;
 }
 .stat-val { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 2px; }
 .stat-label { font-size: 11px; color: var(--sub); font-weight: 500; }
@@ -508,12 +697,15 @@ body {
 
 /* 하단 탭바 */
 .tabbar {
-  background: var(--white);
-  border-top: 1px solid var(--border);
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.07), 0 -1px 0 rgba(255,255,255,0.8) inset;
   display: flex;
   flex-shrink: 0;
-  height: 64px;
-  padding: 0 8px;
+  height: calc(64px + env(safe-area-inset-bottom, 0px));
+  padding: 0 8px env(safe-area-inset-bottom, 0px) 8px;
 }
 .tab-item {
   flex: 1;
@@ -577,10 +769,14 @@ body {
   border-radius: var(--r-xl);
   overflow: hidden;
   cursor: pointer;
-  border: 1px solid var(--border);
-  transition: transform 0.12s;
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.project-card:active { transform: scale(0.98); }
+.project-card:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.08);
+}
 
 .pc-thumb {
   height: 110px;
@@ -632,7 +828,7 @@ body {
 /* ══════════════════════════════════════
    4. 실제 프로젝트 화면 (탭 4개)
 ══════════════════════════════════════ */
-#project { background: var(--bg); overflow-y: auto; display: flex; flex-direction: column; }
+#project { background: var(--bg); overflow: hidden; display: flex; flex-direction: column; }
 #project .proj-tabs { position: sticky; top: 0; z-index: 5; background: var(--white); }
 #project .tabbar { flex-shrink: 0; }
 
@@ -692,7 +888,7 @@ body {
 }
 
 /* 탭 패널 */
-.tab-panels { overflow-y: auto; }
+.tab-panels { flex: 1; min-height: 0; overflow-y: auto; }
 .tab-panels::-webkit-scrollbar { display: none; }
 .tab-panel { display: none; padding: 0; }
 .tab-panel.active { display: block; }
@@ -908,11 +1104,15 @@ body {
   background: var(--white);
   border-radius: var(--r-lg);
   padding: 16px;
-  border: 1px solid var(--border);
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: 0 3px 14px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.9) inset;
   cursor: pointer;
-  transition: transform 0.12s;
+  transition: transform 0.15s, box-shadow 0.15s;
 }
-.done-card:active { transform: scale(0.98); }
+.done-card:active {
+  transform: scale(0.97) translateY(1px);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
 .done-card-top { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
 .done-num {
   width: 40px; height: 40px;
@@ -1678,6 +1878,19 @@ body {
 
       <!-- 집필공간 탭 -->
       <div class="tab-panel" id="panel-1">
+
+        <!-- AI 개연성 가이드 배너 -->
+        <div style="margin:14px 16px 4px;background:linear-gradient(135deg,#1a1a2e 0%,#302b63 100%);border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+          <div style="width:36px;height:36px;background:rgba(255,255,255,0.1);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">🧠</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:2px;">AI 개연성은 어떻게 유지되나요?</div>
+            <div style="font-size:11px;color:rgba(255,255,255,0.55);">검수 완료가 개연성 유지의 핵심이에요</div>
+          </div>
+          <button onclick="showWritingGuide()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:7px 14px;font-size:12px;font-weight:700;color:#fff;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            가이드 보기
+          </button>
+        </div>
+
         <div class="write-ep-list" id="ep-list">
           <div style="background:var(--white);border-radius:var(--r-lg);border:1px dashed var(--border);padding:32px 20px;text-align:center;">
             <div style="font-size:28px;margin-bottom:8px">📝</div>
@@ -1840,8 +2053,22 @@ body {
 
     <div class="scroll-body">
 
-      <!-- ── 공지사항 / 업데이트 ── -->
+      <!-- ── 사용 가이드 ── -->
       <div style="padding:20px 20px 0">
+        <div style="background:linear-gradient(135deg,#1a1a2e 0%,#302b63 100%);border-radius:var(--r-lg);padding:20px;display:flex;align-items:center;gap:16px;margin-bottom:20px;">
+          <div style="width:48px;height:48px;background:rgba(255,255,255,0.12);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">✨</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;color:#fff;margin-bottom:4px;">사용 가이드</div>
+            <div style="font-size:13px;color:rgba(255,255,255,0.6);line-height:1.5;">앱 사용법을 처음부터 다시<br>확인하고 싶을 때 눌러요</div>
+          </div>
+          <button onclick="showOnboarding()" style="background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);border-radius:100px;padding:9px 18px;font-size:13px;font-weight:700;color:#fff;font-family:'Noto Sans KR',sans-serif;cursor:pointer;white-space:nowrap;flex-shrink:0;">
+            다시보기
+          </button>
+        </div>
+      </div>
+
+      <!-- ── 공지사항 / 업데이트 ── -->
+      <div style="padding:0 20px 0">
         <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">📢 공지사항 · 업데이트</div>
         <div style="display:flex;flex-direction:column;gap:10px">
 
@@ -1851,7 +2078,7 @@ body {
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">v0.9 — 베타 서비스 시작</div>
                 <div style="font-size:12px;color:var(--sub);line-height:1.6">AI 집필 + 연속성 시스템 (에피소드 요약, 캐릭터 추적), 검수 시스템, 완성공간이 추가됐어요. 피드백은 언제든지 환영이에요 🙌</div>
-                <div style="font-size:11px;color:var(--hint);margin-top:6px">2025년</div>
+                <div style="font-size:11px;color:var(--hint);margin-top:6px">2026년 4월</div>
               </div>
             </div>
           </div>
@@ -1861,7 +2088,7 @@ body {
               <div style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px">업뎃</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">수익 모델 개편 · 집필권 구매 도입</div>
-                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 집필 <b>3회</b> 제공. 초과 시 이용권(100원/1회, 990원/10회) 구매로 계속 사용할 수 있어요. 앱인토스 출시 시 결제 활성화 예정이에요.</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.6">하루 무료 집필 <b>3회</b> 제공. 초과 시 이용권(100원/1회, 900원/10회) 구매로 계속 사용할 수 있어요. 앱인토스 출시 시 결제 활성화 예정이에요.</div>
               </div>
             </div>
           </div>
@@ -2020,8 +2247,52 @@ body {
     </div>
 
     <div class="scroll-body">
-      <!-- 서비스 연결 상태 -->
+
+      <!-- ── 집필권 현황 ── -->
       <div style="padding:20px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px">집필권 현황</div>
+
+        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;">
+          <!-- 무료 집필권 -->
+          <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;background:#EBF3FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🆓</div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text);">오늘 무료 집필권</div>
+                  <div style="font-size:12px;color:var(--sub);margin-top:1px;">매일 자정 초기화</div>
+                </div>
+              </div>
+              <div id="my-free-count" style="font-size:18px;font-weight:900;color:var(--blue);">3/3회</div>
+            </div>
+            <div style="margin-top:10px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
+              <div id="my-free-bar" style="height:100%;background:var(--blue);border-radius:4px;transition:width 0.4s;width:100%;"></div>
+            </div>
+          </div>
+
+          <!-- 유료 집필권 -->
+          <div style="padding:14px 16px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:36px;height:36px;background:#FFF3EB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+                <div>
+                  <div style="font-size:14px;font-weight:700;color:var(--text);">보유 집필권</div>
+                  <div style="font-size:12px;color:var(--sub);margin-top:1px;">충전 후 무기한 사용 가능</div>
+                </div>
+              </div>
+              <div id="my-paid-count" style="font-size:18px;font-weight:900;color:var(--orange);">0회</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 충전 버튼 -->
+        <button onclick="showIAPPopup()" style="width:100%;padding:15px;background:linear-gradient(160deg,#4fa3f9 0%,#1558d6 100%);color:#fff;border:none;border-radius:var(--r-lg);font-size:15px;font-weight:800;font-family:'Noto Sans KR',sans-serif;cursor:pointer;margin-bottom:20px;box-shadow:0 4px 16px rgba(49,130,246,0.3);">
+          ✨ 집필권 충전하기
+        </button>
+      </div>
+
+      <!-- 서비스 연결 상태 -->
+      <div style="padding:0 20px 0">
         <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px">AI 서비스 상태</div>
 
         <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;">
@@ -2157,8 +2428,8 @@ body {
       <button onclick="purchaseIAP(10)" style="flex:1;padding:16px 12px;background:#FFF3EB;border:2px solid var(--orange);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;position:relative;">
         <div style="position:absolute;top:-1px;right:-1px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 var(--r-lg) 0 10px;">추천</div>
         <div style="font-size:22px;font-weight:800;color:#C05000">10회</div>
-        <div style="font-size:16px;font-weight:700;color:#C05000;margin:4px 0">990원</div>
-        <div style="font-size:11px;color:var(--sub)">회당 99원 · 10% 할인</div>
+        <div style="font-size:16px;font-weight:700;color:#C05000;margin:4px 0">900원</div>
+        <div style="font-size:11px;color:var(--sub)">회당 90원 · 10% 할인</div>
       </button>
     </div>
     <div style="background:var(--bg);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--sub);text-align:center;line-height:1.7;">
@@ -2180,6 +2451,225 @@ body {
     <div class="sheet-body" id="sheet-body"></div>
   </div>
   <div class="toast" id="toast"></div>
+
+  <!-- ══════════════ AI 개연성 가이드 모달 ══════════════ -->
+  <div id="writing-guide-backdrop" onclick="closeWritingGuide()" style="display:none;position:absolute;inset:0;background:rgba(0,0,0,0.5);z-index:300;"></div>
+  <div id="writing-guide-modal" style="display:none;position:absolute;bottom:0;left:0;right:0;background:var(--white);border-radius:24px 24px 0 0;z-index:301;max-height:88%;overflow-y:auto;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));">
+
+    <!-- 핸들 -->
+    <div style="display:flex;justify-content:center;padding:12px 0 0;">
+      <div style="width:36px;height:4px;background:var(--border);border-radius:2px;"></div>
+    </div>
+
+    <!-- 헤더 -->
+    <div style="padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between;">
+      <div>
+        <div style="font-size:18px;font-weight:900;color:var(--text);letter-spacing:-0.4px;">AI 개연성 가이드</div>
+        <div style="font-size:12px;color:var(--sub);margin-top:3px;">AI가 내 소설을 어떻게 기억하고 이어가는지 알아보세요</div>
+      </div>
+      <button onclick="closeWritingGuide()" style="background:var(--bg);border:none;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;cursor:pointer;color:var(--sub);">✕</button>
+    </div>
+
+    <div style="padding:16px 20px;display:flex;flex-direction:column;gap:12px;">
+
+      <!-- 섹션 1: 검수가 핵심인 이유 -->
+      <div style="background:linear-gradient(135deg,#1a1a2e,#302b63);border-radius:16px;padding:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <span style="font-size:22px;">🔑</span>
+          <div style="font-size:15px;font-weight:800;color:#fff;">검수 완료가 개연성의 핵심이에요</div>
+        </div>
+        <div style="font-size:13px;color:rgba(255,255,255,0.75);line-height:1.8;">
+          회차를 집필한 뒤 <b style="color:#fff;">반드시 컨펌공간에서 검수를 완료</b>해주세요.<br>
+          검수가 완료될 때마다 AI가 그 화의 핵심 사건·등장인물·복선을 자동으로 요약해서 저장해요.<br><br>
+          <b style="color:#FFD700;">⚠️ 검수를 건너뛰면</b> AI가 그 화의 내용을 제대로 기억하지 못해 다음 화에서 개연성이 떨어질 수 있어요.
+        </div>
+      </div>
+
+      <!-- 섹션 2: AI가 기억하는 것들 -->
+      <div style="background:var(--white);border:1px solid var(--border);border-radius:16px;padding:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <span style="font-size:22px;">✅</span>
+          <div style="font-size:15px;font-weight:800;color:var(--text);">AI가 자동으로 기억하는 것들</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:#E6FCF5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">📖</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">전체 줄거리 흐름</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.6;">각 화의 핵심 사건과 감정선을 요약해서 누적 보관해요. 100화가 넘어도 큰 흐름은 놓치지 않아요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:#EBF3FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">👥</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">캐릭터 등장 이력</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.6;">어떤 인물이 몇 화에 등장했는지 추적해요. 갑자기 죽은 캐릭터가 살아나는 오류를 방지해요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:#FFF3EB;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">✍️</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">직전 화 문체와 감정선</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.6;">바로 이전 화의 원고 전체를 읽고 같은 문체·분위기로 이어서 써요. 갑작스러운 톤 변화를 방지해요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:flex-start;">
+            <div style="width:28px;height:28px;background:#F3F0FF;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">🌍</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:2px;">작가 설정 (장르·세계관·인물)</div>
+              <div style="font-size:12px;color:var(--sub);line-height:1.6;">작가설정 탭에 입력한 장르, 시놉시스, 등장인물 정보는 매 집필마다 자동으로 반영돼요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 섹션 3: AI가 못 잡는 것들 -->
+      <div style="background:#FFF8F8;border:1px solid #FFD0D0;border-radius:16px;padding:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <span style="font-size:22px;">⚠️</span>
+          <div style="font-size:15px;font-weight:800;color:#C0392B;">AI의 한계 — 직접 보완이 필요해요</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="color:#E74C3C;font-size:16px;flex-shrink:0;margin-top:1px;">✗</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:2px;">세밀한 복선 회수</div>
+              <div style="font-size:12px;color:#8B4444;line-height:1.6;">47화에서 흘린 작은 단서를 150화에서 정확히 회수하는 건 어려워요. 중요한 복선은 작가 메모에 직접 기록해두세요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="color:#E74C3C;font-size:16px;flex-shrink:0;margin-top:1px;">✗</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:2px;">특정 회차의 정확한 대사·묘사</div>
+              <div style="font-size:12px;color:#8B4444;line-height:1.6;">요약 과정에서 세밀한 표현은 압축돼요. "70화에서 주인공이 한 그 대사"를 정확히 기억하진 못해요.</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="color:#E74C3C;font-size:16px;flex-shrink:0;margin-top:1px;">✗</div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#C0392B;margin-bottom:2px;">검수를 건너뛴 회차</div>
+              <div style="font-size:12px;color:#8B4444;line-height:1.6;">검수하지 않은 화는 원고 앞부분 200자만 임시 사용해요. 개연성 품질이 크게 낮아질 수 있어요.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 섹션 4: 잘 쓰는 팁 -->
+      <div style="background:linear-gradient(135deg,#F0FFF4,#E6FCF5);border:1px solid #B2F2BB;border-radius:16px;padding:18px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+          <span style="font-size:22px;">💡</span>
+          <div style="font-size:15px;font-weight:800;color:#1B6B3A;">완성도를 높이는 3가지 습관</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="background:#2ECC71;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">1</div>
+            <div style="font-size:13px;color:#1B6B3A;line-height:1.6;"><b>집필 후 반드시 검수</b>하세요. AI가 내용을 기억하는 유일한 방법이에요.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="background:#2ECC71;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">2</div>
+            <div style="font-size:13px;color:#1B6B3A;line-height:1.6;"><b>중요한 복선은 작가 메모</b>에 직접 적어두세요. AI가 다음 화에 참고해요.</div>
+          </div>
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="background:#2ECC71;color:#fff;font-size:11px;font-weight:800;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">3</div>
+            <div style="font-size:13px;color:#1B6B3A;line-height:1.6;">AI가 생성한 원고는 <b>직접 읽고 수정</b>하세요. AI는 훌륭한 초안 작성자이지만, 최종 완성은 작가님의 손에 달려있어요.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 안내 문구 -->
+      <div style="text-align:center;padding:8px;font-size:12px;color:var(--hint);line-height:1.7;">
+        모두의 판타지 AI는 창작을 돕는 보조 도구예요.<br>
+        최종 원고의 완성도는 작가님이 직접 다듬어 완성해주세요 ✍️
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════ 온보딩 슬라이드 ══════════════ -->
+  <div id="onboarding-overlay" class="ob-overlay">
+
+    <!-- 배경 (슬라이드별 색상 전환) -->
+    <div id="ob-bg" class="ob-bg"></div>
+
+    <!-- 건너뛰기 -->
+    <div class="ob-header">
+      <button id="ob-skip-btn" onclick="finishOnboarding()" class="ob-skip-btn">건너뛰기</button>
+    </div>
+
+    <!-- 슬라이드 외부 컨테이너 (overflow:hidden) -->
+    <div id="ob-outer" class="ob-outer">
+      <!-- 내부 트랙 (이것만 translateX) -->
+      <div id="ob-track" class="ob-track">
+
+        <!-- 슬라이드 1: 환영 -->
+        <div class="ob-slide ob-anim">
+          <div class="ob-icon ob-icon-blue">✨</div>
+          <div class="ob-badge-row">
+            <span class="ob-badge ob-badge-blue">AI 창작</span>
+            <span class="ob-badge ob-badge-blue">매일 무료 3회</span>
+            <span class="ob-badge ob-badge-blue">장르 무제한</span>
+          </div>
+          <div class="ob-title">모두의 판타지에<br>오신 걸 환영해요!</div>
+          <div class="ob-desc">AI와 함께라면 누구나<br>웹소설 작가가 될 수 있어요</div>
+        </div>
+
+        <!-- 슬라이드 2: 작가설정 -->
+        <div class="ob-slide">
+          <div class="ob-icon ob-icon-orange">✍️</div>
+          <div class="ob-step-pill">STEP 1</div>
+          <div class="ob-title">작가 프로필을<br>먼저 설정해요</div>
+          <div class="ob-desc">장르·시놉시스·등장인물을 입력하면<br>AI가 나만의 스타일로 써드려요</div>
+          <div class="ob-tip-card">
+            <span class="ob-tip-icon">💡</span>
+            <span class="ob-tip-text"><b>작가설정 탭</b>에서 바로 시작할 수 있어요</span>
+          </div>
+        </div>
+
+        <!-- 슬라이드 3: AI 집필 -->
+        <div class="ob-slide">
+          <div class="ob-icon ob-icon-green">🤖</div>
+          <div class="ob-step-pill ob-step-green">STEP 2</div>
+          <div class="ob-title">AI와 함께<br>회차를 써내려가요</div>
+          <div class="ob-desc">방향만 알려주면 AI가 원고를 써드려요<br>직접 수정도 언제든 가능해요</div>
+          <div class="ob-stat-row">
+            <div class="ob-stat ob-stat-blue">
+              <div class="ob-stat-num">3회</div>
+              <div class="ob-stat-label">매일 무료</div>
+            </div>
+            <div class="ob-stat-divider"></div>
+            <div class="ob-stat ob-stat-orange">
+              <div class="ob-stat-num">∞</div>
+              <div class="ob-stat-label">이용권 충전 시</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 슬라이드 4: 완성 -->
+        <div class="ob-slide">
+          <div class="ob-icon ob-icon-purple">📚</div>
+          <div class="ob-step-pill ob-step-purple">STEP 3</div>
+          <div class="ob-title">완성하고<br>안전하게 저장해요</div>
+          <div class="ob-desc">AI 검수 점수까지 제공돼요<br>파일로 저장해 언제든 꺼내볼 수 있어요</div>
+          <button onclick="finishOnboarding()" class="ob-start-btn">지금 시작하기 🚀</button>
+        </div>
+
+      </div><!-- ob-track -->
+    </div><!-- ob-outer -->
+
+    <!-- 하단 푸터 -->
+    <div class="ob-footer">
+      <div id="ob-dots" class="ob-dots">
+        <div class="ob-dot ob-dot-active"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+      </div>
+      <button id="ob-next-btn" onclick="obNext()" class="ob-next-btn">
+        다음 <span>→</span>
+      </button>
+    </div>
+
+  </div><!-- onboarding-overlay -->
 
 </div><!-- phone-frame -->
 
@@ -2275,9 +2765,9 @@ function goTo(screenId) {
   setTimeout(()=>{
     document.getElementById(screenId).classList.add('active');
   }, 80);
-  if(screenId === 'my') setTimeout(() => { renderMyStatus(); showApiKeyStatus(false); }, 120);
+  if(screenId === 'my') setTimeout(() => { renderMyStatus(); showApiKeyStatus(false); updateMyCredits(); }, 120);
   if(screenId === 'project') setTimeout(() => syncProjectHeader(), 120);
-  if(screenId === 'home') setTimeout(refreshHome, 80);
+  if(screenId === 'home') { setTimeout(refreshHome, 80); setTimeout(checkOnboarding, 200); }
   if(screenId === 'workspace') setTimeout(refreshWorkspaceCard, 80);
 }
 /* ────────────────────────────────────
@@ -3265,6 +3755,8 @@ function confirmDone(epIdx) {
   showToast('완성공간으로 이동했어요 🎉');
   setTimeout(() => showToast('📥 파일 저장 버튼으로 원고를 백업해두세요!'), 2200);
   generateEpisodeSummary(epIdx);
+  // 10화마다 스토리 바이블 자동 갱신 (비동기, 조용히 실행)
+  setTimeout(() => updateStoryBibleIfNeeded(), 3000);
 }
 
 /* ────────────────────────────────────
@@ -3309,17 +3801,38 @@ function refreshDoneList() {
   }).join('');
 }
 
+function mobileDownload(content, filename) {
+  // Web Share API 지원 시 (iOS WebView 포함) 네이티브 공유 시트 사용
+  if (navigator.share && navigator.canShare) {
+    const file = new File([content], filename, { type: 'text/plain' });
+    if (navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file], title: filename })
+        .then(() => showToast('공유 완료 ✓'))
+        .catch(err => { if (err.name !== 'AbortError') _fallbackDownload(content, filename); });
+      return;
+    }
+  }
+  _fallbackDownload(content, filename);
+}
+function _fallbackDownload(content, filename) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 10000);
+  showToast('다운로드 완료 ✓');
+}
+
 function exportEpisode(epIdx) {
   const ep = S.episodes[epIdx];
   if (!ep?.manuscript) { showToast('원고가 없어요'); return; }
   const title = `${S.projectTitle || '모두의판타지'}_${epIdx+1}화_${ep.title || ''}`;
   const content = `${title}\n${'='.repeat(30)}\n\n${ep.manuscript}`;
-  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${title}.txt`;
-  a.click();
-  showToast('내보내기 완료 ✓');
+  mobileDownload(content, `${title}.txt`);
 }
 
 function exportAllDone() {
@@ -3329,12 +3842,10 @@ function exportAllDone() {
     const epIdx = S.episodes.indexOf(ep);
     return `${epIdx+1}화. ${ep.title || '제목없음'}\n${'─'.repeat(30)}\n\n${ep.manuscript}`;
   }).join('\n\n\n');
-  const blob = new Blob([`${S.projectTitle || '모두의판타지'}\n${'='.repeat(40)}\n\n${content}`], { type: 'text/plain;charset=utf-8' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `${S.projectTitle || '모두의판타지'}_전체.txt`;
-  a.click();
-  showToast('전체 내보내기 완료 ✓');
+  mobileDownload(
+    `${S.projectTitle || '모두의판타지'}\n${'='.repeat(40)}\n\n${content}`,
+    `${S.projectTitle || '모두의판타지'}_전체.txt`
+  );
 }
 
 
@@ -3540,20 +4051,80 @@ let currentEpIdx = null;
 let writingHistory = [];
 let writingLoading = false;
 
+/* ────────────────────────────────────
+   스토리 바이블 — 자동 갱신 (10화마다)
+──────────────────────────────────── */
+const RECENT_EP_COUNT = 10; // 최근 N화는 상세 요약 전달
+
+async function updateStoryBibleIfNeeded() {
+  const s = S;
+  const allEps = s.episodes || [];
+  const doneEps = allEps.filter(ep => ep.done);
+  const totalDone = doneEps.length;
+  if (totalDone < 11) return; // 10화 이하면 바이블 불필요
+
+  const lastBibleAt = s.storyBibleAt || 0;
+  if (totalDone - lastBibleAt < 10) return; // 마지막 갱신 후 10화 미만이면 스킵
+
+  // 스토리 바이블 생성 요청
+  const allSummaries = allEps
+    .map((ep, i) => ep.summary
+      ? `▶ ${i+1}화 「${ep.title||'제목없음'}」\n${ep.summary}`
+      : null)
+    .filter(Boolean)
+    .join('\n\n');
+
+  if (!allSummaries) return;
+
+  try {
+    const res = await fetch('https://modupantasy.vercel.app/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 800,
+        system: '당신은 웹소설 편집자입니다. 아래 회차별 요약을 읽고 전체 줄거리를 800자 이내로 압축 정리해주세요. 주요 사건, 인물 관계 변화, 복선, 현재 상황을 포함해야 합니다. 다른 설명 없이 줄거리 요약만 작성하세요.',
+        messages: [{ role: 'user', content: `다음 회차 요약들을 하나의 스토리 바이블로 압축해주세요:\n\n${allSummaries}` }]
+      })
+    });
+    const data = await res.json();
+    const bible = data.content?.[0]?.text || '';
+    if (bible) {
+      S.storyBible = bible;
+      S.storyBibleAt = totalDone;
+      saveDB();
+    }
+  } catch(e) { /* 실패해도 조용히 넘어감 */ }
+}
+
 function buildSystemPrompt() {
   const s = S;
   const epIdx = currentEpIdx;
   const allEps = s.episodes || [];
 
-  // ── 1. 전체 회차 요약 누적 (AI 자동 생성된 summary 사용) ──
-  const prevEpsWithSummary = allEps
-    .slice(0, epIdx)
-    .map((ep, i) => ({ ep, num: i + 1 }))
+  // ── 레이어 1: 스토리 바이블 (11화 이상일 때, 오래된 화 대체) ──
+  let bibleSection = '';
+  if (s.storyBible && epIdx >= RECENT_EP_COUNT) {
+    bibleSection = `\n[스토리 바이블 — 전체 줄거리 압축본]\n${s.storyBible}`;
+  }
+
+  // ── 레이어 2: 최근 10화 상세 요약 ──
+  const recentStart = Math.max(0, epIdx - RECENT_EP_COUNT);
+  // 바이블이 없으면 전체, 있으면 최근 10화만
+  const summaryRange = s.storyBible && epIdx >= RECENT_EP_COUNT
+    ? allEps.slice(recentStart, epIdx)
+    : allEps.slice(0, epIdx);
+
+  const prevEpsWithSummary = summaryRange
+    .map((ep, i) => ({ ep, num: recentStart + i + 1 }))
     .filter(({ ep }) => ep.summary || (ep.manuscript && ep.manuscript.length > 10));
 
   let prevEpSection = '';
   if (prevEpsWithSummary.length > 0) {
-    prevEpSection = '\n[이전 회차 요약 — 개연성 유지용]\n';
+    const label = s.storyBible && epIdx >= RECENT_EP_COUNT
+      ? `[최근 ${RECENT_EP_COUNT}화 요약 — 상세 개연성 유지]`
+      : '[이전 회차 요약 — 개연성 유지용]';
+    prevEpSection = `\n${label}\n`;
     prevEpSection += prevEpsWithSummary.map(({ ep, num }) => {
       const summary = ep.summary
         ? ep.summary
@@ -3563,7 +4134,7 @@ function buildSystemPrompt() {
     }).join('\n\n');
   }
 
-  // ── 2. 직전 회차 원고 전체 (문체/분위기 이어받기) ──
+  // ── 레이어 3: 직전 회차 원고 전체 (문체/분위기 이어받기) ──
   let prevFullSection = '';
   if (epIdx > 0) {
     const prevEp = allEps[epIdx - 1];
@@ -3648,6 +4219,7 @@ ${charAppearSection}
 - 한줄 소개: ${s.logline || '미설정'}
 - 전체 방향: ${s.plot || '미설정'}
 - 1화 시작: ${s.ep1start || '미설정'}
+${bibleSection}
 ${prevEpSection}
 ${prevFullSection}
 ${currentEpSection}
@@ -3919,14 +4491,31 @@ async function _execWritingAI(userMsg) {
         messages: trimmedHistory
       })
     });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      const errMsg = err.error?.message || `HTTP ${res.status}`;
-      if (res.status === 429) throw new Error('요청이 너무 많아요. 잠깐 기다렸다가 다시 시도해주세요.');
-      if (res.status === 400) throw new Error(`요청 오류: ${errMsg}`);
-      throw new Error(errMsg);
-    }
+
     const data = await res.json();
+
+    // ⚠️ API 오류 확인 (성공 응답 vs 에러 응답)
+    if (!res.ok || data.error) {
+      const shouldDeduct = data.deductCount !== false;  // 명시적으로 false가 아니면 차감
+      const errMsg = data.error || `HTTP ${res.status}`;
+
+      if (!shouldDeduct) {
+        // 횟수 차감 안 함 (서버 오류)
+        addWcMsg('ai', `⚠️ ${errMsg}<br>사용 횟수는 차감되지 않았어요 🙏`);
+        writingHistory.pop();
+      } else {
+        // 횟수 차감 (사용자 요청 오류)
+        if (res.status === 400) {
+          addWcMsg('ai', `⚠️ 요청 오류: ${errMsg}`);
+        } else {
+          addWcMsg('ai', `⚠️ ${errMsg}`);
+        }
+        writingHistory.pop();
+        incrementUsage();  // 400 에러는 유저 책임이므로 차감
+      }
+      return;
+    }
+
     const reply = data.content?.[0]?.text || '오류가 발생했어요. 다시 시도해주세요.';
     writingHistory.push({ role: 'assistant', content: reply });
     const chatText = extractManuscript(reply);
@@ -3957,19 +4546,11 @@ async function _execWritingAI(userMsg) {
     }
   } catch(e) {
     const msg = e.message || '';
-    let errText;
-    if (msg.includes('429') || msg.includes('너무 많아요')) {
-      errText = '요청이 너무 많아요. 잠깐 기다렸다가 다시 시도해주세요 🙏';
-    } else if (msg.includes('401') || msg.includes('authentication') || msg.includes('api_key')) {
-      errText = 'API 키가 올바르지 않아요. Vercel 환경변수를 다시 확인해주세요.';
-    } else if (msg.includes('500') || msg.includes('서버 오류')) {
-      errText = '서버에 일시적인 오류가 생겼어요. 잠시 후 다시 시도해주세요.';
-    } else if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
+    let errText = '일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
+    if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
       errText = '네트워크 연결을 확인해주세요.';
-    } else {
-      errText = '일시적인 오류가 발생했어요. 잠시 후 다시 시도해주세요.';
     }
-    addWcMsg('ai', `⚠️ ${errText}`);
+    addWcMsg('ai', `⚠️ ${errText}<br>사용 횟수는 차감되지 않았어요 🙏`);
     writingHistory.pop();
   }
   setWritingLoading(false);
@@ -4447,6 +5028,179 @@ function resetSettings() {
   localStorage.setItem(STORE_KEY, JSON.stringify(DB));
   refreshAll(); syncProjectHeader(); renderMyStatus();
   showToast('초기화 완료');
+}
+
+/* ────────────────────────────────────
+   온보딩 슬라이드
+──────────────────────────────────── */
+const ONBOARDING_STORE = 'mdpf_onboarding_done';
+let obCurrentSlide = 0;
+const OB_TOTAL = 4;
+
+// 슬라이드별 배경 그라디언트
+const OB_BG = [
+  'linear-gradient(160deg,#EBF3FF 0%,#fff 65%)',
+  'linear-gradient(160deg,#FFF3EB 0%,#fff 65%)',
+  'linear-gradient(160deg,#E6FCF5 0%,#fff 65%)',
+  'linear-gradient(160deg,#F3F0FF 0%,#fff 65%)',
+];
+
+function checkOnboarding() {
+  if (!localStorage.getItem(ONBOARDING_STORE)) {
+    showOnboarding();
+  }
+}
+
+function showOnboarding() {
+  obCurrentSlide = 0;
+  const overlay = document.getElementById('onboarding-overlay');
+  overlay.classList.add('ob-visible');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.35s ease';
+  // 레이아웃이 완전히 계산된 뒤에 슬라이드 렌더링 (offsetWidth가 0이 되는 것 방지)
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+      renderObSlide(false);
+      initObSwipe();
+    });
+  });
+}
+
+function renderObSlide(animate) {
+  // ── 내부 트랙 이동 (핵심: outer가 아닌 track을 이동) ──
+  const outer = document.getElementById('ob-outer');
+  const track = document.getElementById('ob-track');
+  if (track && outer) {
+    const w = outer.offsetWidth;
+    track.style.transform = `translateX(-${obCurrentSlide * w}px)`;
+  }
+
+  // ── 배경색 전환 ──
+  const bg = document.getElementById('ob-bg');
+  if (bg) bg.style.background = OB_BG[obCurrentSlide];
+
+  // ── 도트 업데이트 ──
+  document.querySelectorAll('.ob-dot').forEach((d, i) => {
+    d.classList.toggle('ob-dot-active', i === obCurrentSlide);
+  });
+
+  // ── 다음 버튼 / 건너뛰기 숨김 처리 ──
+  const nextBtn = document.getElementById('ob-next-btn');
+  const skipBtn = document.getElementById('ob-skip-btn');
+  const isLast = obCurrentSlide === OB_TOTAL - 1;
+  if (nextBtn) nextBtn.style.display = isLast ? 'none' : 'flex';
+  if (skipBtn) skipBtn.style.display = isLast ? 'none' : 'block';
+
+  // ── 현재 슬라이드 애니메이션 트리거 ──
+  const slides = document.querySelectorAll('.ob-slide');
+  slides.forEach((s, i) => {
+    if (i === obCurrentSlide) {
+      s.classList.remove('ob-anim');
+      void s.offsetWidth; // reflow로 애니메이션 리셋
+      s.classList.add('ob-anim');
+    } else {
+      s.classList.remove('ob-anim');
+    }
+  });
+}
+
+function obNext() {
+  if (obCurrentSlide < OB_TOTAL - 1) {
+    obCurrentSlide++;
+    renderObSlide(true);
+  }
+}
+
+function finishOnboarding() {
+  localStorage.setItem(ONBOARDING_STORE, '1');
+  const overlay = document.getElementById('onboarding-overlay');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.3s ease';
+  setTimeout(() => {
+    overlay.classList.remove('ob-visible');
+    overlay.style.opacity = '';
+    overlay.style.transition = '';
+    // 모든 슬라이드 anim 클래스 제거
+    document.querySelectorAll('.ob-slide').forEach(s => s.classList.remove('ob-anim'));
+  }, 300);
+}
+
+// ── 스와이프 제스처 ──
+function initObSwipe() {
+  const outer = document.getElementById('ob-outer');
+  if (!outer || outer._swipeInit) return;
+  outer._swipeInit = true;
+  let startX = 0, startY = 0, isDrag = false;
+
+  outer.addEventListener('touchstart', e => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDrag = false;
+  }, { passive: true });
+
+  outer.addEventListener('touchmove', e => {
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (Math.abs(dx) > Math.abs(dy)) isDrag = true;
+  }, { passive: true });
+
+  outer.addEventListener('touchend', e => {
+    if (!isDrag) return;
+    const dx = e.changedTouches[0].clientX - startX;
+    if (dx < -50 && obCurrentSlide < OB_TOTAL - 1) { obCurrentSlide++; renderObSlide(true); }
+    else if (dx > 50 && obCurrentSlide > 0) { obCurrentSlide--; renderObSlide(true); }
+  });
+}
+
+/* ────────────────────────────────────
+   AI 개연성 가이드 모달
+──────────────────────────────────── */
+function showWritingGuide() {
+  document.getElementById('writing-guide-backdrop').style.display = 'block';
+  document.getElementById('writing-guide-modal').style.display = 'block';
+  // 애니메이션
+  const modal = document.getElementById('writing-guide-modal');
+  modal.style.transform = 'translateY(100%)';
+  modal.style.transition = 'transform 0.35s cubic-bezier(0.34,1.1,0.64,1)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    modal.style.transform = 'translateY(0)';
+  }));
+}
+function closeWritingGuide() {
+  const modal = document.getElementById('writing-guide-modal');
+  modal.style.transform = 'translateY(100%)';
+  setTimeout(() => {
+    document.getElementById('writing-guide-backdrop').style.display = 'none';
+    modal.style.display = 'none';
+    modal.style.transform = '';
+    modal.style.transition = '';
+  }, 300);
+}
+
+/* ────────────────────────────────────
+   MY탭 집필권 현황 업데이트
+──────────────────────────────────── */
+function updateMyCredits() {
+  const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
+  const paid = getExtraCount();
+
+  const freeEl = document.getElementById('my-free-count');
+  const paidEl = document.getElementById('my-paid-count');
+  const freeBar = document.getElementById('my-free-bar');
+
+  if (freeEl) {
+    freeEl.textContent = `${freeLeft}/${FREE_LIMIT}회`;
+    freeEl.style.color = freeLeft > 0 ? 'var(--blue)' : 'var(--hint)';
+  }
+  if (paidEl) {
+    paidEl.textContent = `${paid}회`;
+    paidEl.style.color = paid > 0 ? 'var(--orange)' : 'var(--hint)';
+  }
+  if (freeBar) {
+    freeBar.style.width = `${(freeLeft / FREE_LIMIT) * 100}%`;
+    freeBar.style.background = freeLeft > 0 ? 'var(--blue)' : 'var(--border)';
+  }
 }
 
 function renderMyStatus() {
