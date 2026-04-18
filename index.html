@@ -4463,6 +4463,9 @@ function purchaseIAP(count) {
 }
 
 async function callWritingAI(userMsg) {
+  // ✅ 이미 로딩 중이면 중복 요청 방지
+  if (writingLoading) return;
+
   // 무료 or 구매한 집필권 모두 소진 → 차단
   if (!canWriteNow()) {
     updateWritingInputState();
@@ -4521,6 +4524,8 @@ async function _execWritingAI(userMsg) {
         writingHistory.pop();
         incrementUsage();  // 400 에러는 유저 책임이므로 차감
       }
+      setWritingLoading(false);
+      updateWritingInputState();
       return;
     }
 
