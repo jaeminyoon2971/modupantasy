@@ -3861,6 +3861,38 @@ const API_KEY_STORE = 'mdpf_api_key';
 const USAGE_STORE   = 'mdpf_usage';   // 하루 무료 집필 횟수 (날짜 리셋)
 const EXTRA_STORE   = 'mdpf_extra';   // 구매한 집필권 잔여 (날짜 무관, 영구 유지)
 const FREE_LIMIT    = 1;
+const AD_STORE      = 'mdpf_ad_count';  // 광고 시청 횟수 (일일 리셋, 최대 2회)
+const MAX_AD_COUNT  = 2;                // 광고 최대 시청 횟수
+
+// ── 일일 광고 시청 횟수 (자정에 리셋) ──
+function getAdCount() {
+  const today = new Date().toISOString().slice(0, 10);
+  try {
+    const raw = JSON.parse(localStorage.getItem(AD_STORE) || '{}');
+    if (raw.date !== today) return { date: today, count: 0 };
+    return raw;
+  } catch { return { date: today, count: 0 }; }
+}
+
+function saveAdCount(data) {
+  localStorage.setItem(AD_STORE, JSON.stringify(data));
+}
+
+function getTodayAdCount() { return getAdCount().count; }
+
+function canWatchAd() {
+  return getTodayAdCount() < MAX_AD_COUNT;
+}
+
+function incrementAdCount() {
+  const d = getAdCount();
+  if (d.count < MAX_AD_COUNT) {
+    d.count++;
+    saveAdCount(d);
+    return true;
+  }
+  return false;
+}
 
 // ── 일일 무료 사용량 (자정에 리셋) ──
 function getUsageData() {
@@ -4428,9 +4460,18 @@ function updateWritingInputState() {
       const banner = document.createElement('div');
       banner.id = 'wc-limit-banner';
       banner.style.cssText = 'background:#FFF3EB;border:1px solid #FFD0A0;border-radius:12px;padding:12px 14px;margin:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
-      banner.innerHTML = `
-        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅</span>
-        <button onclick="showIAPPopup()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">구매하기 →</button>`;
+
+      // 광고 보기 가능하면 광고 버튼 표시
+      if (canWatchAd()) {
+        const adLeft = MAX_AD_COUNT - getTodayAdCount();
+        banner.innerHTML = `
+          <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅<br><span style="font-size:11px;">📺 광고 ${adLeft}회 시청으로 집필 ${adLeft}회 추가!</span></span>
+          <button onclick="showAdModal()" style="background:#7B61FF;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">광고 보기 ▶</button>`;
+      } else {
+        banner.innerHTML = `
+          <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅</span>
+          <button onclick="showIAPPopup()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">구매하기 →</button>`;
+      }
       const msgEl = document.getElementById('wc-messages');
       const inputRow = document.querySelector('.wc-input-row');
       if (inputRow) inputRow.parentNode.insertBefore(banner, inputRow);
@@ -4460,6 +4501,67 @@ function purchaseIAP(count) {
   // 앱인토스 연동 전 안내 (추후 실결제 연동 예정)
   closeIAPPopup();
   showToast('결제 기능은 앱인토스 서비스 출시 후 이용 가능해요 😊');
+}
+
+// ── 광고 보기 모달 ──
+function showAdModal() {
+  const backdrop = document.createElement('div');
+  backdrop.id = 'ad-backdrop';
+  backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:20px;padding:40px 20px;text-align:center;max-width:300px;box-shadow:0 10px 40px rgba(0,0,0,0.3);';
+  modal.innerHTML = `
+    <div style="font-size:48px;margin-bottom:16px;">📺</div>
+    <div style="font-size:16px;font-weight:700;color:#191F28;margin-bottom:12px;">광고 시청 중...</div>
+    <div style="font-size:13px;color:#6B7684;margin-bottom:24px;">이 과정은 자동으로 진행됩니다 🎬</div>
+    <div style="height:4px;background:#E5E8EB;border-radius:2px;overflow:hidden;">
+      <div id="ad-progress" style="height:100%;background:#3182F6;width:0%;transition:width 0.1s linear;"></div>
+    </div>
+    <div style="font-size:12px;color:#6B7684;margin-top:12px;"><span id="ad-timer">3</span>초</div>
+  `;
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+
+  // 3초 진행 표시
+  let elapsed = 0;
+  const interval = setInterval(() => {
+    elapsed += 0.1;
+    const progress = (elapsed / 3) * 100;
+    document.getElementById('ad-progress').style.width = progress + '%';
+    document.getElementById('ad-timer').textContent = Math.ceil(3 - elapsed);
+
+    if (elapsed >= 3) {
+      clearInterval(interval);
+      completeAd(backdrop);
+    }
+  }, 100);
+}
+
+function completeAd(backdrop) {
+  // 배경 제거
+  if (backdrop) backdrop.remove();
+
+  // 광고 횟수 증가
+  incrementAdCount();
+
+  // 무료 충전 (구매한 집필권에 +1)
+  const before = getTodayExtra();
+  saveExtraCount(before + 1);
+  updateUsageBadge();
+
+  // 안내 토스트
+  const remaining = MAX_AD_COUNT - getTodayAdCount();
+  if (remaining > 0) {
+    showToast(`✨ 집필 1회 충전되었어요! (광고 ${remaining}회 남음)`);
+  } else {
+    showToast(`✨ 집필 1회 충전되었어요! (오늘 한도 도달)`);
+  }
+
+  // 배너 업데이트
+  const banner = document.getElementById('wc-limit-banner');
+  if (banner) banner.remove();
+  updateWritingInputState();
 }
 
 async function callWritingAI(userMsg) {
