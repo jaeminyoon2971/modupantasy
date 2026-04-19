@@ -2241,7 +2241,9 @@ body {
   <!-- ══════════════ 5. MY 화면 ══════════════ -->
   <div id="my" class="screen">
     <div class="toss-nav">
-      <div style="width:36px"></div>
+      <div class="nav-back" onclick="goBack()">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
       <div class="nav-title">MY</div>
       <div style="width:36px"></div>
     </div>
@@ -2314,14 +2316,14 @@ body {
 
         <div style="background:var(--blue-light);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;">
           <div style="font-size:18px;flex-shrink:0">💡</div>
-          <div style="font-size:13px;color:var(--blue);line-height:1.6;">파일을 새로 받으면 설정이 초기화될 수 있어요. <b>내보내기</b>로 백업해두고, 새 파일에서 <b>불러오기</b>로 복원하세요.</div>
+          <div style="font-size:13px;color:var(--blue);line-height:1.6;">당신의 작가 프로필, 캐릭터, 글쓰기 스타일 등 <b>모든 작가설정</b>을 백업할 수 있어요. 새로운 앱에서 불러오면 모든 프로젝트에 적용됩니다.</div>
         </div>
 
         <!-- 내보내기 -->
         <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
           <div style="padding:16px;border-bottom:1px solid var(--border);">
             <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">설정 내보내기</div>
-            <div style="font-size:13px;color:var(--sub);">현재 작가설정 전체를 파일로 저장해요</div>
+            <div style="font-size:13px;color:var(--sub);">지금까지 설정한 모든 작가정보를 백업 파일로 저장합니다</div>
           </div>
           <div style="padding:14px 16px;">
             <button onclick="exportSettings()" style="width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r-md);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
@@ -2334,7 +2336,7 @@ body {
         <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:10px;">
           <div style="padding:16px;border-bottom:1px solid var(--border);">
             <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:4px;">설정 불러오기</div>
-            <div style="font-size:13px;color:var(--sub);">내보낸 .json 파일을 선택해서 복원해요</div>
+            <div style="font-size:13px;color:var(--sub);">백업된 설정 파일을 불러오면 모든 프로젝트에 적용됩니다</div>
           </div>
           <div style="padding:14px 16px;">
             <label style="display:block;width:100%;padding:13px;background:var(--bg);border:1.5px dashed var(--border);border-radius:var(--r-md);font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;cursor:pointer;text-align:center;color:var(--sub);">
@@ -5126,26 +5128,54 @@ function exportSettings() {
   const data = localStorage.getItem(STORE_KEY);
   if (!data || data === '{}') { showToast('저장된 설정이 없어요'); return; }
 
-  // 1순위: 파일 다운로드
-  try {
-    const blob = new Blob([data], { type: 'application/json' });
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `모두의판타지_백업.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
-    showToast('내보내기 완료 ✓');
-  } catch(e) {
-    // 2순위: 클립보드 복사
-    navigator.clipboard.writeText(data).then(() => {
-      showToast('설정이 클립보드에 복사됐어요! 메모장에 붙여넣어 저장하세요.');
-    }).catch(() => {
-      // 3순위: 화면에 표시
-      showExportModal(data);
-    });
+  // 모바일에서 Web Share API 지원하는지 확인
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+  if (isMobile && navigator.share) {
+    // 1순위 (모바일): Web Share API 사용
+    try {
+      const blob = new Blob([data], { type: 'application/json' });
+      const file = new File([blob], '모두의판타지_백업.json', { type: 'application/json' });
+      navigator.share({
+        files: [file],
+        title: '모두의판타지 설정 백업',
+        text: '설정 백업 파일입니다'
+      }).then(() => {
+        showToast('공유 완료 ✓');
+      }).catch((err) => {
+        if (err.name !== 'AbortError') {
+          fallbackToClipboard(data);
+        }
+      });
+    } catch(e) {
+      fallbackToClipboard(data);
+    }
+  } else {
+    // 1순위 (데스크톱): 파일 다운로드
+    try {
+      const blob = new Blob([data], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `모두의판타지_백업.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      showToast('내보내기 완료 ✓');
+    } catch(e) {
+      fallbackToClipboard(data);
+    }
   }
+}
+
+function fallbackToClipboard(data) {
+  // 2순위: 클립보드 복사
+  navigator.clipboard.writeText(data).then(() => {
+    showToast('설정이 클립보드에 복사됐어요! 메모장에 붙여넣어 저장하세요.');
+  }).catch(() => {
+    // 3순위: 화면에 표시
+    showExportModal(data);
+  });
 }
 
 function showExportModal(data) {
