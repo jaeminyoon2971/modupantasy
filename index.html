@@ -4021,7 +4021,7 @@ const MAX_AD_COUNT  = 2;                // 광고 최대 시청 횟수
 
 // ── 일일 광고 시청 횟수 (자정에 리셋) ──
 function getAdCount() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString('ko-KR');
   try {
     const raw = JSON.parse(localStorage.getItem(AD_STORE) || '{}');
     if (raw.date !== today) return { date: today, count: 0 };
@@ -4051,7 +4051,7 @@ function incrementAdCount() {
 
 // ── 일일 무료 사용량 (자정에 리셋) ──
 function getUsageData() {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = new Date().toLocaleDateString('ko-KR');
   try {
     const raw = JSON.parse(localStorage.getItem(USAGE_STORE) || '{}');
     if (raw.date !== today) return { date: today, count: 0 };
@@ -4507,7 +4507,15 @@ function addWcMsg(role, text, scroll = true) {
   const typing = document.getElementById('wc-typing');
   const div = document.createElement('div');
   div.className = 'wc-msg ' + role;
-  div.innerHTML = `<div class="wc-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  const bubble = document.createElement('div');
+  bubble.className = 'wc-bubble';
+  // 안전하게 줄바꿈을 처리 (XSS 방지)
+  const lines = text.split('\n');
+  lines.forEach((line, i) => {
+    if (i > 0) bubble.appendChild(document.createElement('br'));
+    bubble.appendChild(document.createTextNode(line));
+  });
+  div.appendChild(bubble);
   msgEl.insertBefore(div, typing);
   if(scroll) msgEl.scrollTop = msgEl.scrollHeight;
 }
@@ -4738,7 +4746,12 @@ async function _execWritingAI(userMsg) {
     return;
   }
 
+  // 사용자 메시지 추가 후 즉시 저장
   writingHistory.push({ role: 'user', content: userMsg });
+  if (currentEpIdx !== null) {
+    S.episodes[currentEpIdx].chatHistory = [...writingHistory];
+    save();
+  }
 
   const MAX_HISTORY = 20;
   const trimmedHistory = writingHistory.length > MAX_HISTORY
@@ -4781,6 +4794,11 @@ async function _execWritingAI(userMsg) {
         writingHistory.pop();
         incrementUsage();  // 400 에러는 유저 책임이므로 차감
       }
+      // 오류 발생 시에도 즉시 저장
+      if (currentEpIdx !== null) {
+        S.episodes[currentEpIdx].chatHistory = [...writingHistory];
+        save();
+      }
       setWritingLoading(false);
       updateWritingInputState();
       return;
@@ -4788,6 +4806,12 @@ async function _execWritingAI(userMsg) {
 
     const reply = data.content?.[0]?.text || '오류가 발생했어요. 다시 시도해주세요.';
     writingHistory.push({ role: 'assistant', content: reply });
+    // AI 응답 즉시 저장
+    if (currentEpIdx !== null) {
+      S.episodes[currentEpIdx].chatHistory = [...writingHistory];
+      save();
+    }
+
     const chatText = extractManuscript(reply);
     if (chatText) {
       // 원고 생성 → 차감 + 남은 횟수 표시
@@ -4822,6 +4846,11 @@ async function _execWritingAI(userMsg) {
     }
     addWcMsg('ai', `⚠️ ${errText}<br>사용 횟수는 차감되지 않았어요 🙏`);
     writingHistory.pop();
+    // 에러 발생 시에도 저장
+    if (currentEpIdx !== null) {
+      S.episodes[currentEpIdx].chatHistory = [...writingHistory];
+      save();
+    }
   }
   setWritingLoading(false);
   updateWritingInputState(); // 사용 후 항상 상태 갱신
