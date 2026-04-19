@@ -2417,7 +2417,7 @@ body {
     <div style="text-align:center;margin-bottom:20px;">
       <div style="font-size:36px;margin-bottom:12px">✨</div>
       <div style="font-size:18px;font-weight:800;color:var(--text);margin-bottom:8px">AI 집필권 구매</div>
-      <div style="font-size:14px;color:var(--sub);line-height:1.6">오늘 무료 집필 3회를 모두 사용했어요.<br>추가 이용권을 구매해 계속 쓰세요.</div>
+      <div style="font-size:14px;color:var(--sub);line-height:1.6">오늘 무료 집필 1회를 모두 사용했어요.<br>추가 이용권을 구매해 계속 쓰세요.</div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;">
       <button onclick="purchaseIAP(1)" style="flex:1;padding:16px 12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;">
@@ -3860,7 +3860,7 @@ function exportAllDone() {
 const API_KEY_STORE = 'mdpf_api_key';
 const USAGE_STORE   = 'mdpf_usage';   // 하루 무료 집필 횟수 (날짜 리셋)
 const EXTRA_STORE   = 'mdpf_extra';   // 구매한 집필권 잔여 (날짜 무관, 영구 유지)
-const FREE_LIMIT    = 3;
+const FREE_LIMIT    = 1;
 
 // ── 일일 무료 사용량 (자정에 리셋) ──
 function getUsageData() {
@@ -4421,7 +4421,7 @@ function updateWritingInputState() {
   if (!canWriteNow()) {
     sendBtn.disabled  = true;
     inputEl.disabled  = true;
-    inputEl.placeholder = '오늘 무료 집필 3회를 모두 사용했어요. 이용권을 구매하세요.';
+    inputEl.placeholder = '오늘 무료 집필 1회를 모두 사용했어요. 이용권을 구매하세요.';
     if (quickWrap) quickWrap.style.opacity = '0.35';
     // 차단 배너가 없으면 삽입
     if (!document.getElementById('wc-limit-banner')) {
@@ -4429,7 +4429,7 @@ function updateWritingInputState() {
       banner.id = 'wc-limit-banner';
       banner.style.cssText = 'background:#FFF3EB;border:1px solid #FFD0A0;border-radius:12px;padding:12px 14px;margin:8px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;';
       banner.innerHTML = `
-        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 3회를 모두 사용했어요 😅</span>
+        <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅</span>
         <button onclick="showIAPPopup()" style="background:#FF6B00;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">구매하기 →</button>`;
       const msgEl = document.getElementById('wc-messages');
       const inputRow = document.querySelector('.wc-input-row');
