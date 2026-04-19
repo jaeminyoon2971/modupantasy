@@ -3760,11 +3760,70 @@ function confirmDone(epIdx) {
   refreshDoneList();
   syncProjectHeader(); // 진행판 수치 즉시 반영
   switchTab(3);
-  showToast('완성공간으로 이동했어요 🎉');
+
+  // ✅ 첫 번째 화 완료 축하 메세지
+  if (epIdx === 0) {
+    showFirstEpisodeCelebration();
+  } else {
+    showToast('완성공간으로 이동했어요 🎉');
+  }
+
   setTimeout(() => showToast('📥 파일 저장 버튼으로 원고를 백업해두세요!'), 2200);
   generateEpisodeSummary(epIdx);
   // 10화마다 스토리 바이블 자동 갱신 (비동기, 조용히 실행)
   setTimeout(() => updateStoryBibleIfNeeded(), 3000);
+}
+
+// ── 첫 번째 화 완료 축하 모달 ──
+function showFirstEpisodeCelebration() {
+  const backdrop = document.createElement('div');
+  backdrop.id = 'celebration-backdrop';
+  backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);display:flex;align-items:center;justify-content:center;z-index:9999;';
+
+  const modal = document.createElement('div');
+  modal.style.cssText = 'background:#fff;border-radius:24px;padding:40px 30px;text-align:center;max-width:320px;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);';
+  modal.innerHTML = `
+    <div style="font-size:80px;margin-bottom:16px;animation:bounce 0.6s ease-in-out;">🎉</div>
+    <div style="font-size:24px;font-weight:800;color:#191F28;margin-bottom:8px;">첫 번째 화 완성!</div>
+    <div style="font-size:14px;color:#6B7684;margin-bottom:8px;">축하합니다! 🎊</div>
+    <div style="font-size:12px;color:#6B7684;line-height:1.6;margin-bottom:24px;">
+      당신의 창작 여정이<br>시작되었어요. 계속 진행해보세요!
+    </div>
+    <button onclick="closeCelebration()" style="background:#3182F6;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;width:100%;">계속 진행 →</button>
+  `;
+
+  // 애니메이션 스타일 추가
+  if (!document.getElementById('celebration-style')) {
+    const style = document.createElement('style');
+    style.id = 'celebration-style';
+    style.textContent = `
+      @keyframes popIn {
+        0% { transform: scale(0.3) rotateZ(-10deg); opacity: 0; }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1) rotateZ(0deg); opacity: 1; }
+      }
+      @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  backdrop.appendChild(modal);
+  document.body.appendChild(backdrop);
+
+  // 자동 닫기 (8초)
+  setTimeout(() => closeCelebration(), 8000);
+}
+
+function closeCelebration() {
+  const backdrop = document.getElementById('celebration-backdrop');
+  if (backdrop) {
+    backdrop.style.animation = 'fadeOut 0.3s ease-out forwards';
+    setTimeout(() => backdrop.remove(), 300);
+  }
+  showToast('완성공간으로 이동했어요 🎉');
 }
 
 /* ────────────────────────────────────
