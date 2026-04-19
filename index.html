@@ -1675,7 +1675,11 @@ body {
           <svg viewBox="0 0 24 24" style="stroke:#fff"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
         </button>
         <div id="proj-menu" style="display:none;position:absolute;top:44px;right:0;background:#fff;border-radius:var(--r-lg);box-shadow:0 8px 24px rgba(0,0,0,0.15);min-width:150px;overflow:hidden;z-index:999;">
-          <button onclick="closeProjMenu(); confirmDeleteProject(DB.currentIdx);" style="width:100%;padding:14px 16px;background:none;border:none;text-align:left;font-size:14px;font-weight:600;color:var(--red);font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;">
+          <button onclick="closeProjMenu(); openRenameProjectModal();" style="width:100%;padding:14px 16px;background:none;border:none;text-align:left;font-size:14px;font-weight:600;color:var(--text);font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;">
+            <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--blue);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            작품명 수정
+          </button>
+          <button onclick="closeProjMenu(); confirmDeleteProject(DB.currentIdx);" style="width:100%;padding:14px 16px;background:none;border:none;text-align:left;font-size:14px;font-weight:600;color:var(--red);font-family:'Noto Sans KR',sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;border-top:1px solid var(--border);">
             <svg viewBox="0 0 24 24" style="width:16px;height:16px;stroke:var(--red);fill:none;stroke-width:2;stroke-linecap:round;flex-shrink:0"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
             작품 삭제
           </button>
@@ -3572,6 +3576,72 @@ function closeProjMenuOutside(e) {
   if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
     menu.style.display = 'none';
   }
+}
+
+function openRenameProjectModal() {
+  const currentTitle = S.projectTitle || '내 첫 작품';
+
+  const existing = document.getElementById('rename-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'rename-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:24px;width:100%;max-width:320px;">
+      <div style="font-size:16px;font-weight:700;margin-bottom:4px;">작품명 수정</div>
+      <div style="font-size:13px;color:var(--sub);margin-bottom:16px;">작품의 이름을 변경해요</div>
+      <input type="text" id="rename-input" value="${currentTitle}" style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Noto Sans KR',sans-serif;margin-bottom:16px;" maxlength="50" />
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('rename-modal').remove();" style="flex:1;padding:12px;background:var(--bg);color:var(--sub);border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+          취소
+        </button>
+        <button onclick="confirmRenameProject();" style="flex:1;padding:12px;background:var(--blue);color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:'Noto Sans KR',sans-serif;">
+          완료
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  // 입력창에 포커스 및 기존 텍스트 선택
+  setTimeout(() => {
+    const input = document.getElementById('rename-input');
+    input?.focus();
+    input?.select();
+  }, 100);
+
+  // Enter 키로도 완료 가능
+  document.getElementById('rename-input')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') confirmRenameProject();
+  });
+}
+
+function confirmRenameProject() {
+  const input = document.getElementById('rename-input');
+  const newTitle = input?.value?.trim();
+
+  if (!newTitle) {
+    showToast('작품명을 입력해주세요');
+    return;
+  }
+
+  // 프로젝트명 업데이트
+  S.projectTitle = newTitle;
+  DB.projects[DB.currentIdx] = S;
+  localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+
+  // UI 업데이트
+  document.getElementById('proj-nav-title').textContent = newTitle;
+  syncProjectHeader();
+  refreshWorkspaceCard();
+  renderMyStatus();
+
+  // 모달 닫기
+  const modal = document.getElementById('rename-modal');
+  if (modal) modal.remove();
+
+  showToast(`"${newTitle}"으로 변경됐어요 ✓`);
 }
 
 function switchProject(idx) {
