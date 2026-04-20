@@ -540,6 +540,12 @@ body {
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07),
+              0 10px 20px rgba(99, 102, 241, 0.12),
+              0 20px 40px rgba(139, 92, 246, 0.15),
+              0 30px 60px rgba(99, 102, 241, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.3),
+              inset 0 -2px 4px rgba(0, 0, 0, 0.05);
 }
 .proj-slider-card::before {
   content: '';
@@ -659,7 +665,12 @@ body {
   border-radius: var(--r-md);
   padding: 14px 12px;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.06), 0 1px 0 rgba(255,255,255,0.9) inset;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+              0 8px 16px rgba(59, 130, 246, 0.08),
+              0 16px 32px rgba(99, 102, 241, 0.06),
+              0 24px 48px rgba(59, 130, 246, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.02);
 }
 .stat-val { font-size: 20px; font-weight: 800; color: var(--text); letter-spacing: -0.5px; margin-bottom: 2px; }
 .stat-label { font-size: 11px; color: var(--sub); font-weight: 500; }
@@ -671,6 +682,12 @@ body {
   border-radius: var(--r-lg);
   padding: 16px;
   border: 1px solid var(--border);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+              0 8px 16px rgba(59, 130, 246, 0.08),
+              0 16px 32px rgba(99, 102, 241, 0.06),
+              0 24px 48px rgba(59, 130, 246, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.02);
 }
 .mission-head { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .mission-emoji { font-size: 16px; }
@@ -770,7 +787,12 @@ body {
   overflow: hidden;
   cursor: pointer;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08), 0 1px 0 rgba(255,255,255,0.9) inset;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+              0 8px 16px rgba(59, 130, 246, 0.08),
+              0 16px 32px rgba(99, 102, 241, 0.06),
+              0 24px 48px rgba(59, 130, 246, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.02);
   transition: transform 0.15s, box-shadow 0.15s;
 }
 .project-card:active {
@@ -1105,7 +1127,12 @@ body {
   border-radius: var(--r-lg);
   padding: 16px;
   border: 1px solid rgba(0,0,0,0.06);
-  box-shadow: 0 3px 14px rgba(0,0,0,0.07), 0 1px 0 rgba(255,255,255,0.9) inset;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05),
+              0 8px 16px rgba(59, 130, 246, 0.08),
+              0 16px 32px rgba(99, 102, 241, 0.06),
+              0 24px 48px rgba(59, 130, 246, 0.04),
+              inset 0 1px 0 rgba(255, 255, 255, 0.8),
+              inset 0 -1px 2px rgba(0, 0, 0, 0.02);
   cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
 }
@@ -4478,11 +4505,11 @@ function openWritingScreen(epIdx) {
   const hasPrevEp = epIdx > 0 && (S.episodes || []).slice(0, epIdx).some(e => e.manuscript && e.manuscript.length > 10);
   let initMsg;
   if (hasManuscript) {
-    initMsg = `${epIdx+1}화 「${ep.title || '제목 없음'}」 이어쓰기 모드예요!<br>현재 <b>${ep.manuscript.trim().length.toLocaleString()}자</b> 작성됐어요. 이어서 써볼까요? 😊`;
+    initMsg = `${epIdx+1}화 「${ep.title || '제목 없음'}」 이어쓰기 모드예요!\n현재 ${ep.manuscript.trim().length.toLocaleString()}자 작성됐어요. 이어서 써볼까요? 😊`;
   } else if (hasPrevEp) {
-    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}<br>이전 화 내용을 참고해서 자연스럽게 이어질 수 있도록 도와드릴게요 📖`;
+    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}\n이전 화 내용을 참고해서 자연스럽게 이어질 수 있도록 도와드릴게요 📖`;
   } else {
-    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}<br>어떤 장면부터 써볼까요? 위 버튼을 눌러도 되고, 직접 말씀해주세요 😊`;
+    initMsg = `${epIdx+1}화 집필 시작해요! ${ep.title ? '「'+ep.title+'」' : ''}\n어떤 장면부터 써볼까요? 위 버튼을 눌러도 되고, 직접 말씀해주세요 😊`;
   }
   addWcMsg('ai', initMsg); // scroll=true → 자동으로 맨 아래로
 
