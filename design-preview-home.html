@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두의 판타지 - 홈 프로토타입</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(180deg, #0f0f1e 0%, #1a1a3a 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      padding-bottom: 80px;
+    }
+
+    /* 배경 글로우 */
+    .bg-glow {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -200px;
+      right: -200px;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* 헤더 */
+    .header {
+      padding: 40px 0 20px;
+      animation: slideDown 0.6s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .greeting {
+      font-size: 28px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff 0%, #e0e7ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 300;
+    }
+
+    /* 미션 카드 */
+    .mission-section {
+      margin: 40px 0;
+    }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 16px;
+    }
+
+    .mission-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.1) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      animation: slideUp 0.6s ease-out forwards;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    .mission-card:nth-child(1) { animation-delay: 0.2s; }
+    .mission-card:nth-child(2) { animation-delay: 0.3s; }
+    .mission-card:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .mission-card:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.25) 0%, rgba(168, 85, 247, 0.15) 100%);
+      border-color: rgba(99, 102, 241, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+    }
+
+    .mission-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .mission-info {
+      flex: 1;
+    }
+
+    .mission-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .mission-desc {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .mission-points {
+      font-size: 13px;
+      font-weight: 700;
+      color: #6366f1;
+      min-width: 50px;
+      text-align: right;
+    }
+
+    /* 빠른 시작 섹션 */
+    .quick-start {
+      margin: 40px 0;
+    }
+
+    .cta-button {
+      width: 100%;
+      padding: 18px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      border: none;
+      border-radius: 14px;
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
+      animation: slideUp 0.6s ease-out 0.5s forwards;
+      opacity: 0;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    .cta-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(99, 102, 241, 0.4);
+    }
+
+    .cta-button:active {
+      transform: translateY(0);
+    }
+
+    /* 통계 카드 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 40px 0;
+      animation: slideUp 0.6s ease-out 0.6s forwards;
+      opacity: 0;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.12) 0%, rgba(168, 85, 247, 0.08) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      border-radius: 14px;
+      padding: 16px;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      cursor: pointer;
+    }
+
+    .stat-card:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.12) 100%);
+      transform: translateY(-4px);
+      border-color: rgba(99, 102, 241, 0.3);
+    }
+
+    .stat-number {
+      font-size: 28px;
+      font-weight: 900;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 4px;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 500;
+    }
+
+    /* 네비게이션 바 */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, rgba(15, 15, 30, 0.8) 0%, rgba(15, 15, 30, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(99, 102, 241, 0.2);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 24px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.5);
+      transition: all 0.3s;
+      font-size: 20px;
+    }
+
+    .nav-item.active {
+      color: #6366f1;
+    }
+
+    .nav-item:hover {
+      color: #a855f7;
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <div class="container">
+    <!-- 헤더 -->
+    <div class="header">
+      <div class="greeting">안녕하세요! 👋</div>
+      <div class="subtitle">당신의 이야기를 시작해보세요</div>
+    </div>
+
+    <!-- 미션 섹션 -->
+    <div class="mission-section">
+      <div class="section-title">🎯 오늘의 미션</div>
+
+      <div class="mission-card">
+        <div class="mission-icon">✍️</div>
+        <div class="mission-info">
+          <div class="mission-title">첫 번째 장 집필하기</div>
+          <div class="mission-desc">새 작품을 시작해보세요</div>
+        </div>
+        <div class="mission-points">+20p</div>
+      </div>
+
+      <div class="mission-card">
+        <div class="mission-icon">🎭</div>
+        <div class="mission-info">
+          <div class="mission-title">작가 프로필 완성</div>
+          <div class="mission-desc">당신의 스타일을 정의하세요</div>
+        </div>
+        <div class="mission-points">+10p</div>
+      </div>
+
+      <div class="mission-card">
+        <div class="mission-icon">⭐</div>
+        <div class="mission-info">
+          <div class="mission-title">AI 검수 받기</div>
+          <div class="mission-desc">AI와 함께 글을 다듬어보세요</div>
+        </div>
+        <div class="mission-points">+15p</div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">작품</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">45</div>
+        <div class="stat-label">장</div>
+      </div>
+    </div>
+
+    <!-- 빠른 시작 -->
+    <div class="quick-start">
+      <button class="cta-button">✨ 새 작품 시작하기</button>
+    </div>
+  </div>
+
+  <!-- 네비게이션 바 -->
+  <div class="nav-bar">
+    <div class="nav-item active">
+      <div>🏠</div>
+      <div class="nav-label">홈</div>
+    </div>
+    <div class="nav-item">
+      <div>📁</div>
+      <div class="nav-label">작업공간</div>
+    </div>
+    <div class="nav-item">
+      <div>ℹ️</div>
+      <div class="nav-label">정보</div>
+    </div>
+    <div class="nav-item">
+      <div>👤</div>
+      <div class="nav-label">MY</div>
+    </div>
+  </div>
+</body>
+</html>

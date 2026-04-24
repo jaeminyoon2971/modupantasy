@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두의 판타지 - 홈 (디자인 개선)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: #f2f4f6;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* 헤더 */
+    .home-header {
+      background: linear-gradient(180deg, #ffffff 0%, #f5f8ff 100%);
+      padding: 20px 20px 24px;
+      border-bottom: 1px solid #e5e8eb;
+    }
+
+    .home-greeting {
+      font-size: 13px;
+      color: #6b7684;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .home-name {
+      font-size: 26px;
+      font-weight: 800;
+      color: #191f28;
+      letter-spacing: -0.6px;
+    }
+
+    /* 진척도 슬라이더 */
+    .progress-card {
+      margin: 16px 20px 0;
+      background: linear-gradient(135deg, #3182f6 0%, #2563eb 100%);
+      border-radius: 20px;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(49, 130, 246, 0.2);
+    }
+
+    .progress-card::before {
+      content: '';
+      position: absolute;
+      top: -40px;
+      right: -40px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      filter: blur(40px);
+    }
+
+    .pc-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 20px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pc-label {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.75);
+      margin-bottom: 4px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .pc-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+
+    .pc-pct {
+      font-size: 38px;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1;
+      letter-spacing: -1px;
+    }
+
+    .pc-pct span {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .progress-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 3px;
+      width: 40%;
+    }
+
+    .pc-stats {
+      display: flex;
+      gap: 24px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .pc-stat-val {
+      font-size: 15px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .pc-stat-label {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.65);
+      margin-top: 3px;
+      font-weight: 500;
+    }
+
+    /* 섹션 제목 */
+    .section-title {
+      padding: 20px 20px 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #191f28;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-more {
+      font-size: 13px;
+      font-weight: 600;
+      color: #3182f6;
+      cursor: pointer;
+    }
+
+    /* 작업 카드 */
+    .work-list {
+      padding: 0 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .work-card {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      cursor: pointer;
+      border: 1px solid #e5e8eb;
+      transition: all 0.2s;
+    }
+
+    .work-card:hover {
+      border-color: #3182f6;
+      box-shadow: 0 4px 16px rgba(49, 130, 246, 0.1);
+    }
+
+    .wc-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .wc-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      font-size: 18px;
+      background: #f0eeff;
+    }
+
+    .wc-meta {
+      flex: 1;
+    }
+
+    .wc-genre {
+      font-size: 11px;
+      font-weight: 600;
+      color: #6b7684;
+      margin-bottom: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    .wc-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #191f28;
+      letter-spacing: -0.3px;
+    }
+
+    .wc-badge {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      background: #ebf3fe;
+      color: #3182f6;
+    }
+
+    .wc-progress {
+      margin-bottom: 10px;
+    }
+
+    .wc-track {
+      height: 4px;
+      background: #e5e8eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .wc-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: #3182f6;
+    }
+
+    .wc-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #b0b8c1;
+    }
+
+    /* 통계 */
+    .stat-row {
+      padding: 0 20px 16px;
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 14px;
+      border: 1px solid #e5e8eb;
+      text-align: center;
+    }
+
+    .stat-val {
+      font-size: 20px;
+      font-weight: 800;
+      color: #191f28;
+      letter-spacing: -0.5px;
+      margin-bottom: 3px;
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: #6b7684;
+      font-weight: 500;
+    }
+
+    /* 미션 */
+    .mission-card {
+      margin: 0 20px 20px;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 16px;
+      border: 1px solid #e5e8eb;
+    }
+
+    .mission-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .mission-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #191f28;
+      letter-spacing: -0.2px;
+    }
+
+    .mission-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .mission-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #f2f4f6;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #191f28;
+    }
+
+    .mission-check {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px solid #e5e8eb;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mission-pts {
+      font-size: 12px;
+      font-weight: 700;
+      color: #ff8b37;
+      margin-left: auto;
+    }
+
+    /* 탭바 */
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid #e5e8eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 24px;
+      z-index: 100;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      color: #b0b8c1;
+      transition: color 0.3s;
+      font-size: 18px;
+    }
+
+    .tab-item.active {
+      color: #3182f6;
+    }
+
+    .tab-label {
+      font-size: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 헤더 -->
+    <div class="home-header">
+      <div class="home-greeting">안녕하세요</div>
+      <div class="home-name">작가님</div>
+    </div>
+
+    <!-- 진척도 슬라이더 -->
+    <div class="progress-card">
+      <div class="pc-top">
+        <div>
+          <div class="pc-label">현재 진행 중</div>
+          <div class="pc-title">달빛의 속삭임</div>
+        </div>
+        <div class="pc-pct">40<span>%</span></div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill"></div>
+      </div>
+      <div class="pc-stats">
+        <div>
+          <div class="pc-stat-val">3화</div>
+          <div class="pc-stat-label">작성 중</div>
+        </div>
+        <div>
+          <div class="pc-stat-val">12,558</div>
+          <div class="pc-stat-label">총 글자</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 최근 작업 -->
+    <div class="section-title">
+      <span>최근 작업</span>
+      <span class="section-more">전체보기</span>
+    </div>
+
+    <div class="work-list">
+      <div class="work-card">
+        <div class="wc-header">
+          <div class="wc-icon">📖</div>
+          <div class="wc-meta">
+            <div class="wc-genre">판타지 · 완전판타지</div>
+            <div class="wc-title">달빛의 속삭임</div>
+          </div>
+          <span class="wc-badge">작성 중</span>
+        </div>
+        <div class="wc-progress">
+          <div class="wc-track">
+            <div class="wc-fill" style="width: 40%;"></div>
+          </div>
+        </div>
+        <div class="wc-footer">
+          <span>3화 작성중</span>
+          <span>40%</span>
+        </div>
+      </div>
+
+      <div class="work-card">
+        <div class="wc-header">
+          <div class="wc-icon">✨</div>
+          <div class="wc-meta">
+            <div class="wc-genre">판타지 · 로맨스판타지</div>
+            <div class="wc-title">마법의 학교</div>
+          </div>
+          <span class="wc-badge">작성 중</span>
+        </div>
+        <div class="wc-progress">
+          <div class="wc-track">
+            <div class="wc-fill" style="width: 60%;"></div>
+          </div>
+        </div>
+        <div class="wc-footer">
+          <span>8화 완료</span>
+          <span>60%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 통계 -->
+    <div class="stat-row">
+      <div class="stat-card">
+        <div class="stat-val">3</div>
+        <div class="stat-label">작품</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">45</div>
+        <div class="stat-label">회차</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val">82K</div>
+        <div class="stat-label">글자</div>
+      </div>
+    </div>
+
+    <!-- 미션 -->
+    <div class="mission-card">
+      <div class="mission-head">
+        <span style="font-size: 16px;">🎯</span>
+        <span class="mission-title">오늘의 미션</span>
+      </div>
+      <div class="mission-list">
+        <div class="mission-item">
+          <div class="mission-check"></div>
+          <span>첫 화 완료하기</span>
+          <span class="mission-pts">+20p</span>
+        </div>
+        <div class="mission-item">
+          <div class="mission-check"></div>
+          <span>AI로 검수받기</span>
+          <span class="mission-pts">+15p</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭바 -->
+  <div class="tabbar">
+    <div class="tab-item active">
+      <div>⌂</div>
+      <div class="tab-label">홈</div>
+    </div>
+    <div class="tab-item">
+      <div>▦</div>
+      <div class="tab-label">작업공간</div>
+    </div>
+    <div class="tab-item">
+      <div>ⓘ</div>
+      <div class="tab-label">정보</div>
+    </div>
+    <div class="tab-item">
+      <div>⊕</div>
+      <div class="tab-label">MY</div>
+    </div>
+  </div>
+</body>
+</html>

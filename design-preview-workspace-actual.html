@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두의 판타지 - 작업공간 (디자인 개선)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: #f2f4f6;
+      min-height: 100vh;
+      padding-bottom: 80px;
+    }
+
+    .container {
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* 네비게이션 */
+    .nav-top {
+      display: flex;
+      align-items: center;
+      padding: 14px 20px;
+      gap: 12px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5e8eb;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .nav-back {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #f2f4f6;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      color: #191f28;
+      transition: background 0.2s;
+    }
+
+    .nav-back:hover {
+      background: #e5e8eb;
+    }
+
+    .nav-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #191f28;
+      flex: 1;
+      letter-spacing: -0.2px;
+    }
+
+    .nav-search {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #f2f4f6;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      color: #191f28;
+      transition: background 0.2s;
+    }
+
+    .nav-search:hover {
+      background: #e5e8eb;
+    }
+
+    /* 헤더 */
+    .ws-hero {
+      background: #ffffff;
+      padding: 20px 20px 24px;
+      border-bottom: 1px solid #e5e8eb;
+    }
+
+    .ws-eyebrow {
+      font-size: 12px;
+      font-weight: 600;
+      color: #3182f6;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .ws-headline {
+      font-size: 22px;
+      font-weight: 800;
+      color: #191f28;
+      letter-spacing: -0.5px;
+      margin-bottom: 6px;
+    }
+
+    .ws-desc {
+      font-size: 14px;
+      color: #6b7684;
+      line-height: 1.6;
+      font-weight: 400;
+    }
+
+    /* 버튼 */
+    .ws-new-btn {
+      margin: 16px 20px 0;
+      width: calc(100% - 40px);
+      padding: 16px;
+      background: linear-gradient(135deg, #3182f6 0%, #2563eb 100%);
+      color: #fff;
+      border: none;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: -0.2px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(49, 130, 246, 0.2);
+    }
+
+    .ws-new-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 24px rgba(49, 130, 246, 0.3);
+    }
+
+    .ws-new-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 섹션 제목 */
+    .section-title {
+      padding: 20px 20px 12px;
+      font-size: 15px;
+      font-weight: 700;
+      color: #191f28;
+      letter-spacing: -0.3px;
+    }
+
+    /* 프로젝트 그리드 */
+    .project-grid {
+      padding: 0 20px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .project-card {
+      background: #ffffff;
+      border-radius: 16px;
+      overflow: hidden;
+      cursor: pointer;
+      border: 1px solid #e5e8eb;
+      transition: all 0.2s;
+    }
+
+    .project-card:hover {
+      border-color: #3182f6;
+      box-shadow: 0 4px 20px rgba(49, 130, 246, 0.12);
+      transform: translateY(-2px);
+    }
+
+    /* 썸네일 */
+    .pc-thumb {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(135deg, #f0eeff 0%, #ede9fe 100%);
+      font-size: 40px;
+    }
+
+    .pc-thumb.theme-1 {
+      background: linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%);
+    }
+
+    .pc-thumb.theme-2 {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .pc-thumb.theme-3 {
+      background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+    }
+
+    /* 카드 본문 */
+    .pc-body {
+      padding: 16px;
+    }
+
+    .pc-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .pc-genre {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7684;
+      letter-spacing: 0.3px;
+    }
+
+    .pc-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #191f28;
+      letter-spacing: -0.3px;
+    }
+
+    .pc-status {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 100px;
+      background: #ebf3fe;
+      color: #3182f6;
+    }
+
+    .pc-prog-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .pc-prog-track {
+      flex: 1;
+      height: 4px;
+      background: #e5e8eb;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .pc-prog-fill {
+      height: 100%;
+      border-radius: 2px;
+      background: #3182f6;
+    }
+
+    .pc-prog-pct {
+      font-size: 12px;
+      font-weight: 700;
+      color: #6b7684;
+      min-width: 32px;
+      text-align: right;
+    }
+
+    .pc-meta-row {
+      display: flex;
+      gap: 16px;
+      font-size: 12px;
+      color: #b0b8c1;
+    }
+
+    /* 탭바 */
+    .tabbar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid #e5e8eb;
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 24px;
+      z-index: 100;
+    }
+
+    .tab-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      cursor: pointer;
+      color: #b0b8c1;
+      transition: color 0.3s;
+      font-size: 18px;
+    }
+
+    .tab-item.active {
+      color: #3182f6;
+    }
+
+    .tab-label {
+      font-size: 10px;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- 네비게이션 -->
+    <div class="nav-top">
+      <button class="nav-back">←</button>
+      <div class="nav-title">작업공간</div>
+      <button class="nav-search">⌕</button>
+    </div>
+
+    <!-- 헤더 -->
+    <div class="ws-hero">
+      <div class="ws-eyebrow">내 작품</div>
+      <div class="ws-headline">어떤 이야기를<br>만들고 싶으신가요?</div>
+      <div class="ws-desc">AI 파트너와 함께 당신의 판타지를 만들어보세요</div>
+    </div>
+
+    <!-- 버튼 -->
+    <button class="ws-new-btn">+ 새 작품 만들기</button>
+
+    <!-- 프로젝트 목록 -->
+    <div class="section-title">작품 목록</div>
+
+    <div class="project-grid">
+      <!-- 프로젝트 1 -->
+      <div class="project-card">
+        <div class="pc-thumb theme-1">✨</div>
+        <div class="pc-body">
+          <div class="pc-row">
+            <div>
+              <div class="pc-genre">판타지 · 완전판타지</div>
+              <div class="pc-title">달빛의 속삭임</div>
+            </div>
+            <span class="pc-status">작성 중</span>
+          </div>
+          <div class="pc-prog-row">
+            <div class="pc-prog-track">
+              <div class="pc-prog-fill" style="width: 65%;"></div>
+            </div>
+            <div class="pc-prog-pct">65%</div>
+          </div>
+          <div class="pc-meta-row">
+            <span>3화 작성중</span>
+            <span>45.2천자</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로젝트 2 -->
+      <div class="project-card">
+        <div class="pc-thumb theme-2">🌙</div>
+        <div class="pc-body">
+          <div class="pc-row">
+            <div>
+              <div class="pc-genre">판타지 · 로맨스판타지</div>
+              <div class="pc-title">마법의 학교</div>
+            </div>
+            <span class="pc-status">작성 중</span>
+          </div>
+          <div class="pc-prog-row">
+            <div class="pc-prog-track">
+              <div class="pc-prog-fill" style="width: 42%;"></div>
+            </div>
+            <div class="pc-prog-pct">42%</div>
+          </div>
+          <div class="pc-meta-row">
+            <span>8회 완료</span>
+            <span>32.2천자</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로젝트 3 -->
+      <div class="project-card">
+        <div class="pc-thumb theme-3">🏰</div>
+        <div class="pc-body">
+          <div class="pc-row">
+            <div>
+              <div class="pc-genre">판타지 · 판타지 소설</div>
+              <div class="pc-title">왕국의 비밀</div>
+            </div>
+            <span class="pc-status">작성 중</span>
+          </div>
+          <div class="pc-prog-row">
+            <div class="pc-prog-track">
+              <div class="pc-prog-fill" style="width: 28%;"></div>
+            </div>
+            <div class="pc-prog-pct">28%</div>
+          </div>
+          <div class="pc-meta-row">
+            <span>5회 미진행</span>
+            <span>18.9천자</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탭바 -->
+  <div class="tabbar">
+    <div class="tab-item">
+      <div>⌂</div>
+      <div class="tab-label">홈</div>
+    </div>
+    <div class="tab-item active">
+      <div>▦</div>
+      <div class="tab-label">작업공간</div>
+    </div>
+    <div class="tab-item">
+      <div>ⓘ</div>
+      <div class="tab-label">정보</div>
+    </div>
+    <div class="tab-item">
+      <div>⊕</div>
+      <div class="tab-label">MY</div>
+    </div>
+  </div>
+</body>
+</html>

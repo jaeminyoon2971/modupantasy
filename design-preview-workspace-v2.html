@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두의 판타지 - 작업공간 (프리미엄)</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans KR', sans-serif;
+      background: linear-gradient(180deg, #0f0f1e 0%, #1a1a3a 100%);
+      min-height: 100vh;
+      color: #ffffff;
+      padding: 0;
+    }
+
+    /* 배경 글로우 */
+    .bg-glow {
+      position: fixed;
+      width: 700px;
+      height: 700px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.08) 0%, transparent 70%);
+      border-radius: 50%;
+      top: -300px;
+      left: -200px;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* 상단 네비게이션 */
+    .header {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, rgba(15, 15, 30, 0.95) 0%, rgba(15, 15, 30, 0.8) 100%);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(99, 102, 241, 0.12);
+      padding: 14px 20px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .back-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #ffffff;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 600;
+      flex: 1;
+      letter-spacing: -0.2px;
+    }
+
+    .search-btn {
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.15);
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      transition: all 0.3s;
+      font-weight: 600;
+    }
+
+    .search-btn:hover {
+      background: rgba(99, 102, 241, 0.2);
+      color: #ffffff;
+    }
+
+    /* 컨텐츠 */
+    .container {
+      position: relative;
+      z-index: 2;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 20px;
+      padding-bottom: 100px;
+    }
+
+    /* 인트로 섹션 */
+    .intro-section {
+      text-align: center;
+      margin-bottom: 40px;
+      animation: fadeInDown 0.6s ease-out;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .intro-text {
+      font-size: 15px;
+      color: rgba(255, 255, 255, 0.55);
+      margin-bottom: 20px;
+      letter-spacing: 0.1px;
+    }
+
+    .create-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.25);
+      font-family: inherit;
+      letter-spacing: -0.2px;
+    }
+
+    .create-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 36px rgba(99, 102, 241, 0.35);
+    }
+
+    .create-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 프로젝트 리스트 */
+    .projects-section {
+      margin-top: 40px;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.45);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+    }
+
+    .project-card {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(168, 85, 247, 0.06) 100%);
+      border: 1px solid rgba(99, 102, 241, 0.18);
+      border-radius: 14px;
+      padding: 0;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+      overflow: hidden;
+      animation: slideUp 0.6s ease-out forwards;
+      opacity: 0;
+      backdrop-filter: blur(10px);
+    }
+
+    .project-card:nth-child(1) { animation-delay: 0.2s; }
+    .project-card:nth-child(2) { animation-delay: 0.3s; }
+    .project-card:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .project-card:hover {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.16) 0%, rgba(168, 85, 247, 0.1) 100%);
+      border-color: rgba(99, 102, 241, 0.28);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(99, 102, 241, 0.18);
+    }
+
+    .project-card:hover .project-thumbnail {
+      transform: scale(1.04);
+    }
+
+    /* 프로젝트 썸네일 */
+    .project-thumbnail {
+      width: 100%;
+      height: 140px;
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2) 0%, rgba(168, 85, 247, 0.12) 100%);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0;
+      transition: transform 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+    }
+
+    /* 프로젝트 정보 */
+    .project-info {
+      padding: 14px;
+    }
+
+    .project-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      letter-spacing: -0.3px;
+    }
+
+    .project-meta {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.45);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .project-progress {
+      width: 100%;
+      height: 3px;
+      background: rgba(99, 102, 241, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #6366f1 0%, #a855f7 100%);
+      border-radius: 2px;
+      width: 65%;
+      transition: width 0.3s ease;
+    }
+
+    .project-card:hover .progress-bar {
+      width: 70%;
+    }
+
+    /* 네비게이션 바 */
+    .nav-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(180deg, rgba(15, 15, 30, 0.9) 0%, rgba(15, 15, 30, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid rgba(99, 102, 241, 0.15);
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 24px;
+      z-index: 100;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.4);
+      transition: all 0.3s;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .nav-item.active {
+      color: #6366f1;
+    }
+
+    .nav-item:hover {
+      color: #a855f7;
+      transform: translateY(-1px);
+    }
+
+    .nav-label {
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-glow"></div>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <button class="back-btn">‹</button>
+    <div class="header-title">작업공간</div>
+    <button class="search-btn">⌕</button>
+  </div>
+
+  <!-- 컨텐츠 -->
+  <div class="container">
+    <!-- 인트로 -->
+    <div class="intro-section">
+      <div class="intro-text">어떤 이야기로 시작하시겠어요?</div>
+      <button class="create-btn">새 작품 만들기</button>
+    </div>
+
+    <!-- 프로젝트 목록 -->
+    <div class="projects-section">
+      <div class="section-title">작품 목록</div>
+
+      <!-- 프로젝트 1 -->
+      <div class="project-card">
+        <div class="project-thumbnail"></div>
+        <div class="project-info">
+          <div class="project-title">달빛의 속삭임</div>
+          <div class="project-meta">
+            <span>12회</span>
+            <span>45.2천자</span>
+          </div>
+          <div class="project-progress">
+            <div class="progress-bar" style="width: 65%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로젝트 2 -->
+      <div class="project-card">
+        <div class="project-thumbnail"></div>
+        <div class="project-info">
+          <div class="project-title">마법의 학교</div>
+          <div class="project-meta">
+            <span>8회</span>
+            <span>32.2천자</span>
+          </div>
+          <div class="project-progress">
+            <div class="progress-bar" style="width: 42%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 프로젝트 3 -->
+      <div class="project-card">
+        <div class="project-thumbnail"></div>
+        <div class="project-info">
+          <div class="project-title">왕국의 비밀</div>
+          <div class="project-meta">
+            <span>5회</span>
+            <span>18.9천자</span>
+          </div>
+          <div class="project-progress">
+            <div class="progress-bar" style="width: 28%;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 네비게이션 바 -->
+  <div class="nav-bar">
+    <div class="nav-item">
+      <div>⌂</div>
+      <div class="nav-label">홈</div>
+    </div>
+    <div class="nav-item active">
+      <div>▦</div>
+      <div class="nav-label">작업</div>
+    </div>
+    <div class="nav-item">
+      <div>ⓘ</div>
+      <div class="nav-label">정보</div>
+    </div>
+    <div class="nav-item">
+      <div>⊕</div>
+      <div class="nav-label">MY</div>
+    </div>
+  </div>
+</body>
+</html>

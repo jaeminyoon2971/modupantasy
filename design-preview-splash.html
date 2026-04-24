@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>모두의 판타지 - 스플래시 프로토타입</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 100%;
+      height: 100vh;
+      font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      overflow: hidden;
+    }
+
+    .splash-container {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(160deg, #0a0e27 0%, #1a0f3a 40%, #2d1b4e 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* 신비로운 배경 효과 */
+    .background-glow {
+      position: absolute;
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      animation: float 8s ease-in-out infinite;
+      filter: blur(60px);
+    }
+
+    .background-glow-2 {
+      position: absolute;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(168, 85, 247, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      top: 30%;
+      right: 10%;
+      animation: float 10s ease-in-out infinite;
+      filter: blur(60px);
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0); }
+      25% { transform: translate(20px, -20px); }
+      50% { transform: translate(0, 20px); }
+      75% { transform: translate(-20px, -10px); }
+    }
+
+    /* 별 입자 */
+    .stars {
+      position: absolute;
+      width: 2px;
+      height: 2px;
+      background: white;
+      border-radius: 50%;
+      animation: twinkle 3s infinite;
+    }
+
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+
+    /* 떨어지는 입자 */
+    .particle {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      background: rgba(99, 102, 241, 0.6);
+      border-radius: 50%;
+      animation: fall linear infinite;
+    }
+
+    @keyframes fall {
+      to {
+        transform: translateY(100vh);
+        opacity: 0;
+      }
+    }
+
+    /* 메인 콘텐츠 */
+    .content {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      animation: fadeInUp 1s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo-circle {
+      width: 120px;
+      height: 120px;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      box-shadow: 0 0 40px rgba(99, 102, 241, 0.5),
+                  0 0 60px rgba(168, 85, 247, 0.3);
+      animation: glow 3s ease-in-out infinite;
+    }
+
+    @keyframes glow {
+      0%, 100% {
+        box-shadow: 0 0 40px rgba(99, 102, 241, 0.5),
+                    0 0 60px rgba(168, 85, 247, 0.3);
+      }
+      50% {
+        box-shadow: 0 0 60px rgba(99, 102, 241, 0.8),
+                    0 0 100px rgba(168, 85, 247, 0.5);
+      }
+    }
+
+    .title {
+      font-size: 32px;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+      text-shadow: 0 0 20px rgba(99, 102, 241, 0.3);
+    }
+
+    .subtitle {
+      font-size: 16px;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 50px;
+      font-weight: 300;
+      letter-spacing: 0.5px;
+    }
+
+    .loading-dots {
+      display: inline-flex;
+      gap: 6px;
+      margin-top: 20px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      background: linear-gradient(135deg, #6366f1, #a855f7);
+      border-radius: 50%;
+      animation: pulse 1.4s infinite;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+    }
+
+    .dot:nth-child(1) { animation-delay: 0s; }
+    .dot:nth-child(2) { animation-delay: 0.2s; }
+    .dot:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 0.3;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: scale(1.2);
+      }
+    }
+
+    /* 하단 텍스트 */
+    .footer-text {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.4);
+      letter-spacing: 0.8px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <!-- 배경 글로우 -->
+    <div class="background-glow"></div>
+    <div class="background-glow-2"></div>
+
+    <!-- 입자 효과 -->
+    <div id="particles"></div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="content">
+      <div class="logo-circle">✨</div>
+      <div class="title">모두의 판타지</div>
+      <div class="subtitle">아이디어가 곧 이야기가 되는<br>모두의 판타지에 오신 것을 환영합니다</div>
+
+      <div class="loading-dots">
+        <div class="dot"></div>
+        <div class="dot"></div>
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <!-- 하단 텍스트 -->
+    <div class="footer-text">로딩 중...</div>
+  </div>
+
+  <script>
+    // 별과 입자 생성
+    function createParticles() {
+      const container = document.getElementById('particles');
+
+      // 별 생성
+      for (let i = 0; i < 50; i++) {
+        const star = document.createElement('div');
+        star.className = 'stars';
+        star.style.left = Math.random() * 100 + '%';
+        star.style.top = Math.random() * 100 + '%';
+        star.style.animationDuration = (2 + Math.random() * 2) + 's';
+        star.style.animationDelay = Math.random() * 2 + 's';
+        container.appendChild(star);
+      }
+
+      // 떨어지는 입자 생성
+      setInterval(() => {
+        const particle = document.createElement('div');
+        particle.className = 'particle';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = '-10px';
+        particle.style.animationDuration = (3 + Math.random() * 2) + 's';
+        particle.style.opacity = Math.random() * 0.5 + 0.3;
+        container.appendChild(particle);
+
+        setTimeout(() => particle.remove(), 5000);
+      }, 200);
+    }
+
+    createParticles();
+  </script>
+</body>
+</html>

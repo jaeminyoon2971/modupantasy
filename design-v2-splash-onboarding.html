@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 판타지 - 디자인 V2</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #3B82F6;
+  --primary-light: #60A5FA;
+  --secondary: #8B5CF6;
+  --accent: #EC4899;
+  --text: #0F172A;
+  --text-light: #64748B;
+  --white: #FFFFFF;
+  --bg-light: #F8FAFC;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg-light);
+  overflow: hidden;
+}
+
+.phone-frame {
+  width: 100%;
+  height: 100vh;
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 스플래시 화면 ── */
+.splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #F0F9FF 0%, #F3E8FF 50%, #FCE7F3 100%);
+  opacity: 1;
+  z-index: 100;
+  overflow: hidden;
+}
+
+/* 배경 블렌드 오브 - 더 화려함 */
+.splash-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  opacity: 0.5;
+  filter: blur(80px);
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  top: -200px;
+  right: -150px;
+  animation: float1 15s ease-in-out infinite;
+}
+
+.orb-2 {
+  width: 400px;
+  height: 400px;
+  background: linear-gradient(135deg, #8B5CF6, #EC4899);
+  bottom: -100px;
+  left: -100px;
+  animation: float2 20s ease-in-out infinite reverse;
+}
+
+.orb-3 {
+  width: 300px;
+  height: 300px;
+  background: linear-gradient(135deg, #EC4899, #3B82F6);
+  top: 50%;
+  left: 10%;
+  opacity: 0.3;
+  animation: float1 18s ease-in-out infinite;
+}
+
+@keyframes float1 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(40px, -40px); }
+}
+
+@keyframes float2 {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(-40px, 40px); }
+}
+
+/* 메인 오브 */
+.orb-container {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 80px;
+}
+
+.orb {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #E0E7FF 0%, #C7D2FE 20%, #A5B4FC 40%, #818CF8 60%, #6366F1 80%, #4F46E5 100%);
+  box-shadow:
+    0 0 0 3px rgba(59, 130, 246, 0.3),
+    0 0 80px rgba(99, 102, 241, 0.6),
+    0 0 160px rgba(139, 92, 246, 0.4),
+    0 0 240px rgba(236, 72, 153, 0.2),
+    inset -50px -50px 100px rgba(0, 0, 0, 0.2),
+    inset 30px 30px 80px rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  animation: orb-float 6s ease-in-out infinite, orb-pulse 3s ease-in-out infinite;
+  position: relative;
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-25px); }
+}
+
+@keyframes orb-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 3px rgba(59, 130, 246, 0.3),
+      0 0 80px rgba(99, 102, 241, 0.6),
+      0 0 160px rgba(139, 92, 246, 0.4),
+      0 0 240px rgba(236, 72, 153, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(59, 130, 246, 0.5),
+      0 0 100px rgba(99, 102, 241, 0.8),
+      0 0 200px rgba(139, 92, 246, 0.6),
+      0 0 300px rgba(236, 72, 153, 0.3);
+  }
+}
+
+/* 텍스트 */
+.splash-text {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  color: var(--text);
+  margin-top: 40px;
+}
+
+.splash-title {
+  font-size: 42px;
+  font-weight: 900;
+  letter-spacing: -1.5px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.splash-subtitle {
+  font-size: 15px;
+  color: var(--text-light);
+  line-height: 1.6;
+  letter-spacing: -0.3px;
+}
+
+/* 글로시 버튼 */
+.btn-start {
+  position: absolute;
+  bottom: 60px;
+  left: 24px;
+  right: 24px;
+  padding: 18px;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #2563EB 100%);
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow:
+    0 10px 30px rgba(59, 130, 246, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-start::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.btn-start:active {
+  transform: scale(0.98);
+  box-shadow:
+    0 5px 15px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* ── 온보딩 화면 ── */
+.onboarding {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: linear-gradient(180deg, #F8FAFC 0%, #F1F5F9 100%);
+  opacity: 0;
+  z-index: 50;
+}
+
+.onboarding.active {
+  display: flex;
+  opacity: 1;
+}
+
+.ob-header {
+  padding: 24px 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ob-step {
+  font-size: 12px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ob-skip {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.ob-skip:active {
+  color: var(--text);
+}
+
+.ob-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.ob-icon {
+  width: 140px;
+  height: 140px;
+  border-radius: 40px;
+  background: linear-gradient(135deg, #DBEAFE 0%, #D8B4FE 50%, #FBCFE8 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 64px;
+  margin-bottom: 32px;
+  box-shadow:
+    0 12px 32px rgba(59, 130, 246, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.ob-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.ob-desc {
+  font-size: 15px;
+  color: var(--text-light);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 280px;
+}
+
+.ob-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #DBEAFE 0%, #D8B4FE 100%);
+  color: #1E40AF;
+  padding: 10px 20px;
+  border-radius: 24px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
+}
+
+.ob-footer {
+  padding: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ob-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  transition: all 0.3s;
+}
+
+.ob-dot.active {
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  width: 28px;
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.ob-btn {
+  margin-left: auto;
+  padding: 12px 28px;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow:
+    0 8px 20px rgba(59, 130, 246, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.ob-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.ob-btn:active {
+  transform: scale(0.96);
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.demo-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.demo-btn {
+  padding: 8px 12px;
+  background: linear-gradient(135deg, #3B82F6, #8B5CF6);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- 스플래시 -->
+  <div class="splash" id="splash-screen">
+    <div class="splash-bg-orb orb-1"></div>
+    <div class="splash-bg-orb orb-2"></div>
+    <div class="splash-bg-orb orb-3"></div>
+
+    <div class="orb-container">
+      <div class="orb">✨</div>
+    </div>
+
+    <div class="splash-text">
+      <h1 class="splash-title">모두의 판타지</h1>
+      <p class="splash-subtitle">아이디어가 곧 이야기가 되는<br>당신만의 창작 공간</p>
+    </div>
+
+    <button class="btn-start" onclick="startOnboarding()">시작하기</button>
+  </div>
+
+  <!-- 온보딩 -->
+  <div class="onboarding" id="onboarding-screen">
+    <div class="ob-header">
+      <span class="ob-step" id="step-text">STEP 1 / 4</span>
+      <button class="ob-skip" onclick="finishOnboarding()">건너뛰기</button>
+    </div>
+
+    <div class="ob-body">
+      <div class="ob-icon" id="ob-icon">📖</div>
+      <div class="ob-badge" id="ob-badge">새로운 경험</div>
+      <h2 class="ob-title" id="ob-title">아이디어를 이야기로</h2>
+      <p class="ob-desc" id="ob-desc">당신의 상상을 AI와 함께 웹소설로 만들어보세요</p>
+    </div>
+
+    <div class="ob-footer">
+      <div class="ob-dots">
+        <div class="ob-dot active"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+      </div>
+      <button class="ob-btn" onclick="nextSlide()">다음</button>
+    </div>
+  </div>
+</div>
+
+<div class="demo-controls">
+  <button class="demo-btn" onclick="toSplash()">Splash</button>
+  <button class="demo-btn" onclick="startOnboarding()">Onboarding</button>
+</div>
+
+<script>
+const slides = [
+  {
+    icon: '📖',
+    badge: '새로운 경험',
+    title: '아이디어를 이야기로',
+    desc: '당신의 상상을 AI와 함께 웹소설로 만들어보세요'
+  },
+  {
+    icon: '🎨',
+    badge: '창의적 도구',
+    title: '세계관부터 캐릭터까지',
+    desc: '체계적으로 작품의 기초를 다져보세요'
+  },
+  {
+    icon: '✍️',
+    badge: '스마트 집필',
+    title: 'AI와 함께 집필하기',
+    desc: '매 화마다 AI의 제안을 받으며 완성도를 높여요'
+  },
+  {
+    icon: '🚀',
+    badge: '완성과 공유',
+    title: '당신의 작품 완성하기',
+    desc: '완성된 원고를 저장하고 공유해보세요'
+  }
+];
+
+let currentSlide = 0;
+
+function startOnboarding() {
+  document.getElementById('splash-screen').style.opacity = '0';
+  document.getElementById('splash-screen').style.pointerEvents = 'none';
+  setTimeout(() => {
+    document.getElementById('onboarding-screen').classList.add('active');
+  }, 300);
+}
+
+function nextSlide() {
+  if (currentSlide < slides.length - 1) {
+    currentSlide++;
+    updateSlide();
+  } else {
+    finishOnboarding();
+  }
+}
+
+function updateSlide() {
+  const slide = slides[currentSlide];
+  document.getElementById('ob-icon').textContent = slide.icon;
+  document.getElementById('ob-badge').textContent = slide.badge;
+  document.getElementById('ob-title').textContent = slide.title;
+  document.getElementById('ob-desc').textContent = slide.desc;
+  document.getElementById('step-text').textContent = `STEP ${currentSlide + 1} / ${slides.length}`;
+
+  const dots = document.querySelectorAll('.ob-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSlide);
+  });
+}
+
+function finishOnboarding() {
+  alert('온보딩 완료!');
+  toSplash();
+}
+
+function toSplash() {
+  document.getElementById('onboarding-screen').classList.remove('active');
+  document.getElementById('splash-screen').style.opacity = '1';
+  document.getElementById('splash-screen').style.pointerEvents = 'all';
+  currentSlide = 0;
+}
+</script>
+
+</body>
+</html>

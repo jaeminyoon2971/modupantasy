@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>모두의 판타지 - 디자인 개선 V1</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --primary: #3B82F6;
+  --primary-light: #60A5FA;
+  --primary-dark: #1E40AF;
+  --secondary: #8B5CF6;
+  --bg: #F8FAFC;
+  --text: #0F172A;
+  --text-light: #64748B;
+  --white: #FFFFFF;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  background: var(--bg);
+  overflow: hidden;
+}
+
+.phone-frame {
+  width: 100%;
+  height: 100vh;
+  background: var(--white);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── 스플래시 화면 ── */
+.splash {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(160deg, #0F172A 0%, #1E3A8A 35%, #312E81 70%, #1E1B4B 100%);
+  opacity: 1;
+  z-index: 100;
+}
+
+.splash-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* 네뷸라 배경 */
+.nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(100px);
+  opacity: 0.3;
+  animation: float 15s ease-in-out infinite;
+}
+
+.nebula-1 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #A78BFA 0%, transparent 70%);
+  top: -100px;
+  right: -100px;
+}
+
+.nebula-2 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #7C3AED 0%, transparent 70%);
+  bottom: -50px;
+  left: -50px;
+  animation: float 20s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(30px, -30px) scale(1.1); }
+}
+
+/* 스타 효과 */
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: twinkle 3s infinite ease-in-out;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+}
+
+/* 오브 */
+.orb-container {
+  position: relative;
+  z-index: 10;
+  margin-bottom: 80px;
+}
+
+.orb {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #C4B5FD 0%, #A78BFA 15%, #8B5CF6 35%, #7C3AED 55%, #6D28D9 75%, #4C1D95 100%);
+  box-shadow:
+    0 0 0 2px rgba(168, 85, 247, 0.4),
+    0 0 60px rgba(168, 85, 247, 0.6),
+    0 0 120px rgba(123, 97, 255, 0.4),
+    0 0 180px rgba(168, 85, 247, 0.2),
+    inset -40px -40px 80px rgba(0, 0, 0, 0.3),
+    inset 20px 20px 60px rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 80px;
+  animation: orb-float 6s ease-in-out infinite, orb-glow 4s ease-in-out infinite;
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes orb-glow {
+  0%, 100% {
+    box-shadow:
+      0 0 0 2px rgba(168, 85, 247, 0.4),
+      0 0 60px rgba(168, 85, 247, 0.6),
+      0 0 120px rgba(123, 97, 255, 0.4),
+      0 0 180px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 0 2px rgba(168, 85, 247, 0.6),
+      0 0 80px rgba(168, 85, 247, 0.8),
+      0 0 160px rgba(123, 97, 255, 0.6),
+      0 0 240px rgba(168, 85, 247, 0.3);
+  }
+}
+
+/* 텍스트 */
+.splash-text {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  color: #fff;
+  margin-top: 40px;
+  animation: fade-up 0.8s ease-out 0.3s backwards;
+}
+
+.splash-title {
+  font-size: 38px;
+  font-weight: 900;
+  letter-spacing: -1px;
+  margin-bottom: 12px;
+  background: linear-gradient(135deg, #F0F4FF 0%, #E9D5FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.splash-subtitle {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.6;
+  letter-spacing: -0.2px;
+}
+
+.btn-start {
+  position: absolute;
+  bottom: 60px;
+  left: 24px;
+  right: 24px;
+  padding: 16px;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 50%, #1E40AF 100%);
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.3);
+  animation: fade-up 0.8s ease-out 0.5s backwards;
+}
+
+.btn-start:active {
+  transform: scale(0.98);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── 온보딩 화면 ── */
+.onboarding {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background: #fff;
+  opacity: 0;
+  z-index: 50;
+}
+
+.onboarding.active {
+  display: flex;
+  opacity: 1;
+}
+
+.ob-header {
+  padding: 24px 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ob-step {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.ob-skip {
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 14px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.ob-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  text-align: center;
+}
+
+.ob-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 32px;
+  background: linear-gradient(135deg, #DBEAFE 0%, #E0E7FF 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+}
+
+.ob-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+  line-height: 1.3;
+}
+
+.ob-desc {
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 280px;
+}
+
+.ob-badge {
+  display: inline-block;
+  background: linear-gradient(135deg, #DBEAFE 0%, #E9D5FF 100%);
+  color: var(--primary-dark);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.ob-footer {
+  padding: 24px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ob-dots {
+  display: flex;
+  gap: 8px;
+}
+
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #E2E8F0;
+  transition: all 0.3s;
+}
+
+.ob-dot.active {
+  background: var(--primary);
+  width: 24px;
+  border-radius: 4px;
+}
+
+.ob-btn {
+  margin-left: auto;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #60A5FA 0%, #3B82F6 100%);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.ob-btn:active {
+  transform: scale(0.96);
+}
+
+/* 테스트용 스타일 */
+.demo-controls {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  display: flex;
+  gap: 8px;
+  z-index: 1000;
+}
+
+.demo-btn {
+  padding: 8px 12px;
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+</style>
+</head>
+<body>
+
+<div class="phone-frame">
+  <!-- 스플래시 -->
+  <div class="splash" id="splash-screen">
+    <div class="splash-bg">
+      <div class="nebula nebula-1"></div>
+      <div class="nebula nebula-2"></div>
+      <div class="star" style="top: 10%; left: 15%;"></div>
+      <div class="star" style="top: 20%; right: 20%;"></div>
+      <div class="star" style="bottom: 30%; left: 25%;"></div>
+      <div class="star" style="bottom: 15%; right: 10%;"></div>
+    </div>
+
+    <div class="orb-container">
+      <div class="orb">✨</div>
+    </div>
+
+    <div class="splash-text">
+      <h1 class="splash-title">모두의 판타지</h1>
+      <p class="splash-subtitle">아이디어가 곧 이야기가 되는<br>당신만의 창작 공간</p>
+    </div>
+
+    <button class="btn-start" onclick="startOnboarding()">시작하기</button>
+  </div>
+
+  <!-- 온보딩 -->
+  <div class="onboarding" id="onboarding-screen">
+    <div class="ob-header">
+      <span class="ob-step" id="step-text">Step 1 / 4</span>
+      <button class="ob-skip" onclick="finishOnboarding()">건너뛰기</button>
+    </div>
+
+    <div class="ob-body">
+      <div class="ob-icon" id="ob-icon">📖</div>
+      <div class="ob-badge" id="ob-badge">새로운 경험</div>
+      <h2 class="ob-title" id="ob-title">아이디어를 이야기로</h2>
+      <p class="ob-desc" id="ob-desc">당신의 상상을 AI와 함께 웹소설로 만들어보세요</p>
+    </div>
+
+    <div class="ob-footer">
+      <div class="ob-dots">
+        <div class="ob-dot active"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+        <div class="ob-dot"></div>
+      </div>
+      <button class="ob-btn" onclick="nextSlide()">다음</button>
+    </div>
+  </div>
+</div>
+
+<!-- 데모 컨트롤 -->
+<div class="demo-controls">
+  <button class="demo-btn" onclick="toSplash()">Splash</button>
+  <button class="demo-btn" onclick="startOnboarding()">Onboarding</button>
+</div>
+
+<script>
+const slides = [
+  {
+    icon: '📖',
+    badge: '새로운 경험',
+    title: '아이디어를 이야기로',
+    desc: '당신의 상상을 AI와 함께 웹소설로 만들어보세요'
+  },
+  {
+    icon: '🎨',
+    badge: '창의적 도구',
+    title: '세계관부터 캐릭터까지',
+    desc: '체계적으로 작품의 기초를 다져보세요'
+  },
+  {
+    icon: '✍️',
+    badge: '스마트 집필',
+    title: 'AI와 함께 집필하기',
+    desc: '매 화마다 AI의 제안을 받으며 완성도를 높여요'
+  },
+  {
+    icon: '🚀',
+    badge: '완성과 공유',
+    title: '당신의 작품 완성하기',
+    desc: '완성된 원고를 저장하고 공유해보세요'
+  }
+];
+
+let currentSlide = 0;
+
+function startOnboarding() {
+  document.getElementById('splash-screen').style.opacity = '0';
+  document.getElementById('splash-screen').style.pointerEvents = 'none';
+  setTimeout(() => {
+    document.getElementById('onboarding-screen').classList.add('active');
+  }, 300);
+}
+
+function nextSlide() {
+  if (currentSlide < slides.length - 1) {
+    currentSlide++;
+    updateSlide();
+  } else {
+    finishOnboarding();
+  }
+}
+
+function updateSlide() {
+  const slide = slides[currentSlide];
+  document.getElementById('ob-icon').textContent = slide.icon;
+  document.getElementById('ob-badge').textContent = slide.badge;
+  document.getElementById('ob-title').textContent = slide.title;
+  document.getElementById('ob-desc').textContent = slide.desc;
+  document.getElementById('step-text').textContent = `Step ${currentSlide + 1} / ${slides.length}`;
+
+  const dots = document.querySelectorAll('.ob-dot');
+  dots.forEach((dot, i) => {
+    dot.classList.toggle('active', i === currentSlide);
+  });
+}
+
+function finishOnboarding() {
+  alert('온보딩 완료! 실제 코드에 반영되지 않습니다.');
+  toSplash();
+}
+
+function toSplash() {
+  document.getElementById('onboarding-screen').classList.remove('active');
+  document.getElementById('splash-screen').style.opacity = '1';
+  document.getElementById('splash-screen').style.pointerEvents = 'all';
+  currentSlide = 0;
+}
+</script>
+
+</body>
+</html>
