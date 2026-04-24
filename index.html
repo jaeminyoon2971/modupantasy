@@ -1493,6 +1493,7 @@ body {
 }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@apps-in-toss/web-framework"></script>
 </head>
 <body>
 
@@ -2741,26 +2742,101 @@ const SUPABASE_ANON_KEY = 'sb_publishable_a2cgPqMYyTcikrHggVJ22w_knhv8Otp';
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let currentUser = null;
+let tossUserKey = null;
 
-supabase.auth.onAuthStateChange((event, session) => {
-  if (session?.user) {
-    currentUser = session.user;
-    console.log('✓ 로그인됨:', currentUser.email);
-  } else {
-    currentUser = null;
-    console.log('로그아웃됨');
+/* Toss AppinToss 초기화 */
+async function initializeTossAuth() {
+  try {
+    // localStorage에서 userKey 확인
+    const savedUserKey = localStorage.getItem('toss_user_key');
+    if (savedUserKey) {
+      tossUserKey = savedUserKey;
+      console.log('✓ 저장된 Toss userKey 발견');
+      await authenticateWithTossKey(tossUserKey);
+      return;
+    }
+
+    // AppinToss에서 userKey 가져오기 (비게임 미니앱)
+    const res = await window.getAnonymousKey();
+    if (!res) {
+      console.warn('❌ AppinToss userKey를 가져올 수 없음');
+      return;
+    }
+
+    tossUserKey = res.userKey;
+    const hash = res.hash;
+
+    // 해시 유효성 검증
+    console.log('✓ Toss userKey 획득:', tossUserKey);
+    console.log('✓ 해시:', hash);
+
+    // localStorage에 저장
+    localStorage.setItem('toss_user_key', tossUserKey);
+
+    // Supabase에서 사용자 인증
+    await authenticateWithTossKey(tossUserKey);
+  } catch (error) {
+    console.error('Toss 인증 초기화 오류:', error);
   }
-});
+}
+
+/* Toss userKey로 사용자 인증 */
+async function authenticateWithTossKey(userKey) {
+  try {
+    // Supabase Edge Function을 통해 사용자 생성/조회
+    const response = await fetch(
+      SUPABASE_URL + '/functions/v1/authenticate-toss-user',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': SUPABASE_ANON_KEY,
+        },
+        body: JSON.stringify({ userKey }),
+      }
+    );
+
+    const result = await response.json();
+    if (!response.ok) {
+      throw new Error(result.error || 'Toss 인증 실패');
+    }
+
+    // 세션 토큰 저장
+    if (result.session) {
+      await supabase.auth.setSession(result.session);
+    }
+
+    currentUser = {
+      id: userKey,
+      user_id: result.user_id,
+    };
+
+    console.log('✓ Toss 사용자 인증 완료:', userKey);
+
+    // 프로젝트 로드
+    await loadUserProjects();
+  } catch (error) {
+    console.error('Toss 사용자 인증 오류:', error);
+  }
+}
+
+// 앱 로드 시 Toss 인증 초기화
+document.addEventListener('DOMContentLoaded', initializeTossAuth);
+
+// 또는 스크립트 로드 후 즉시 실행
+setTimeout(initializeTossAuth, 100);
 
 /* ───────────────────────────────────────────────────────────
    Edge Functions 호출 함수
 ───────────────────────────────────────────────────────────── */
 
-// 인증 헤더 가져오기
+// 인증 헤더 가져오기 (Toss userKey)
 async function getAuthHeader() {
-  const { data } = await supabase.auth.getSession();
-  if (!data.session?.access_token) return null;
-  return `Bearer ${data.session.access_token}`;
+  if (!tossUserKey) {
+    console.warn('Toss userKey 없음');
+    return null;
+  }
+  return `Bearer ${tossUserKey}`;
 }
 
 // create-project 호출
@@ -3163,45 +3239,23 @@ function save() {
 }
 
 /* ═══════════════════════════════════════════════════════════
-   인증 함수 (Supabase)
+   인증 함수 (Toss AppinToss)
 ═══════════════════════════════════════════════════════════ */
 
-// 회원가입
-async function signUpUser(email, password) {
+// Toss 로그인 (AppinToss 자동 인증)
+async function signInWithToss() {
   try {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-    });
+    if (!tossUserKey) {
+      console.error('Toss userKey가 없음');
+      showToast('❌ 로그인 실패: Toss 계정이 필요합니다');
+      return null;
+    }
 
-    if (error) throw error;
-    console.log('✓ 회원가입 성공:', email);
-    return data.user;
+    await authenticateWithTossKey(tossUserKey);
+    console.log('✓ Toss 로그인 성공');
+    return currentUser;
   } catch (error) {
-    console.error('회원가입 오류:', error.message);
-    showToast('❌ 회원가입 실패: ' + error.message);
-    throw error;
-  }
-}
-
-// 로그인
-async function signInUser(email, password) {
-  try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) throw error;
-    currentUser = data.user;
-    console.log('✓ 로그인 성공:', email);
-
-    // 사용자 프로젝트 로드
-    await loadUserProjects();
-
-    return data.user;
-  } catch (error) {
-    console.error('로그인 오류:', error.message);
+    console.error('Toss 로그인 오류:', error.message);
     showToast('❌ 로그인 실패: ' + error.message);
     throw error;
   }
@@ -3210,10 +3264,14 @@ async function signInUser(email, password) {
 // 로그아웃
 async function signOutUser() {
   try {
-    const { error } = await supabase.auth.signOut();
-    if (error) throw error;
+    // Supabase 세션 로그아웃
+    await supabase.auth.signOut();
 
+    // 로컬 상태 초기화
     currentUser = null;
+    tossUserKey = null;
+    localStorage.removeItem('toss_user_key');
+
     console.log('✓ 로그아웃 완료');
     showToast('로그아웃됐어요');
 
@@ -3221,7 +3279,11 @@ async function signOutUser() {
     goTo('splash');
   } catch (error) {
     console.error('로그아웃 오류:', error.message);
-    showToast('❌ 로그아웃 실패');
+    // 에러가 있어도 로컬 상태는 초기화
+    currentUser = null;
+    tossUserKey = null;
+    localStorage.removeItem('toss_user_key');
+    goTo('splash');
   }
 }
 
