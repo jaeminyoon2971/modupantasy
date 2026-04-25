@@ -2739,10 +2739,10 @@ body {
 const SUPABASE_URL = 'https://tsxxfkpteooocquonehr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a2cgPqMYyTcikrHggVJ22w_knhv8Otp';
 
-let supabase = null;
+let supabaseClient = null;
 try {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     console.log('✓ Supabase 클라이언트 초기화 완료');
   } else {
     console.warn('⚠️ window.supabase 없음 - Supabase 기능 비활성화');
@@ -2817,7 +2817,7 @@ async function authenticateWithTossKey(userKey) {
 
     // 세션 토큰 저장
     if (result.session) {
-      await supabase.auth.setSession(result.session);
+      if (supabaseClient) await supabaseClient.auth.setSession(result.session);
     }
 
     currentUser = {
@@ -3279,7 +3279,7 @@ async function signInWithToss() {
 async function signOutUser() {
   try {
     // Supabase 세션 로그아웃
-    await supabase.auth.signOut();
+    if (supabaseClient) await supabaseClient.auth.signOut();
 
     // 로컬 상태 초기화
     currentUser = null;
