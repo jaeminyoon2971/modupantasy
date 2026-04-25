@@ -2780,9 +2780,7 @@ async function initializeTossAuth() {
     tossUserKey = res.userKey;
     const hash = res.hash;
 
-    // 해시 유효성 검증
-    console.log('✓ Toss userKey 획득:', tossUserKey);
-    console.log('✓ 해시:', hash);
+    console.log('✓ Toss userKey 획득 완료');
 
     // localStorage에 저장
     localStorage.setItem('toss_user_key', tossUserKey);
@@ -2825,7 +2823,7 @@ async function authenticateWithTossKey(userKey) {
       user_id: result.user_id,
     };
 
-    console.log('✓ Toss 사용자 인증 완료:', userKey);
+    console.log('✓ Toss 사용자 인증 완료');
 
     // 프로젝트 로드
     await loadUserProjects();

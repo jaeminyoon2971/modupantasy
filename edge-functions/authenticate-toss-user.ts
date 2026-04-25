@@ -6,33 +6,36 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
-function extractUserKey(req: Request): string | null {
-  const authHeader = req.headers.get('authorization') || ''
-  const parts = authHeader.split(' ')
-  if (parts.length !== 2 || parts[0] !== 'Bearer') {
-    return null
-  }
-  return parts[1]
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'https://modupantasy.vercel.app',
+  'Access-Control-Allow-Methods': 'POST',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
+// userKey 유효성 검증 (32~128자 영숫자/특수문자)
+function isValidUserKey(key: string): boolean {
+  return typeof key === 'string' && key.length >= 8 && key.length <= 128
 }
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'POST',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      },
+    return new Response('ok', { headers: CORS_HEADERS })
+  }
+
+  if (req.method !== 'POST') {
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     })
   }
 
   try {
-    const { userKey } = await req.json()
+    const body = await req.json()
+    const { userKey } = body
 
-    if (!userKey) {
-      return new Response(JSON.stringify({ error: 'userKey가 필요함' }), {
+    if (!userKey || !isValidUserKey(userKey)) {
+      return new Response(JSON.stringify({ error: 'userKey가 유효하지 않음' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
       })
     }
 
@@ -56,10 +59,10 @@ Deno.serve(async (req) => {
         .single()
 
       if (createError) {
-        console.error('사용자 생성 오류:', createError)
+        console.error('사용자 생성 오류 코드:', createError.code)
         return new Response(
           JSON.stringify({ error: '사용자 생성 실패' }),
-          { status: 500, headers: { 'Content-Type': 'application/json' } }
+          { status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
         )
       }
 
@@ -67,29 +70,14 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({
-        user_id: user.id,
-        toss_user_key: userKey,
-      }),
-      {
-        status: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
+      JSON.stringify({ user_id: user.id }),
+      { status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
     )
   } catch (error) {
-    console.error('인증 오류:', error)
+    console.error('인증 오류 발생')
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : '오류 발생' }),
-      {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
-        },
-      }
+      JSON.stringify({ error: '서버 오류가 발생했어요' }),
+      { status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS } }
     )
   }
 })
