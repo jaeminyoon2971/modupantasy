@@ -2240,6 +2240,42 @@ body {
         </div>
       </div>
 
+      <!-- ── AI 개연성 & 집필 안내 ── -->
+      <div style="padding:24px 20px 0">
+        <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">🧠 AI 개연성 & 집필 안내</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">✍️ 집필 1회에 AI는 몇 자 써줘요?</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.8">한 번에 <b>500~1,000자</b> 정도를 작성해요. 웹소설 A4 반 페이지 분량이에요.<br>5,000자 목표를 채우려면 보통 <b>집필 버튼 6~7회</b>가 필요해요.<br>장면 전환이나 감정 고조 등 <b>구체적인 방향을 알려줄수록</b> 더 좋은 원고가 나와요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">🔗 개연성은 어떻게 유지되나요?</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.8">AI는 집필할 때마다 <b>3가지 정보</b>를 함께 참고해요.<br><br>
+              <b>① 스토리 바이블</b> — 지금까지 완성된 화들의 전체 줄거리 압축본. 10화마다 자동 갱신돼요.<br>
+              <b>② 최근 20화 요약</b> — 최근 완성된 화들의 상세 요약. 직전 흐름과 복선을 기억해요.<br>
+              <b>③ 현재 화 원고 전체</b> — 지금 쓰고 있는 화의 내용을 처음부터 끝까지 보고 이어써요.<br><br>
+              덕분에 50화, 100화가 넘어도 등장인물과 사건 흐름이 일관되게 유지돼요.</div>
+          </div>
+
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);padding:14px 16px">
+            <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">📈 개연성을 더 높이는 방법</div>
+            <div style="font-size:12px;color:var(--sub);line-height:1.8">
+              <b>1. 화를 완성으로 확정하세요</b><br>
+              완성 처리를 해야 AI가 그 화의 요약을 생성해요. 미완성 화가 많으면 AI가 내용을 기억하지 못해요.<br><br>
+              <b>2. 세계관·캐릭터 설정을 구체적으로 써두세요</b><br>
+              작가설정이 자세할수록 AI가 일관된 캐릭터로 글을 써줘요. 특히 말투·성격·관계는 최대한 구체적으로 입력해두세요.<br><br>
+              <b>3. 이번 화 메모 기능을 활용하세요</b><br>
+              이번 회차에서 꼭 넣고 싶은 복선이나 사건을 집필창 상단 <b>"이번 화 참고사항"</b>에 메모해두면, AI가 그 방향으로 글을 써요.<br><br>
+              <b>4. 복선은 채팅으로 알려주세요</b><br>
+              "3화에서 주인공이 단검을 잃어버렸어, 이번 화에서 그게 등장하게 해줘"처럼 직접 말해주면 AI가 반영해요. 오래된 복선일수록 직접 언급해주는 게 가장 확실해요.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- ── 웹소설 작성 팁 ── -->
       <div style="padding:24px 20px 0">
         <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.05em;text-transform:uppercase;margin-bottom:12px">💡 웹소설 작성 팁</div>
@@ -4733,7 +4769,7 @@ let writingLoading = false;
 /* ────────────────────────────────────
    스토리 바이블 — 자동 갱신 (10화마다)
 ──────────────────────────────────── */
-const RECENT_EP_COUNT = 10; // 최근 N화는 상세 요약 전달
+const RECENT_EP_COUNT = 20; // 최근 N화는 상세 요약 전달
 
 async function updateStoryBibleIfNeeded() {
   const s = S;
@@ -4761,8 +4797,8 @@ async function updateStoryBibleIfNeeded() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 800,
-        system: '당신은 웹소설 편집자입니다. 아래 회차별 요약을 읽고 전체 줄거리를 800자 이내로 압축 정리해주세요. 주요 사건, 인물 관계 변화, 복선, 현재 상황을 포함해야 합니다. 다른 설명 없이 줄거리 요약만 작성하세요.',
+        max_tokens: 2000,
+        system: '당신은 웹소설 편집자입니다. 아래 회차별 요약을 읽고 전체 줄거리를 2000자 이내로 압축 정리해주세요. 주요 사건, 인물 관계 변화, 복선, 떡밥, 현재 상황, 미해결 갈등을 포함해야 합니다. 다른 설명 없이 줄거리 요약만 작성하세요.',
         messages: [{ role: 'user', content: `다음 회차 요약들을 하나의 스토리 바이블로 압축해주세요:\n\n${allSummaries}` }]
       })
     });
@@ -4784,7 +4820,7 @@ function buildSystemPrompt() {
   // ── 레이어 1: 스토리 바이블 (11화 이상일 때, 오래된 화 대체) ──
   let bibleSection = '';
   if (s.storyBible && epIdx >= RECENT_EP_COUNT) {
-    const bible = s.storyBible.length > 800 ? s.storyBible.slice(0, 800) + '…' : s.storyBible;
+    const bible = s.storyBible.length > 2000 ? s.storyBible.slice(0, 2000) + '…' : s.storyBible;
     bibleSection = `\n[스토리 바이블 — 전체 줄거리 압축본]\n${bible}`;
   }
 
@@ -5276,7 +5312,7 @@ async function _execWritingAI(userMsg, isWrite = false) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: isWrite ? 4000 : 250,  // 순수채팅은 250토큰으로 제한
+        max_tokens: isWrite ? 2000 : 250,  // 원고작성 2000, 순수채팅 250
         system: systemPrompt,
         messages: trimmedHistory
       })
