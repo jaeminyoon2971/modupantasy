@@ -4825,13 +4825,10 @@ function buildSystemPrompt() {
     }
   }
 
-  // ── 3. 현재 화차 원고 (마지막 2,000자 — 중략 없이 개연성 유지)
+  // ── 3. 현재 화차 원고 (전체 — 이 화 안의 개연성 유지를 위해 자르지 않음)
   const currentEp = allEps[epIdx];
   const currentManuscript = currentEp?.manuscript?.trim() || '';
-  // 앞부분은 이전 화 요약이 커버하므로, 최근 흐름(2,000자)만 전달
-  const currentEpContent = currentManuscript.length > 2000
-    ? '…' + currentManuscript.slice(-2000)
-    : currentManuscript;
+  const currentEpContent = currentManuscript; // 현재 화는 전체 필요 (화 내부 개연성)
   const currentEpSection = currentManuscript
     ? `\n[현재 화차(${epIdx + 1}화) 작성된 원고 — 반드시 이어서 쓸 것]\n${currentEpContent}`
     : `\n[현재 화차(${epIdx + 1}화) 원고]\n아직 작성된 원고가 없습니다. 처음부터 시작해주세요.`;
