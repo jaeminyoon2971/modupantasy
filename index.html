@@ -2145,7 +2145,7 @@ body {
               <div style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px">업뎃</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">집필권 · 이용권 안내</div>
-                <div style="font-size:12px;color:var(--sub);line-height:1.7">매일 자정 기준으로 <b>무료 집필 1회</b>가 제공돼요.<br>초과 시 이용권(<b>100원/1회 · 900원/10회</b>) 구매로 계속 사용할 수 있어요.<br>결제 기능은 앱인토스 정식 출시 시 활성화 예정이에요.</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.7">매일 자정 기준으로 <b>무료 집필 1회</b>가 제공돼요.<br>초과 시 이용권(<b>집필권 5회 900원</b>) 구매로 계속 사용할 수 있어요.<br>결제 기능은 앱인토스 정식 출시 시 활성화 예정이에요.</div>
               </div>
             </div>
           </div>
@@ -2377,7 +2377,7 @@ body {
               <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div>
                   <div style="font-size:13px;color:var(--sub);">현재 보유량</div>
-                  <div style="font-size:11px;color:var(--hint);margin-top:2px;">100원/1회 · 900원/10회</div>
+                  <div style="font-size:11px;color:var(--hint);margin-top:2px;">5회 900원</div>
                 </div>
                 <div id="my-paid-count" style="font-size:22px;font-weight:900;color:var(--orange);">0회</div>
               </div>
@@ -2521,16 +2521,14 @@ body {
       <div style="font-size:14px;color:var(--sub);line-height:1.6">오늘 무료 집필 1회를 모두 사용했어요.<br>추가 이용권을 구매해 계속 쓰세요.</div>
     </div>
     <div style="display:flex;gap:10px;margin-bottom:16px;">
-      <button onclick="purchaseIAP(1)" style="flex:1;padding:16px 12px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;">
-        <div style="font-size:22px;font-weight:800;color:var(--blue)">1회</div>
-        <div id="iap-price-1" style="font-size:16px;font-weight:700;color:var(--blue);margin:4px 0">---</div>
-        <div style="font-size:11px;color:var(--sub)">즉시 사용 가능</div>
-      </button>
-      <button onclick="purchaseIAP(10)" style="flex:1;padding:16px 12px;background:#FFF3EB;border:2px solid var(--orange);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;position:relative;">
-        <div style="position:absolute;top:-1px;right:-1px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;padding:3px 10px;border-radius:0 var(--r-lg) 0 10px;">추천</div>
-        <div style="font-size:22px;font-weight:800;color:#C05000">10회</div>
-        <div id="iap-price-10" style="font-size:16px;font-weight:700;color:#C05000;margin:4px 0">---</div>
-        <div style="font-size:11px;color:var(--sub)">10% 할인</div>
+      <button onclick="purchaseIAP(5)" style="width:100%;padding:20px 16px;background:var(--blue-light);border:2px solid var(--blue);border-radius:var(--r-lg);cursor:pointer;font-family:'Noto Sans KR',sans-serif;text-align:center;display:flex;align-items:center;justify-content:space-between;">
+        <div style="text-align:left;">
+          <div style="font-size:20px;font-weight:800;color:var(--blue)">집필권 5회</div>
+          <div style="font-size:12px;color:var(--sub);margin-top:4px">회당 180원 · 즉시 사용 가능</div>
+        </div>
+        <div>
+          <div id="iap-price-5" style="font-size:22px;font-weight:900;color:var(--blue)">900원</div>
+        </div>
       </button>
     </div>
     <div id="iap-notice" style="background:var(--bg);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--sub);text-align:center;line-height:1.7;">
@@ -5243,8 +5241,7 @@ function closeIAPPopup() {
 /* ── AppinToss 인앱결제 SDK 연동 ── */
 
 // TODO: 앱인토스 콘솔 → 인앱 결제 → 상품 등록 후 실제 SKU로 교체
-const IAP_SKU_1  = 'writing_credit_1';   // 집필권 1회 SKU
-const IAP_SKU_10 = 'writing_credit_10';  // 집필권 10회 SKU
+const IAP_SKU_5 = 'writing_credit_5';  // 집필권 5회 SKU (900원)
 
 let _aitIAP = null; // IAP SDK 모듈
 
@@ -5278,12 +5275,8 @@ async function _loadIAPProducts() {
     if (!products.length) return;
 
     for (const p of products) {
-      if (p.sku === IAP_SKU_1) {
-        const el = document.getElementById('iap-price-1');
-        if (el) el.textContent = `${p.price?.toLocaleString()}원`;
-      }
-      if (p.sku === IAP_SKU_10) {
-        const el = document.getElementById('iap-price-10');
+      if (p.sku === IAP_SKU_5) {
+        const el = document.getElementById('iap-price-5');
         if (el) el.textContent = `${p.price?.toLocaleString()}원`;
       }
     }
@@ -5314,7 +5307,7 @@ async function _recoverPendingOrders() {
 
 // 상품 지급 처리 (결제 성공 or 복원 시 공통 호출)
 async function _grantPurchasedProduct(sku, orderId, isRecovery = false) {
-  const creditCount = sku === IAP_SKU_10 ? 10 : 1;
+  const creditCount = sku === IAP_SKU_5 ? 5 : 5; // 현재 단일 상품 5회
   try {
     // 집필권 지급
     addExtraUsage(creditCount);
@@ -5343,7 +5336,7 @@ async function purchaseIAP(count) {
 
   // ── AppinToss IAP SDK 결제 ──
   if (_aitIAP) {
-    const sku = count === 1 ? IAP_SKU_1 : IAP_SKU_10;
+    const sku = IAP_SKU_5; // 단일 상품
     try {
       await _aitIAP.createOneTimePurchaseOrder({
         sku,
