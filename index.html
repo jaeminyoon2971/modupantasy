@@ -5206,7 +5206,7 @@ function updateWritingInputState() {
         const adLeft = MAX_AD_COUNT - getTodayAdCount();
         banner.innerHTML = `
           <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅<br><span style="font-size:11px;">📺 광고 ${adLeft}회 시청으로 집필 ${adLeft}회 추가!</span></span>
-          <button onclick="showAdModal()" style="background:#7B61FF;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">광고 보기 ▶</button>`;
+          <button onclick="showAdPopup()" style="background:#7B61FF;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">광고 보기 ▶</button>`;
       } else {
         banner.innerHTML = `
           <span style="font-size:13px;color:#C05000;font-weight:600;">오늘 무료 집필 1회를 모두 사용했어요 😅</span>
