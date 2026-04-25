@@ -3612,7 +3612,7 @@ function openSheet(type) {
     },
     target: {
       title: '타겟 독자',
-      options: ['전체','10대','20대','30대 이상','성인(19+)'],
+      options: ['전체','10대','20대','30대 이상'],
       multi: false, key: 'target'
     },
     keywords: {
@@ -4490,6 +4490,41 @@ function updateUsageBadge() {
   }
 }
 
+// ── 일일 채팅 횟수 제한 (API 비용 관리) ──
+const CHAT_LIMIT_STORE = 'mdpf_chat_limit';
+const DAILY_CHAT_LIMIT = 10;  // 일일 최대 채팅 횟수
+
+function getChatLimitData() {
+  const today = new Date().toLocaleDateString('ko-KR');
+  try {
+    const raw = JSON.parse(localStorage.getItem(CHAT_LIMIT_STORE) || '{}');
+    if (raw.date !== today) return { date: today, count: 0 };
+    return raw;
+  } catch { return { date: today, count: 0 }; }
+}
+
+function saveChatLimitData(data) {
+  localStorage.setItem(CHAT_LIMIT_STORE, JSON.stringify(data));
+}
+
+function getTodayChatCount() {
+  return getChatLimitData().count;
+}
+
+function canChat() {
+  return getTodayChatCount() < DAILY_CHAT_LIMIT;
+}
+
+function incrementChatCount() {
+  const d = getChatLimitData();
+  if (d.count < DAILY_CHAT_LIMIT) {
+    d.count++;
+    saveChatLimitData(d);
+    return true;
+  }
+  return false;
+}
+
 function getApiKey() {
   return localStorage.getItem(API_KEY_STORE) || '';
 }
@@ -5115,6 +5150,12 @@ async function _execWritingAI(userMsg) {
     return;
   }
 
+  // 일일 채팅 한도 확인
+  if (!canChat()) {
+    showToast('⚠️ 오늘의 AI 채팅 한도(10회)에 도달했어요. 내일 다시 시도해주세요.');
+    return;
+  }
+
   // 사용자 메시지 추가 후 즉시 저장
   writingHistory.push({ role: 'user', content: userMsg });
   if (currentEpIdx !== null) {
@@ -5151,14 +5192,14 @@ async function _execWritingAI(userMsg) {
 
       if (!shouldDeduct) {
         // 횟수 차감 안 함 (서버 오류)
-        addWcMsg('ai', `⚠️ ${errMsg}<br>사용 횟수는 차감되지 않았어요 🙏`);
+        addWcMsg('ai', `⚠️ 일시적인 오류가 발생했어요.<br>사용 횟수는 차감되지 않았어요 🙏`);
         writingHistory.pop();
       } else {
         // 횟수 차감 (사용자 요청 오류)
         if (res.status === 400) {
-          addWcMsg('ai', `⚠️ 요청 오류: ${errMsg}`);
+          addWcMsg('ai', `⚠️ 입력된 내용에 문제가 있어요. 다시 시도해주세요.`);
         } else {
-          addWcMsg('ai', `⚠️ ${errMsg}`);
+          addWcMsg('ai', `⚠️ 오류가 발생했어요. 잠시 후 다시 시도해주세요.`);
         }
         writingHistory.pop();
         incrementUsage();  // 400 에러는 유저 책임이므로 차감
@@ -5185,6 +5226,7 @@ async function _execWritingAI(userMsg) {
     if (chatText) {
       // 원고 생성 → 차감 + 남은 횟수 표시
       incrementUsage();
+      incrementChatCount();  // 채팅 한도 추적
       addWcMsgAnimated('ai', chatText);
       autoSaveEpisode();
       // 남은 횟수 안내
