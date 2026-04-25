@@ -1492,7 +1492,7 @@ body {
   to { background-position: 200% center; }
 }
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <!-- @apps-in-toss/web-framework는 AppinToss 번들이 자동 제공 (CDN 로드 불필요) -->
 </head>
 <body>
@@ -2739,7 +2739,17 @@ body {
 const SUPABASE_URL = 'https://tsxxfkpteooocquonehr.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_a2cgPqMYyTcikrHggVJ22w_knhv8Otp';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+let supabase = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('✓ Supabase 클라이언트 초기화 완료');
+  } else {
+    console.warn('⚠️ window.supabase 없음 - Supabase 기능 비활성화');
+  }
+} catch (e) {
+  console.error('❌ Supabase 초기화 실패:', e);
+}
 
 let currentUser = null;
 let tossUserKey = null;
