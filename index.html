@@ -4509,7 +4509,7 @@ function onBadgeClick() {
 function showAdPopup(callback) {
   if (!canUseAI() && !callback) {
     // 한도 초과 시 알림만
-    showToast('오늘 최대 사용량(50회)에 도달했어요. 내일 다시 시도해주세요.');
+    showToast('오늘 최대 사용량(3회)에 도달했어요. 내일 다시 시도해주세요.');
     return;
   }
   adCallback = callback || null;
@@ -4523,7 +4523,7 @@ function showAdPopup(callback) {
   if (freeLeft === 0 && !callback) {
     // 배지 클릭 시 (충전 안내)
     titleEl.textContent = '무료 횟수를 모두 사용했어요';
-    descEl.innerHTML = `광고 1회 시청 = AI 집필 1회 충전<br>하루 최대 <b>50회</b>까지 사용 가능해요`;
+    descEl.innerHTML = `광고 1회 시청 = AI 집필 1회 충전<br>하루 최대 <b>3회</b>까지 사용 가능해요`;
     iconEl.textContent = '🎬';
   } else {
     titleEl.textContent = 'AI 사용권 충전';
