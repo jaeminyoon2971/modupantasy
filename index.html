@@ -4605,7 +4605,7 @@ function updateUsageBadge() {
   badge.innerHTML =
     `<span style="${freeStyle}">무료 ${freeLeft}회</span>` +
     `<span style="color:var(--border);margin:0 4px;">|</span>` +
-    `<span style="${paidStyle}">유료 ${extra}회</span>`;
+    `<span style="${paidStyle}">보유 ${extra}회</span>`;
 
   badge.style.color = '';
   badge.style.background = freeLeft > 0 ? '#EBF3FF' : extra > 0 ? '#FFF3EB' : 'var(--bg)';
