@@ -23,13 +23,7 @@ function extractUserKey(req: Request): string | null {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response('ok', {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET',
-        'Access-Control-Allow-Headers': 'Authorization',
-      },
-    })
+    return new Response('ok', { headers: CORS_HEADERS })
   }
 
   try {
@@ -81,7 +75,7 @@ Deno.serve(async (req) => {
         status: 500,
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': 'https://modupantasy.vercel.app',
         },
       }
     )
