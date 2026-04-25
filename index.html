@@ -2016,7 +2016,7 @@ body {
       </div>
       <div class="nav-title" id="writing-nav-title">1화 집필</div>
       <div style="display:flex;align-items:center;gap:6px;">
-        <span id="usage-badge" onclick="onBadgeClick()" style="font-size:11px;font-weight:700;padding:4px 8px;border-radius:20px;cursor:pointer;background:#EBF3FF;color:var(--blue);">💬 3회 무료</span>
+        <span id="usage-badge" onclick="onBadgeClick()" style="font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;cursor:pointer;background:#EBF3FF;color:var(--blue);display:inline-flex;align-items:center;gap:6px;">💬 1회 무료</span>
         <button class="nav-icon-btn" onclick="saveEpisode()" title="저장">
           <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
         </button>
@@ -4598,16 +4598,24 @@ function updateUsageBadge() {
   const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
   const extra = getExtraCount();
 
-  if (freeLeft > 0) {
-    badge.textContent = `💬 ${freeLeft}회 무료`;
+  if (freeLeft > 0 && extra > 0) {
+    // 무료 + 유료 둘 다 있음
+    badge.innerHTML = `🆓 ${freeLeft}회&nbsp;<span style="width:1px;height:12px;background:rgba(49,130,246,0.3);display:inline-block;vertical-align:middle;"></span>&nbsp;✨ ${extra}회`;
+    badge.style.color = 'var(--blue)';
+    badge.style.background = '#EBF3FF';
+  } else if (freeLeft > 0) {
+    // 무료만 있음
+    badge.innerHTML = `🆓 무료 ${freeLeft}회`;
     badge.style.color = 'var(--blue)';
     badge.style.background = '#EBF3FF';
   } else if (extra > 0) {
-    badge.textContent = `💬 +${extra}회 남음`;
-    badge.style.color = '#FF6B00';
+    // 유료만 있음
+    badge.innerHTML = `✨ 구매 ${extra}회`;
+    badge.style.color = '#C05000';
     badge.style.background = '#FFF3EB';
   } else {
-    badge.textContent = `💬 집필권 소진`;
+    // 모두 소진
+    badge.innerHTML = `집필권 소진`;
     badge.style.color = 'var(--hint)';
     badge.style.background = 'var(--border)';
   }
