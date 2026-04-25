@@ -1,6 +1,5 @@
 // 채팅 이력 저장
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { v4 as uuid } from 'https://deno.land/std@0.208.0/uuid/mod.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -63,7 +62,7 @@ Deno.serve(async (req) => {
     const { data: chatRecord, error } = await supabase
       .from('chat_history')
       .insert({
-        id: uuid.v4(),
+        id: crypto.randomUUID(),
         episode_id,
         role,
         content,

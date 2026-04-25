@@ -58,6 +58,27 @@ Deno.serve(async (req) => {
       })
     }
 
+    // 에피소드 소유권 확인 (episode → project → user)
+    const { data: episodeCheck, error: ownerError } = await supabase
+      .from('episodes')
+      .select('id, project:projects(user_id)')
+      .eq('id', episode_id)
+      .single()
+
+    if (ownerError || !episodeCheck) {
+      return new Response(JSON.stringify({ error: '에피소드를 찾을 수 없음' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
+    if ((episodeCheck.project as any)?.user_id !== user.id) {
+      return new Response(JSON.stringify({ error: '권한 없음' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' },
+      })
+    }
+
     // 에피소드 업데이트
     const { data: episode, error } = await supabase
       .from('episodes')

@@ -1,6 +1,5 @@
 // Toss userKey 기반 프로젝트 생성
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
-import { v4 as uuid } from 'https://deno.land/std@0.208.0/uuid/mod.ts'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
 const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
@@ -63,7 +62,7 @@ Deno.serve(async (req) => {
     const { data: project, error: createError } = await supabase
       .from('projects')
       .insert({
-        id: uuid.v4(),
+        id: crypto.randomUUID(),
         user_id: user.id,
         title,
         description: description || '',
