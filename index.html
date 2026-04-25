@@ -1492,6 +1492,8 @@ body {
   to { background-position: 200% center; }
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<!-- @apps-in-toss/web-framework는 AppinToss 번들이 자동 제공 (CDN 로드 불필요) -->
 </head>
 <body>
 
@@ -2730,9 +2732,6 @@ body {
 
 </div><!-- phone-frame -->
 
-<!-- Supabase 라이브러리 로드 -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
 /* ═══════════════════════════════════════════════════════════
    Supabase 클라이언트 초기화
@@ -2757,7 +2756,11 @@ async function initializeTossAuth() {
       return;
     }
 
-    // AppinToss에서 userKey 가져오기 (비게임 미니앱)
+    // AppinToss에서 userKey 가져오기 (비게임 미니앱) - AppinToss 환경에서만 동작
+    if (typeof window.getAnonymousKey !== 'function') {
+      console.warn('❌ AppinToss 환경이 아님 - getAnonymousKey 없음, 인증 건너뜀');
+      return;
+    }
     const res = await window.getAnonymousKey();
     if (!res) {
       console.warn('❌ AppinToss userKey를 가져올 수 없음');
