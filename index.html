@@ -4573,7 +4573,7 @@ function updateUsageBadge() {
 
 // ── 일일 채팅 횟수 제한 (API 비용 관리) ──
 const CHAT_LIMIT_STORE = 'mdpf_chat_limit';
-const DAILY_CHAT_LIMIT = 10;  // 일일 최대 채팅 횟수
+const DAILY_CHAT_LIMIT = 30;  // 일일 최대 순수채팅 횟수 (원고생성 별도)
 
 function getChatLimitData() {
   const today = new Date().toLocaleDateString('ko-KR');
@@ -5212,29 +5212,43 @@ function completeAd(backdrop) {
   updateWritingInputState();
 }
 
-async function callWritingAI(userMsg) {
+// 원고 작성 요청인지 판단 (쓰기 키워드 포함 여부)
+function isWritingRequest(msg) {
+  const writeKeywords = [
+    '써줘','작성해줘','시작해줘','이어써','계속써','이어서 써','다음 장면',
+    '다듬어','수정해줘','고쳐줘','다시 써','장면을 써','를 써줘','을 써줘',
+    '이어쓰기','문체','원고','집필'
+  ];
+  return writeKeywords.some(kw => msg.includes(kw));
+}
+
+async function callWritingAI(userMsg, forceWrite = false) {
   // ✅ 이미 로딩 중이면 중복 요청 방지
   if (writingLoading) return;
 
-  // 무료 or 구매한 집필권 모두 소진 → 차단
-  if (!canWriteNow()) {
+  const isWrite = forceWrite || isWritingRequest(userMsg);
+
+  // 원고작성 요청일 때만 집필 횟수 체크
+  if (isWrite && !canWriteNow()) {
     updateWritingInputState();
     return;
   }
-  _execWritingAI(userMsg);
+  _execWritingAI(userMsg, isWrite);
 }
 
-async function _execWritingAI(userMsg) {
-  // 방어 코드: 이 시점에도 사용 불가면 중단
-  if (!canWriteNow()) {
+async function _execWritingAI(userMsg, isWrite = false) {
+  // 원고작성 요청이면 집필 횟수 재확인
+  if (isWrite && !canWriteNow()) {
     updateWritingInputState();
     return;
   }
 
-  // 일일 채팅 한도 확인
-  if (!canChat()) {
-    showToast('⚠️ 오늘의 AI 채팅 한도(10회)에 도달했어요. 내일 다시 시도해주세요.');
-    return;
+  // 순수채팅 한도 확인 (원고작성이 아닐 때만)
+  if (!isWrite) {
+    if (!canChat()) {
+      addWcMsg('ai', '오늘은 답변을 많이 했어요. 내일 다시 얘기해요 😊');
+      return;
+    }
   }
 
   // 사용자 메시지 추가 후 즉시 저장
@@ -5258,7 +5272,7 @@ async function _execWritingAI(userMsg) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
+        max_tokens: isWrite ? 4000 : 250,  // 순수채팅은 250토큰으로 제한
         system: systemPrompt,
         messages: trimmedHistory
       })
@@ -5304,20 +5318,19 @@ async function _execWritingAI(userMsg) {
     }
 
     const chatText = extractManuscript(reply);
-    if (chatText) {
-      // 원고 생성 → 차감 + 남은 횟수 표시
+    const manuscriptGenerated = reply !== chatText; // [원고시작]태그가 있었으면 true
+
+    if (manuscriptGenerated) {
+      // ✅ 원고 생성 → 집필 횟수 차감
       incrementUsage();
-      incrementChatCount();  // 채팅 한도 추적
       addWcMsgAnimated('ai', chatText);
       autoSaveEpisode();
-      // 남은 횟수 안내
+      // 남은 집필 횟수 안내
       const ms = document.getElementById('wm-text')?.innerText?.trim() || '';
       if (ms.length >= 5000) {
-        // 5000자 달성 → 채팅창에 안내 메세지 (토스트는 사라지니 채팅으로)
         setTimeout(() => addWcMsg('ai',
           '🎉 이번 화 목표 분량(5,000자)을 달성했어요!<br>검수 탭에서 원고를 확인하고 완성 처리해보세요 😊'), 400);
       } else {
-        // 아직 5000자 미만 → 남은 집필 횟수 토스트
         const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
         const extraLeft = getTodayExtra();
         if (freeLeft > 0) {
@@ -5327,7 +5340,8 @@ async function _execWritingAI(userMsg) {
         }
       }
     } else {
-      // 순수 대화 → 차감 없이 타이핑 애니메이션
+      // ✅ 순수 채팅 → 채팅 횟수만 차감 (집필 횟수 차감 없음)
+      incrementChatCount();
       addWcMsgAnimated('ai', reply);
     }
   } catch(e) {
@@ -5362,7 +5376,7 @@ async function sendWritingMsg() {
 async function quickWrite(text) {
   if(writingLoading) return;
   addWcMsg('user', text);
-  await callWritingAI(text);
+  await callWritingAI(text, true); // 빠른집필 버튼 = 항상 원고작성 모드
 }
 
 function handleWcKey(e) {
