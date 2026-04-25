@@ -4784,7 +4784,7 @@ function buildSystemPrompt() {
   // ── 레이어 1: 스토리 바이블 (11화 이상일 때, 오래된 화 대체) ──
   let bibleSection = '';
   if (s.storyBible && epIdx >= RECENT_EP_COUNT) {
-    const bible = s.storyBible.length > 600 ? s.storyBible.slice(0, 600) + '…' : s.storyBible;
+    const bible = s.storyBible.length > 800 ? s.storyBible.slice(0, 800) + '…' : s.storyBible;
     bibleSection = `\n[스토리 바이블 — 전체 줄거리 압축본]\n${bible}`;
   }
 
@@ -4825,15 +4825,13 @@ function buildSystemPrompt() {
     }
   }
 
-  // ── 3. 현재 화차 원고 (앞부분 200자 + 마지막 1,000자만 — 전체 불필요)
+  // ── 3. 현재 화차 원고 (마지막 2,000자 — 중략 없이 개연성 유지)
   const currentEp = allEps[epIdx];
   const currentManuscript = currentEp?.manuscript?.trim() || '';
-  let currentEpContent = currentManuscript;
-  if (currentManuscript.length > 1200) {
-    const head = currentManuscript.slice(0, 200);
-    const tail = currentManuscript.slice(-1000);
-    currentEpContent = head + '\n\n[… 중략 …]\n\n' + tail;
-  }
+  // 앞부분은 이전 화 요약이 커버하므로, 최근 흐름(2,000자)만 전달
+  const currentEpContent = currentManuscript.length > 2000
+    ? '…' + currentManuscript.slice(-2000)
+    : currentManuscript;
   const currentEpSection = currentManuscript
     ? `\n[현재 화차(${epIdx + 1}화) 작성된 원고 — 반드시 이어서 쓸 것]\n${currentEpContent}`
     : `\n[현재 화차(${epIdx + 1}화) 원고]\n아직 작성된 원고가 없습니다. 처음부터 시작해주세요.`;
@@ -4896,7 +4894,7 @@ function buildSystemPrompt() {
 [세계관]
 - 시대/배경: ${s.era || '미설정'}
 - 핵심 키워드: ${s.keywords?.join(', ') || '없음'}
-- 세계관 설명: ${s.worlddesc ? s.worlddesc.slice(0, 300) + (s.worlddesc.length > 300 ? '…' : '') : '미설정'}
+- 세계관 설명: ${s.worlddesc ? s.worlddesc.slice(0, 500) + (s.worlddesc.length > 500 ? '…' : '') : '미설정'}
 
 [등장인물]
 ${s.characters?.length ? s.characters.map(c =>
@@ -4905,7 +4903,7 @@ ${s.characters?.length ? s.characters.map(c =>
 ${charAppearSection}
 [스토리 방향]
 - 한줄 소개: ${s.logline || '미설정'}
-- 전체 방향: ${s.plot ? s.plot.slice(0, 300) + (s.plot.length > 300 ? '…' : '') : '미설정'}
+- 전체 방향: ${s.plot ? s.plot.slice(0, 500) + (s.plot.length > 500 ? '…' : '') : '미설정'}
 - 1화 시작: ${s.ep1start || '미설정'}
 ${bibleSection}
 ${prevEpSection}
