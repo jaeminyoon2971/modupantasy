@@ -6,6 +6,12 @@ const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 
 const supabase = createClient(supabaseUrl, supabaseServiceKey)
 
+const CORS_HEADERS = {
+  'Access-Control-Allow-Origin': 'https://modupantasy.vercel.app',
+  'Access-Control-Allow-Methods': 'GET, POST',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+}
+
 function extractUserKey(req: Request): string | null {
   const authHeader = req.headers.get('authorization') || ''
   const parts = authHeader.split(' ')
@@ -52,14 +58,12 @@ Deno.serve(async (req) => {
     // 프로젝트 조회
     const { data: projects, error } = await supabase
       .from('projects')
-      .select(
-        `
-        *,
-        episodes:episodes(*)
-      `
-      )
+      .select(`
+        id, title, description, genre, settings, created_at, updated_at,
+        episodes:episodes(id, title, manuscript, status, review, summary, appearing_chars, updated_at)
+      `)
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .order('updated_at', { ascending: false })
 
     if (error) {
       throw error
@@ -67,10 +71,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ data: projects || [] }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
+      headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     })
   } catch (error) {
     console.error('오류:', error)

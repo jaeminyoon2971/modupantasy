@@ -1,4 +1,4 @@
-// Toss userKey 기반 프로젝트 생성
+// 프로젝트 전체 설정 저장 (작가설정, 세계관, 등장인물, 기획 등)
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const supabaseUrl = Deno.env.get('SUPABASE_URL')!
@@ -25,7 +25,6 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: CORS_HEADERS })
   }
-
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
@@ -40,12 +39,9 @@ Deno.serve(async (req) => {
       })
     }
 
+    // 사용자 확인
     const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('user_id', userKey)
-      .single()
-
+      .from('users').select('id').eq('user_id', userKey).single()
     if (userError || !user) {
       return new Response(JSON.stringify({ error: '사용자를 찾을 수 없음' }), {
         status: 401, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
@@ -53,40 +49,56 @@ Deno.serve(async (req) => {
     }
 
     const body = await req.json()
-    const title = typeof body.title === 'string' ? body.title.slice(0, 200) : ''
-    const description = typeof body.description === 'string' ? body.description.slice(0, 1000) : ''
-    const genre = typeof body.genre === 'string' ? body.genre.slice(0, 100) : ''
+    const { project_id, settings } = body
 
-    if (!title.trim()) {
-      return new Response(JSON.stringify({ error: '제목이 필요함' }), {
+    if (!project_id || typeof project_id !== 'string') {
+      return new Response(JSON.stringify({ error: 'project_id가 필요함' }), {
+        status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      })
+    }
+    if (!settings || typeof settings !== 'object') {
+      return new Response(JSON.stringify({ error: 'settings가 필요함' }), {
         status: 400, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
       })
     }
 
-    const settings = body.settings && typeof body.settings === 'object' ? body.settings : {}
+    // 프로젝트 소유권 확인
+    const { data: project, error: projError } = await supabase
+      .from('projects').select('id').eq('id', project_id).eq('user_id', user.id).single()
+    if (projError || !project) {
+      return new Response(JSON.stringify({ error: '프로젝트를 찾을 수 없음' }), {
+        status: 404, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
+      })
+    }
 
-    const { data: project, error: createError } = await supabase
+    // manuscript는 episodes 테이블에 별도 저장되므로 settings에서 제외
+    const safeSettings = { ...settings }
+    if (safeSettings.episodes) {
+      safeSettings.episodes = (safeSettings.episodes as any[]).map((ep: any) => {
+        const { manuscript, ...rest } = ep
+        return rest
+      })
+    }
+
+    // settings 저장
+    const { error: updateError } = await supabase
       .from('projects')
-      .insert({
-        id: crypto.randomUUID(),
-        user_id: user.id,
-        title,
-        description,
-        genre,
-        settings,
-        created_at: new Date().toISOString(),
+      .update({
+        settings: safeSettings,
+        title: settings.projectTitle || '',
         updated_at: new Date().toISOString(),
       })
-      .select()
+      .eq('id', project_id)
+      .eq('user_id', user.id)
 
-    if (createError) {
-      console.error('프로젝트 생성 오류 코드:', createError.code)
-      return new Response(JSON.stringify({ error: '프로젝트 생성 실패' }), {
+    if (updateError) {
+      console.error('settings 저장 오류 코드:', updateError.code)
+      return new Response(JSON.stringify({ error: '저장 실패' }), {
         status: 500, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
       })
     }
 
-    return new Response(JSON.stringify({ data: project }), {
+    return new Response(JSON.stringify({ success: true }), {
       status: 200, headers: { 'Content-Type': 'application/json', ...CORS_HEADERS },
     })
   } catch (error) {

@@ -2852,32 +2852,44 @@ async function getAuthHeader() {
 }
 
 // create-project 호출
-async function callCreateProject(title, description, genre) {
+async function callCreateProject(title, description, genre, settings = {}) {
   try {
     const token = await getAuthHeader();
-    if (!token) {
-      console.error('인증 토큰 없음');
-      return null;
-    }
+    if (!token) { console.error('인증 토큰 없음'); return null; }
 
     const response = await fetch(
       'https://tsxxfkpteooocquonehr.supabase.co/functions/v1/create-project',
       {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': token,
-        },
-        body: JSON.stringify({ title, description, genre }),
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ title, description, genre, settings }),
       }
     );
-
     const result = await response.json();
     if (!response.ok) throw new Error(result.error);
     return result.data?.[0] || result.data;
   } catch (error) {
     console.error('create-project 오류:', error);
     throw error;
+  }
+}
+
+// 프로젝트 전체 설정 저장 (작가설정, 세계관, 등장인물 등)
+async function callUpdateProjectSettings(projectId, settings) {
+  try {
+    const token = await getAuthHeader();
+    if (!token) return;
+
+    await fetch(
+      'https://tsxxfkpteooocquonehr.supabase.co/functions/v1/update-project-settings',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': token },
+        body: JSON.stringify({ project_id: projectId, settings }),
+      }
+    );
+  } catch (error) {
+    console.error('update-project-settings 오류:', error);
   }
 }
 
@@ -3301,23 +3313,69 @@ async function signOutUser() {
 
 // 사용자 프로젝트 로드
 async function loadUserProjects() {
-  if (!currentUser) {
-    console.log('로그인되지 않음');
-    return;
-  }
+  if (!currentUser) return;
 
   try {
-    const projects = await callGetProjects();
-    console.log('✓ 프로젝트 로드:', projects.length + '개');
+    const remoteProjects = await callGetProjects();
+    if (!remoteProjects || remoteProjects.length === 0) return;
 
-    // DB에 프로젝트 동기화
-    DB.projects = projects || [];
-    if (DB.projects.length > 0) {
+    console.log('✓ 프로젝트 로드:', remoteProjects.length + '개');
+
+    // Supabase 데이터를 로컬 S 포맷으로 복원
+    const restored = remoteProjects.map(proj => {
+      // settings JSONB에 전체 작가설정이 저장되어 있음
+      const base = proj.settings && typeof proj.settings === 'object' ? proj.settings : {};
+
+      // episodes: settings에서 원고 없는 메타 + episodes 테이블의 원고 병합
+      const remoteEps = Array.isArray(proj.episodes) ? proj.episodes : [];
+      const settingsEps = Array.isArray(base.episodes) ? base.episodes : [];
+      const mergedEps = remoteEps.map(remoteEp => {
+        const settingsEp = settingsEps.find(e => e.id === remoteEp.id) || {};
+        return {
+          ...settingsEp,           // review, summary, appearingChars 등 메타
+          id: remoteEp.id,
+          title: remoteEp.title || settingsEp.title || '',
+          manuscript: remoteEp.manuscript || '',
+          status: remoteEp.status || settingsEp.status || 'writing',
+          updatedAt: remoteEp.updated_at || settingsEp.updatedAt || '',
+        };
+      });
+
+      return {
+        // 기본 필드
+        genres: [], moods: [], target: '', era: '', keywords: [],
+        worlddesc: '', characters: [], logline: '', plot: '',
+        ep1start: '', projectTitle: proj.title || '', totalEps: 0,
+        writingStyle: {}, episodes: [],
+        // settings로 전체 덮어쓰기
+        ...base,
+        // DB에서 온 최신 값으로 확정
+        projectTitle: proj.title || base.projectTitle || '',
+        episodes: mergedEps.length > 0 ? mergedEps : (base.episodes || []),
+        _projectId: proj.id,  // Supabase project ID 보존
+      };
+    });
+
+    // localStorage가 비어있으면 Supabase 데이터로 완전 복원
+    const localEmpty = !DB.projects || DB.projects.length === 0;
+    if (localEmpty) {
+      DB.projects = restored;
       DB.currentIdx = 0;
       S = { ...DB.projects[0] };
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+      console.log('✓ 기기 복원 완료 - Supabase → localStorage');
+    } else {
+      // localStorage에 데이터가 있으면 _projectId만 동기화 (ID 연결)
+      DB.projects = DB.projects.map(localProj => {
+        const match = restored.find(r => r.projectTitle === localProj.projectTitle);
+        if (match && !localProj._projectId) {
+          return { ...localProj, _projectId: match._projectId };
+        }
+        return localProj;
+      });
+      localStorage.setItem(STORE_KEY, JSON.stringify(DB));
     }
 
-    localStorage.setItem(STORE_KEY, JSON.stringify(DB));
     refreshAll();
     refreshHome();
   } catch (error) {
@@ -3325,34 +3383,45 @@ async function loadUserProjects() {
   }
 }
 
-// 프로젝트를 Supabase로 동기화 저장
+// 프로젝트를 Supabase로 완전 동기화
 async function syncProjectToSupabase() {
-  if (!currentUser) {
-    console.log('로그인되지 않음 - localStorage에만 저장');
-    save();
-    return;
-  }
+  // 항상 localStorage에 먼저 저장
+  save();
+
+  if (!currentUser) return;
 
   try {
-    // 먼저 localStorage에 저장
-    save();
+    // 1. 프로젝트가 Supabase에 없으면 생성
+    if (!S._projectId) {
+      const created = await callCreateProject(
+        S.projectTitle || '새 작품',
+        S.logline || '',
+        (S.genres || []).join(', '),
+        S  // 전체 settings 저장
+      );
+      if (created?.id) {
+        S._projectId = created.id;
+        DB.projects[DB.currentIdx] = S;
+        localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+        console.log('✓ Supabase 프로젝트 생성:', created.id);
+      }
+      return;
+    }
 
-    // 각 에피소드를 Supabase에 저장
-    for (let ep of S.episodes || []) {
+    // 2. 전체 작가설정을 settings JSONB에 저장
+    await callUpdateProjectSettings(S._projectId, S);
+
+    // 3. 각 에피소드 원고를 episodes 테이블에 저장
+    for (const ep of S.episodes || []) {
       if (ep.id) {
-        await callUpdateEpisode(
-          ep.id,
-          ep.manuscript,
-          ep.status,
-          ep.title
-        );
+        await callUpdateEpisode(ep.id, ep.manuscript, ep.status, ep.title);
       }
     }
 
-    console.log('✓ Supabase 동기화 완료');
+    console.log('✓ Supabase 전체 동기화 완료');
   } catch (error) {
     console.error('Supabase 동기화 오류:', error);
-    // 오류가 나도 localStorage에는 저장됨
+    // 오류가 나도 localStorage에는 이미 저장됨
   }
 }
 
