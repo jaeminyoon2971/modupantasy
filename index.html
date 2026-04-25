@@ -2347,37 +2347,43 @@ body {
       <div style="padding:20px 20px 0">
         <div style="font-size:11px;font-weight:600;color:var(--sub);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px">집필권 현황</div>
 
-        <div style="background:var(--white);border-radius:var(--r-lg);border:1px solid var(--border);overflow:hidden;margin-bottom:16px;">
-          <!-- 무료 집필권 -->
-          <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:36px;height:36px;background:#EBF3FF;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">🆓</div>
-                <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--text);">오늘 무료 집필권</div>
-                  <div style="font-size:12px;color:var(--sub);margin-top:1px;">매일 자정 초기화</div>
-                </div>
-              </div>
-              <div id="my-free-count" style="font-size:18px;font-weight:900;color:var(--blue);">3/3회</div>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;">
+
+          <!-- 무료 집필권 카드 -->
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1.5px solid var(--blue);overflow:hidden;">
+            <div style="background:#EBF3FE;padding:10px 16px 8px;display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;font-weight:700;color:var(--blue);letter-spacing:0.03em;">🆓 무료 집필권</span>
+              <span style="font-size:11px;color:var(--blue);opacity:0.7;">· 매일 자정 초기화</span>
             </div>
-            <div style="margin-top:10px;background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
-              <div id="my-free-bar" style="height:100%;background:var(--blue);border-radius:4px;transition:width 0.4s;width:100%;"></div>
+            <div style="padding:14px 16px 12px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:13px;color:var(--sub);">오늘 남은 무료 집필</div>
+                <div id="my-free-count" style="font-size:22px;font-weight:900;color:var(--blue);">1/1회</div>
+              </div>
+              <div style="background:var(--border);border-radius:4px;height:6px;overflow:hidden;">
+                <div id="my-free-bar" style="height:100%;background:var(--blue);border-radius:4px;transition:width 0.4s;width:100%;"></div>
+              </div>
+              <div id="my-free-msg" style="font-size:11px;color:var(--blue);margin-top:7px;">오늘 1회 남았어요</div>
             </div>
           </div>
 
-          <!-- 유료 집필권 -->
-          <div style="padding:14px 16px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;">
-              <div style="display:flex;align-items:center;gap:10px;">
-                <div style="width:36px;height:36px;background:#FFF3EB;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;">✨</div>
+          <!-- 유료 집필권 카드 -->
+          <div style="background:var(--white);border-radius:var(--r-lg);border:1.5px solid var(--orange);overflow:hidden;">
+            <div style="background:#FFF3EB;padding:10px 16px 8px;display:flex;align-items:center;gap:6px;">
+              <span style="font-size:11px;font-weight:700;color:var(--orange);letter-spacing:0.03em;">✨ 보유 집필권</span>
+              <span style="font-size:11px;color:var(--orange);opacity:0.7;">· 구매 후 무기한 사용</span>
+            </div>
+            <div style="padding:14px 16px;">
+              <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div>
-                  <div style="font-size:14px;font-weight:700;color:var(--text);">보유 집필권</div>
-                  <div style="font-size:12px;color:var(--sub);margin-top:1px;">충전 후 무기한 사용 가능</div>
+                  <div style="font-size:13px;color:var(--sub);">현재 보유량</div>
+                  <div style="font-size:11px;color:var(--hint);margin-top:2px;">100원/1회 · 900원/10회</div>
                 </div>
+                <div id="my-paid-count" style="font-size:22px;font-weight:900;color:var(--orange);">0회</div>
               </div>
-              <div id="my-paid-count" style="font-size:18px;font-weight:900;color:var(--orange);">0회</div>
             </div>
           </div>
+
         </div>
 
         <!-- 충전 버튼 -->
@@ -6146,9 +6152,10 @@ function updateMyCredits() {
   const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
   const paid = getExtraCount();
 
-  const freeEl = document.getElementById('my-free-count');
-  const paidEl = document.getElementById('my-paid-count');
+  const freeEl  = document.getElementById('my-free-count');
+  const paidEl  = document.getElementById('my-paid-count');
   const freeBar = document.getElementById('my-free-bar');
+  const freeMsg = document.getElementById('my-free-msg');
 
   if (freeEl) {
     freeEl.textContent = `${freeLeft}/${FREE_LIMIT}회`;
@@ -6161,6 +6168,15 @@ function updateMyCredits() {
   if (freeBar) {
     freeBar.style.width = `${(freeLeft / FREE_LIMIT) * 100}%`;
     freeBar.style.background = freeLeft > 0 ? 'var(--blue)' : 'var(--border)';
+  }
+  if (freeMsg) {
+    if (freeLeft > 0) {
+      freeMsg.textContent = `오늘 ${freeLeft}회 남았어요`;
+      freeMsg.style.color = 'var(--blue)';
+    } else {
+      freeMsg.textContent = '오늘 무료 집필을 모두 사용했어요. 자정에 초기화돼요.';
+      freeMsg.style.color = 'var(--hint)';
+    }
   }
 }
 
