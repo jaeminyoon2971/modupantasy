@@ -4598,27 +4598,17 @@ function updateUsageBadge() {
   const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
   const extra = getExtraCount();
 
-  if (freeLeft > 0 && extra > 0) {
-    // 무료 + 유료 둘 다 있음
-    badge.innerHTML = `🆓 ${freeLeft}회&nbsp;<span style="width:1px;height:12px;background:rgba(49,130,246,0.3);display:inline-block;vertical-align:middle;"></span>&nbsp;✨ ${extra}회`;
-    badge.style.color = 'var(--blue)';
-    badge.style.background = '#EBF3FF';
-  } else if (freeLeft > 0) {
-    // 무료만 있음
-    badge.innerHTML = `🆓 무료 ${freeLeft}회`;
-    badge.style.color = 'var(--blue)';
-    badge.style.background = '#EBF3FF';
-  } else if (extra > 0) {
-    // 유료만 있음
-    badge.innerHTML = `✨ 구매 ${extra}회`;
-    badge.style.color = '#C05000';
-    badge.style.background = '#FFF3EB';
-  } else {
-    // 모두 소진
-    badge.innerHTML = `집필권 소진`;
-    badge.style.color = 'var(--hint)';
-    badge.style.background = 'var(--border)';
-  }
+  // 항상 무료 / 유료 동시 표시
+  const freeStyle = freeLeft > 0 ? 'color:var(--blue);' : 'color:var(--hint);text-decoration:line-through;';
+  const paidStyle = extra > 0 ? 'color:#C05000;' : 'color:var(--hint);';
+
+  badge.innerHTML =
+    `<span style="${freeStyle}">🆓 ${freeLeft}회</span>` +
+    `<span style="color:var(--border);margin:0 4px;">|</span>` +
+    `<span style="${paidStyle}">✨ ${extra}회</span>`;
+
+  badge.style.color = '';
+  badge.style.background = freeLeft > 0 ? '#EBF3FF' : extra > 0 ? '#FFF3EB' : 'var(--bg)';
 }
 
 // ── 일일 채팅 횟수 제한 (API 비용 관리) ──
