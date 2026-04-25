@@ -4702,6 +4702,38 @@ function closeAdPopup() {
 }
 
 function startAdWatch() {
+  const callback = adCallback; // 미리 저장
+
+  // ── AppinToss 실제 광고 SDK 사용 ──
+  if (_aitSDK && _aitSDK.showFullScreenAd?.isSupported() && _isAdLoaded) {
+    closeAdPopup();
+    _aitSDK.showFullScreenAd({
+      options: { adGroupId: REWARDED_AD_GROUP_ID },
+      onEvent: (event) => {
+        switch (event.type) {
+          case 'userEarnedReward':
+            // 리워드 지급: 집필권 충전 or 검수 실행
+            _onAdRewarded(callback);
+            break;
+          case 'dismissed':
+            // 시청 완료 없이 닫음 → 다음 광고 사전 로드
+            _loadNextAd();
+            if (callback) showToast('광고를 끝까지 시청해야 사용할 수 있어요.');
+            break;
+          case 'failedToShow':
+            showToast('광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+            _loadNextAd();
+            break;
+        }
+      },
+      onError: () => {
+        showToast('광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
+      },
+    });
+    return;
+  }
+
+  // ── Fallback: 시뮬레이션 (Vercel/개발 환경) ──
   const btn = document.getElementById('ad-watch-btn');
   btn.disabled = true;
   btn.textContent = '광고 시청 중...';
@@ -4718,17 +4750,32 @@ function startAdWatch() {
     document.getElementById('ad-progress-bar').style.width = `${((AD_DURATION - sec) / AD_DURATION) * 100}%`;
     if (sec <= 0) {
       clearInterval(interval);
-      onAdComplete();
+      closeAdPopup();
+      _onAdRewarded(callback);
     }
   }, 1000);
 }
 
-function onAdComplete() {
-  const callback = adCallback; // closeAdPopup이 adCallback을 null로 만들기 전에 저장
-  addExtraUsage();
-  closeAdPopup();
-  showToast('충전 완료! AI 1회 사용권이 추가됐어요 ✓');
-  if (callback) callback();
+// 광고 시청 완료 후 보상 처리 (callback 유무로 목적 구분)
+function _onAdRewarded(callback) {
+  if (callback) {
+    // 검수 등 다른 기능을 위한 광고 → 집필권 추가 없음, 기능만 실행
+    callback();
+  } else {
+    // 집필권 충전 목적 → 광고 횟수 카운트 + 집필권 +1
+    incrementAdCount();
+    addExtraUsage();
+    updateUsageBadge();
+    updateMyCredits();
+    const remaining = MAX_AD_COUNT - getTodayAdCount();
+    showToast(remaining > 0
+      ? `✨ 집필 1회 충전되었어요! (광고 ${remaining}회 남음)`
+      : `✨ 집필 1회 충전되었어요! (오늘 한도 도달)`);
+    const banner = document.getElementById('wc-limit-banner');
+    if (banner) banner.remove();
+    updateWritingInputState();
+  }
+  _loadNextAd(); // 다음 광고 사전 로드
 }
 
 function saveApiKey() {
@@ -5247,84 +5294,7 @@ function _loadNextAd() {
   });
 }
 
-// 광고 시청 완료 시 집필권 지급
-function completeAd() {
-  incrementAdCount();
-  saveExtraCount(getTodayExtra() + 1);
-  updateUsageBadge();
-  updateMyCredits();
-
-  const remaining = MAX_AD_COUNT - getTodayAdCount();
-  showToast(remaining > 0
-    ? `✨ 집필 1회 충전되었어요! (광고 ${remaining}회 남음)`
-    : `✨ 집필 1회 충전되었어요! (오늘 한도 도달)`);
-
-  const banner = document.getElementById('wc-limit-banner');
-  if (banner) banner.remove();
-  updateWritingInputState();
-}
-
-// 광고 보기 실행 (AppinToss SDK 연동 + Vercel fallback)
-function showAdModal() {
-  // ── AppinToss 실제 광고 ──
-  if (_aitSDK && _aitSDK.showFullScreenAd?.isSupported() && _isAdLoaded) {
-    _aitSDK.showFullScreenAd({
-      options: { adGroupId: REWARDED_AD_GROUP_ID },
-      onEvent: (event) => {
-        switch (event.type) {
-          case 'userEarnedReward':
-            // 문서 규칙: 반드시 userEarnedReward에서만 리워드 지급
-            completeAd();
-            break;
-          case 'dismissed':
-            // 광고 닫힘 → 다음 광고 사전 로드 (dismissed만으로는 리워드 없음)
-            _loadNextAd();
-            break;
-          case 'failedToShow':
-            showToast('광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-            _loadNextAd();
-            break;
-        }
-      },
-      onError: (error) => {
-        console.error('광고 표시 실패:', error);
-        showToast('광고를 불러오지 못했어요. 잠시 후 다시 시도해주세요.');
-      },
-    });
-    return;
-  }
-
-  // ── Fallback: Vercel/개발 환경 (3초 시뮬레이션) ──
-  const backdrop = document.createElement('div');
-  backdrop.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;z-index:9999;';
-  const modal = document.createElement('div');
-  modal.style.cssText = 'background:#fff;border-radius:20px;padding:40px 20px;text-align:center;max-width:300px;';
-  modal.innerHTML = `
-    <div style="font-size:48px;margin-bottom:16px">📺</div>
-    <div style="font-size:16px;font-weight:700;color:#191F28;margin-bottom:12px">광고 시청 중...</div>
-    <div style="font-size:13px;color:#6B7684;margin-bottom:24px">이 과정은 자동으로 진행됩니다 🎬</div>
-    <div style="height:4px;background:#E5E8EB;border-radius:2px;overflow:hidden">
-      <div id="ad-progress" style="height:100%;background:#3182F6;width:0%;transition:width 0.1s linear"></div>
-    </div>
-    <div style="font-size:12px;color:#6B7684;margin-top:12px"><span id="ad-timer">3</span>초</div>
-  `;
-  backdrop.appendChild(modal);
-  document.body.appendChild(backdrop);
-
-  let elapsed = 0;
-  const iv = setInterval(() => {
-    elapsed += 0.1;
-    const p = document.getElementById('ad-progress');
-    const t = document.getElementById('ad-timer');
-    if (p) p.style.width = (elapsed / 3 * 100) + '%';
-    if (t) t.textContent = Math.ceil(3 - elapsed);
-    if (elapsed >= 3) {
-      clearInterval(iv);
-      backdrop.remove();
-      completeAd();
-    }
-  }, 100);
-}
+// (showAdModal, completeAd 제거 — startAdWatch + _onAdRewarded 으로 통합)
 
 // 원고 작성 요청인지 판단 (쓰기 키워드 포함 여부)
 function isWritingRequest(msg) {
