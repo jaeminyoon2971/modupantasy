@@ -5244,8 +5244,18 @@ async function initAitIAP() {
 
   try {
     const sdk = await import('@apps-in-toss/web-framework');
-    if (!sdk.IAP) { console.warn('IAP SDK 없음'); return; }
-    _aitIAP = sdk.IAP;
+
+    // IAP 함수 위치 탐색: sdk.IAP → sdk 직접 → 없음
+    let iapModule = null;
+    if (sdk.IAP?.getProductItemList) {
+      iapModule = sdk.IAP;
+    } else if (sdk.getProductItemList) {
+      iapModule = sdk;
+    } else {
+      console.warn('IAP SDK 없음 (getProductItemList 미발견). sdk keys:', Object.keys(sdk));
+      return;
+    }
+    _aitIAP = iapModule;
     console.log('✓ IAP SDK 초기화 완료');
 
     // 상품 가격 동적 로드 (콘솔 등록 가격으로 팝업 업데이트)
