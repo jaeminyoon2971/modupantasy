@@ -1,10 +1,3 @@
-// 허용된 Origin 목록
-const ALLOWED_ORIGINS = [
-  'https://modupantasy.vercel.app',
-  'http://localhost:3000',
-  'http://localhost:5173',
-];
-
 // 서버사이드 상한선
 const MAX_TOKENS_LIMIT = 4500;
 const MAX_MESSAGE_LENGTH = 20000; // 메시지 하나당 최대 글자수
@@ -16,21 +9,12 @@ const ALLOWED_MODELS = [
 ];
 
 export default async function handler(req, res) {
-  const origin = req.headers.origin || '';
-  const isAllowedOrigin = ALLOWED_ORIGINS.includes(origin);
-
-  // CORS - 허용된 Origin만
-  res.setHeader('Access-Control-Allow-Origin', isAllowedOrigin ? origin : ALLOWED_ORIGINS[0]);
+  // CORS - AppinToss 웹뷰 포함 모든 환경 허용 (보안은 서버사이드 API 키로 유지)
+  res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.setHeader('Vary', 'Origin');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  // 허용되지 않은 Origin 차단
-  if (!isAllowedOrigin) {
-    return res.status(403).json({ error: '접근이 거부됐어요.', deductCount: false });
-  }
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed', deductCount: false });
