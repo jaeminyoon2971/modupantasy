@@ -2144,7 +2144,7 @@ body {
               <div style="background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:100px;white-space:nowrap;margin-top:2px">업뎃</div>
               <div>
                 <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">집필권 · 이용권 안내</div>
-                <div style="font-size:12px;color:var(--sub);line-height:1.7">매일 자정 기준으로 <b>무료 집필 1회</b>가 제공돼요.<br>초과 시 이용권(<b>집필권 5회 900원</b>) 구매로 계속 사용할 수 있어요.<br>결제 기능은 앱인토스 정식 출시 시 활성화 예정이에요.</div>
+                <div style="font-size:12px;color:var(--sub);line-height:1.7">매일 자정 기준으로 <b>무료 집필 1회</b>가 제공돼요.<br>초과 시 이용권(<b>집필권 5회 900원</b>) 구매로 계속 사용할 수 있어요.</div>
               </div>
             </div>
           </div>
@@ -2531,7 +2531,7 @@ body {
       </button>
     </div>
     <div id="iap-notice" style="background:var(--bg);border-radius:var(--r-md);padding:12px 14px;margin-bottom:16px;font-size:12px;color:var(--sub);text-align:center;line-height:1.7;">
-      💡 결제 기능은 <b>앱인토스 서비스 출시 시</b> 활성화돼요.<br>지금은 준비 중이에요.
+      💡 결제 후 <b>집필권 5회</b>가 즉시 충전돼요.<br>구매한 집필권은 <b>만료 없이</b> 사용할 수 있어요.
     </div>
     <button onclick="closeIAPPopup()" style="width:100%;padding:12px;background:none;color:var(--hint);border:none;font-size:14px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;">
       닫기
@@ -5233,8 +5233,8 @@ function closeIAPPopup() {
 
 /* ── AppinToss 인앱결제 SDK 연동 ── */
 
-// TODO: 앱인토스 콘솔 → 인앱 결제 → 상품 등록 후 실제 SKU로 교체
-const IAP_SKU_5 = 'writing_credit_5';  // 집필권 5회 SKU (900원)
+// 앱인토스 콘솔 → 인앱 결제에 등록된 상품 ID
+const IAP_SKU_5 = 'writing_credit_5';  // 집필권 5회 상품 ID (900원)
 
 let _aitIAP = null; // IAP SDK 모듈
 
@@ -5268,15 +5268,15 @@ async function _loadIAPProducts() {
     if (!products.length) return;
 
     for (const p of products) {
-      if (p.sku === IAP_SKU_5) {
+      // AppinToss 콘솔 상품 ID: productId (또는 sku 필드 fallback)
+      const pid = p.productId ?? p.sku;
+      if (pid === IAP_SKU_5) {
         const el = document.getElementById('iap-price-5');
-        if (el) el.textContent = `${p.price?.toLocaleString()}원`;
+        if (el && p.price != null) el.textContent = `${Number(p.price).toLocaleString()}원`;
       }
     }
 
-    // AppinToss 환경: "준비 중" 안내 숨기기
-    const notice = document.getElementById('iap-notice');
-    if (notice) notice.style.display = 'none';
+    console.log('✓ IAP 상품 목록 로드 완료');
   } catch(e) {
     console.error('상품 목록 로드 실패:', e);
   }
@@ -5291,7 +5291,9 @@ async function _recoverPendingOrders() {
 
     console.log(`미결 주문 ${orders.length}건 복원 시작`);
     for (const order of orders) {
-      await _grantPurchasedProduct(order.sku, order.orderId, true);
+      // productId 또는 sku 필드 fallback
+      const productId = order.productId ?? order.sku;
+      await _grantPurchasedProduct(productId, order.orderId, true);
     }
   } catch(e) {
     console.error('미결 주문 복원 오류:', e);
@@ -5299,26 +5301,28 @@ async function _recoverPendingOrders() {
 }
 
 // 상품 지급 처리 (결제 성공 or 복원 시 공통 호출)
-async function _grantPurchasedProduct(sku, orderId, isRecovery = false) {
-  const creditCount = sku === IAP_SKU_5 ? 5 : 5; // 현재 단일 상품 5회
+async function _grantPurchasedProduct(productId, orderId, isRecovery = false) {
+  const creditCount = 5; // 현재 단일 상품 5회
   try {
     // 집필권 지급
     addExtraUsage(creditCount);
     updateUsageBadge();
     updateMyCredits();
 
-    // AppinToss에 지급 완료 신호 전송 (이 호출이 성공해야 최종 완료)
-    await _aitIAP.completeProductGrant({ orderId });
+    // AppinToss에 지급 완료 신호 전송 (반드시 지급 후 호출)
+    await _aitIAP.completeProductGrant(orderId);
 
     updateWritingInputState();
     if (isRecovery) {
-      showToast(`✨ 미결 주문 복원: 집필권 ${creditCount}회가 충전됐어요!`);
+      showToast(`✨ 집필권 ${creditCount}회가 자동 복원됐어요!`);
     } else {
       showToast(`✨ 집필권 ${creditCount}회가 충전됐어요!`);
     }
-    console.log(`✓ 상품 지급 완료 (orderId: ${orderId})`);
+    console.log(`✓ 상품 지급 완료 (productId: ${productId}, orderId: ${orderId})`);
   } catch(e) {
     console.error('상품 지급 실패:', e);
+    // 지급 실패 시 차감 롤백
+    try { addExtraUsage(-creditCount); updateUsageBadge(); updateMyCredits(); } catch(_) {}
     showToast('집필권 지급에 실패했어요. 앱을 재시작하면 자동 복원돼요.');
   }
 }
@@ -5329,18 +5333,22 @@ async function purchaseIAP(count) {
 
   // ── AppinToss IAP SDK 결제 ──
   if (_aitIAP) {
-    const sku = IAP_SKU_5; // 단일 상품
+    const productId = IAP_SKU_5; // 앱인토스 콘솔에 등록된 상품 ID
     try {
       await _aitIAP.createOneTimePurchaseOrder({
-        sku,
+        productId,
         onEvent: async (event) => {
           if (event.type === 'success') {
-            // 결제 성공 → 상품 지급 후 AppinToss에 완료 신호
-            await _grantPurchasedProduct(sku, event.data?.orderId);
+            // 결제 성공 → 상품 지급 + AppinToss 완료 신호
+            const orderId = event.data?.orderId ?? event.orderId;
+            await _grantPurchasedProduct(productId, orderId);
           } else if (event.type === 'error') {
-            const code = event.data?.errorCode;
+            const code = event.data?.errorCode ?? event.errorCode;
             if (code === 'PRODUCT_NOT_GRANTED_BY_PARTNER') {
               showToast('결제는 완료됐지만 지급에 실패했어요. 앱을 재시작하면 자동 복원돼요.');
+            } else if (code === 'USER_CANCEL') {
+              // 사용자가 직접 취소한 경우 - 토스트 없이 조용히 종료
+              console.log('사용자 결제 취소');
             } else {
               showToast('결제 중 오류가 발생했어요. 다시 시도해주세요.');
             }
@@ -5358,8 +5366,8 @@ async function purchaseIAP(count) {
     return;
   }
 
-  // ── Fallback: Vercel/개발 환경 ──
-  showToast('결제 기능은 앱인토스 서비스 출시 후 이용 가능해요 😊');
+  // ── Fallback: 앱인토스 외 환경 ──
+  showToast('결제는 앱인토스 앱에서 이용 가능해요 😊');
 }
 
 // ── 광고 보기 모달 ──
