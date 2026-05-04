@@ -1526,7 +1526,6 @@ body {
 
     <div class="splash-logo">모두의 판타지</div>
     <div class="splash-sub">아이디어가 곧 이야기가 되는<br>모두의 판타지에 오신 것을 환영합니다</div>
-
     <div class="splash-cta">
       <button class="btn-primary" onclick="goTo('home')">시작하기</button>
       <div class="splash-badge">
@@ -4283,7 +4282,7 @@ ${ep.manuscript}
 {"readability": 점수, "consistency": 점수, "expression": 점수, "feedback": "피드백 내용"}`;
 
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('https://modupantasy.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4321,7 +4320,7 @@ ${ep.manuscript.trim().slice(0, 3000)}
 {"summary": "요약 내용", "appearingChars": ["이름1", "이름2"]}`;
 
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('https://modupantasy.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -4350,12 +4349,14 @@ function confirmDone(epIdx) {
   syncProjectHeader(); // 진행판 수치 즉시 반영
   switchTab(3);
 
-  // ✅ 첫 번째 화 완료 축하 메세지
-  if (epIdx === 0) {
-    showFirstEpisodeCelebration();
-  } else {
-    showToast('완성공간으로 이동했어요 🎉');
-  }
+  // ── 전면 광고 노출 후 축하 메시지 (광고 없으면 즉시 실행) ──
+  showInterstitialAd(() => {
+    if (epIdx === 0) {
+      showFirstEpisodeCelebration();
+    } else {
+      showToast('완성공간으로 이동했어요 🎉');
+    }
+  });
 
   setTimeout(() => showToast('📥 파일 저장 버튼으로 원고를 백업해두세요!'), 2200);
   generateEpisodeSummary(epIdx);
@@ -5371,12 +5372,20 @@ async function purchaseIAP(count) {
 
 // ── 광고 보기 모달 ──
 /* ── AppinToss 광고 SDK 연동 ── */
-// 테스트: 'ait-ad-test-rewarded-id' / 실제 출시 시 콘솔에서 발급받은 adGroupId로 교체
-const REWARDED_AD_GROUP_ID = 'ait-ad-test-rewarded-id';
+// ▼ 실제 출시 전 콘솔에서 발급받은 adGroupId로 교체하세요
+// 테스트 ID: 'ait-ad-test-rewarded-id' / 'ait-ad-test-interstitial-id'
+const REWARDED_AD_GROUP_ID      = 'ait-ad-test-rewarded-id';
+const INTERSTITIAL_AD_GROUP_ID  = 'ait-ad-test-interstitial-id'; // TODO: 콘솔 발급 후 교체
 
 let _aitSDK = null;         // @apps-in-toss/web-framework 모듈
-let _adUnregister = null;   // loadFullScreenAd 등록 해제 함수
-let _isAdLoaded = false;    // 광고 사전 로드 완료 여부
+
+// ── 리워드 광고 상태 ──
+let _adUnregister = null;
+let _isAdLoaded   = false;
+
+// ── 전면 광고(Interstitial) 상태 ──
+let _interstitialUnregister = null;
+let _isInterstitialLoaded   = false;
 
 // AppinToss 환경 진입 시 광고 SDK 초기화 + 사전 로드
 async function initAitAds() {
@@ -5391,7 +5400,8 @@ async function initAitAds() {
       return;
     }
 
-    _loadNextAd();
+    _loadNextAd();             // 리워드 광고 사전 로드
+    _loadNextInterstitialAd(); // 전면 광고 사전 로드
     console.log('✓ 광고 SDK 초기화 완료');
   } catch(e) {
     console.warn('광고 SDK 로드 실패:', e);
@@ -5399,7 +5409,7 @@ async function initAitAds() {
   }
 }
 
-// 다음 광고 사전 로드 (show 직후 또는 초기화 시 호출)
+// ── 리워드 광고: 다음 광고 사전 로드 (show 직후 또는 초기화 시 호출) ──
 function _loadNextAd() {
   if (!_aitSDK) return;
   if (_adUnregister) { _adUnregister(); _adUnregister = null; }
@@ -5410,12 +5420,67 @@ function _loadNextAd() {
     onEvent: (event) => {
       if (event.type === 'loaded') {
         _isAdLoaded = true;
-        console.log('✓ 광고 로드 완료');
+        console.log('✓ 리워드 광고 로드 완료');
       }
     },
     onError: (error) => {
-      console.error('광고 로드 실패:', error);
+      console.error('리워드 광고 로드 실패:', error);
       _isAdLoaded = false;
+    },
+  });
+}
+
+// ── 전면 광고: 다음 광고 사전 로드 ──
+function _loadNextInterstitialAd() {
+  if (!_aitSDK) return;
+  if (_interstitialUnregister) { _interstitialUnregister(); _interstitialUnregister = null; }
+  _isInterstitialLoaded = false;
+
+  _interstitialUnregister = _aitSDK.loadFullScreenAd({
+    options: { adGroupId: INTERSTITIAL_AD_GROUP_ID },
+    onEvent: (event) => {
+      if (event.type === 'loaded') {
+        _isInterstitialLoaded = true;
+        console.log('✓ 전면 광고 로드 완료');
+      }
+    },
+    onError: (error) => {
+      console.error('전면 광고 로드 실패:', error);
+      _isInterstitialLoaded = false;
+    },
+  });
+}
+
+// ── 전면 광고 노출 (회차 완성 등 자연스러운 전환 시점에 호출) ──
+// onDismissed: 광고 닫힌 뒤 실행할 콜백
+function showInterstitialAd(onDismissed) {
+  if (!_aitSDK || !_aitSDK.showFullScreenAd?.isSupported() || !_isInterstitialLoaded) {
+    // 광고 미로드 시 콜백만 즉시 실행 (앱 흐름 막지 않음)
+    if (typeof onDismissed === 'function') onDismissed();
+    return;
+  }
+
+  _aitSDK.showFullScreenAd({
+    options: { adGroupId: INTERSTITIAL_AD_GROUP_ID },
+    onEvent: (event) => {
+      switch (event.type) {
+        case 'impression':
+          console.log('전면 광고 노출 (수익 발생)');
+          break;
+        case 'dismissed':
+        case 'userEarnedReward':
+          _loadNextInterstitialAd(); // 다음 광고 미리 로드
+          if (typeof onDismissed === 'function') onDismissed();
+          break;
+        case 'failedToShow':
+          _loadNextInterstitialAd();
+          if (typeof onDismissed === 'function') onDismissed();
+          break;
+      }
+    },
+    onError: () => {
+      _loadNextInterstitialAd();
+      if (typeof onDismissed === 'function') onDismissed();
     },
   });
 }
@@ -5477,7 +5542,7 @@ async function _execWritingAI(userMsg, isWrite = false) {
 
   setWritingLoading(true);
   try {
-    const res = await fetch('/api/chat', {
+    const res = await fetch('https://modupantasy.vercel.app/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -5497,7 +5562,7 @@ async function _execWritingAI(userMsg, isWrite = false) {
 
       if (!shouldDeduct) {
         // 횟수 차감 안 함 (서버 오류)
-        addWcMsg('ai', `⚠️ 일시적인 오류가 발생했어요.<br>사용 횟수는 차감되지 않았어요 🙏`);
+        addWcMsg('ai', `⚠️ 일시적인 오류가 발생했어요.\n사용 횟수는 차감되지 않았어요 🙏`);
         writingHistory.pop();
       } else {
         // 횟수 차감 (사용자 요청 오류)
@@ -5539,7 +5604,7 @@ async function _execWritingAI(userMsg, isWrite = false) {
       const ms = document.getElementById('wm-text')?.innerText?.trim() || '';
       if (ms.length >= 5000) {
         setTimeout(() => addWcMsg('ai',
-          '🎉 이번 화 목표 분량(5,000자)을 달성했어요!<br>검수 탭에서 원고를 확인하고 완성 처리해보세요 😊'), 400);
+          '🎉 이번 화 목표 분량(5,000자)을 달성했어요!\n검수 탭에서 원고를 확인하고 완성 처리해보세요 😊'), 400);
       } else {
         const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
         const extraLeft = getTodayExtra();
@@ -5560,7 +5625,7 @@ async function _execWritingAI(userMsg, isWrite = false) {
     if (msg.includes('Failed to fetch') || msg.includes('NetworkError')) {
       errText = '네트워크 연결을 확인해주세요.';
     }
-    addWcMsg('ai', `⚠️ ${errText}<br>사용 횟수는 차감되지 않았어요 🙏`);
+    addWcMsg('ai', `⚠️ ${errText}\n사용 횟수는 차감되지 않았어요 🙏`);
     writingHistory.pop();
     // 에러 발생 시에도 저장
     if (currentEpIdx !== null) {
