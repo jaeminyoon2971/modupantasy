@@ -5366,8 +5366,11 @@ async function purchaseIAP(count) {
 /* ── AppinToss 광고 SDK 연동 ── */
 // ▼ 실제 출시 전 콘솔에서 발급받은 adGroupId로 교체하세요
 // 테스트 ID: 'ait-ad-test-rewarded-id' / 'ait-ad-test-interstitial-id'
-const REWARDED_AD_GROUP_ID      = 'ait.v2.live.034f85282c2d4844';
-const INTERSTITIAL_AD_GROUP_ID  = 'ait.v2.live.8017eb3758034a12';
+// ▼ 출시 승인 후 실제 ID로 교체
+// const REWARDED_AD_GROUP_ID      = 'ait.v2.live.034f85282c2d4844';
+// const INTERSTITIAL_AD_GROUP_ID  = 'ait.v2.live.8017eb3758034a12';
+const REWARDED_AD_GROUP_ID      = 'ait-ad-test-rewarded-id';
+const INTERSTITIAL_AD_GROUP_ID  = 'ait-ad-test-interstitial-id';
 
 let _aitSDK = null;         // @apps-in-toss/web-framework 모듈
 
