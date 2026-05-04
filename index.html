@@ -4506,91 +4506,82 @@ function exportAllDone() {
 }
 
 
-const API_KEY_STORE = 'mdpf_api_key';
-const USAGE_STORE   = 'mdpf_usage';   // 하루 무료 집필 횟수 (날짜 리셋)
-const EXTRA_STORE   = 'mdpf_extra';   // 구매한 집필권 잔여 (날짜 무관, 영구 유지)
-const FREE_LIMIT    = 1;
-const AD_STORE      = 'mdpf_ad_count';  // 광고 시청 횟수 (일일 리셋, 최대 2회)
-const MAX_AD_COUNT  = 2;                // 광고 최대 시청 횟수
+const API_KEY_STORE  = 'mdpf_api_key';
+const USAGE_STORE    = 'mdpf_usage';      // 하루 무료 집필 횟수 (자정 리셋)
+const EXTRA_STORE    = 'mdpf_extra';      // 구매한 집필권 잔여 (영구 유지)
+const AD_EXTRA_STORE = 'mdpf_ad_extra';   // 광고로 얻은 집필권 (자정 리셋, 최대 MAX_AD_COUNT)
+const FREE_LIMIT     = 1;
+const AD_STORE       = 'mdpf_ad_count';   // 광고 시청 횟수 (자정 리셋)
+const MAX_AD_COUNT   = 2;                 // 하루 최대 광고 시청 횟수 → 총 3회(1+2) 제한
 
-// ── 일일 광고 시청 횟수 (자정에 리셋) ──
-function getAdCount() {
-  const today = new Date().toLocaleDateString('ko-KR');
+// ── 날짜 키 공통 유틸 ──
+function _today() { return new Date().toLocaleDateString('ko-KR'); }
+function _getDateStore(key) {
   try {
-    const raw = JSON.parse(localStorage.getItem(AD_STORE) || '{}');
-    if (raw.date !== today) return { date: today, count: 0 };
+    const raw = JSON.parse(localStorage.getItem(key) || '{}');
+    if (raw.date !== _today()) return { date: _today(), count: 0 };
     return raw;
-  } catch { return { date: today, count: 0 }; }
+  } catch { return { date: _today(), count: 0 }; }
 }
+function _saveDateStore(key, data) { localStorage.setItem(key, JSON.stringify(data)); }
 
-function saveAdCount(data) {
-  localStorage.setItem(AD_STORE, JSON.stringify(data));
-}
-
-function getTodayAdCount() { return getAdCount().count; }
-
-function canWatchAd() {
-  return getTodayAdCount() < MAX_AD_COUNT;
-}
-
+// ── 일일 광고 시청 횟수 (자정 리셋) ──
+function getAdCount()        { return _getDateStore(AD_STORE); }
+function saveAdCount(data)   { _saveDateStore(AD_STORE, data); }
+function getTodayAdCount()   { return getAdCount().count; }
+function canWatchAd()        { return getTodayAdCount() < MAX_AD_COUNT; }
 function incrementAdCount() {
   const d = getAdCount();
-  if (d.count < MAX_AD_COUNT) {
-    d.count++;
-    saveAdCount(d);
-    return true;
-  }
+  if (d.count < MAX_AD_COUNT) { d.count++; saveAdCount(d); return true; }
   return false;
 }
 
-// ── 일일 무료 사용량 (자정에 리셋) ──
-function getUsageData() {
-  const today = new Date().toLocaleDateString('ko-KR');
-  try {
-    const raw = JSON.parse(localStorage.getItem(USAGE_STORE) || '{}');
-    if (raw.date !== today) return { date: today, count: 0 };
-    return raw;
-  } catch { return { date: today, count: 0 }; }
+// ── 광고로 얻은 집필권 (자정 리셋) ──
+function getAdExtraData()       { return _getDateStore(AD_EXTRA_STORE); }
+function saveAdExtraData(data)  { _saveDateStore(AD_EXTRA_STORE, data); }
+function getAdExtraCount()      { return getAdExtraData().count; }
+function addAdExtraUsage() {
+  const d = getAdExtraData();
+  d.count++;
+  saveAdExtraData(d);
+  updateUsageBadge();
 }
 
-function saveUsageData(data) {
-  localStorage.setItem(USAGE_STORE, JSON.stringify(data));
-}
+// ── 일일 무료 사용량 (자정 리셋) ──
+function getUsageData()      { return _getDateStore(USAGE_STORE); }
+function saveUsageData(data) { _saveDateStore(USAGE_STORE, data); }
 
-// ── 구매한 집필권 잔여 (자정에도 사라지지 않음) ──
-function getExtraCount() {
-  return Math.max(0, parseInt(localStorage.getItem(EXTRA_STORE) || '0', 10));
-}
+// ── 구매한 집필권 잔여 (영구 유지) ──
+function getExtraCount()   { return Math.max(0, parseInt(localStorage.getItem(EXTRA_STORE) || '0', 10)); }
+function saveExtraCount(n) { localStorage.setItem(EXTRA_STORE, Math.max(0, n).toString()); }
 
-function saveExtraCount(n) {
-  localStorage.setItem(EXTRA_STORE, Math.max(0, n).toString());
-}
+function getTodayCount()  { return getUsageData().count; }
+function getTodayExtra()  { return getAdExtraCount() + getExtraCount(); } // 광고적립 + 구매
 
-function getTodayCount() { return getUsageData().count; }
-function getTodayExtra() { return getExtraCount(); }
+function isFreeLeft() { return getTodayCount() < FREE_LIMIT; }
 
-function isFreeLeft() {
-  return getTodayCount() < FREE_LIMIT;
-}
-
-function canUseAI() {
-  return isFreeLeft() || getExtraCount() > 0;
-}
+function canUseAI() { return isFreeLeft() || getAdExtraCount() > 0 || getExtraCount() > 0; }
 
 function incrementUsage() {
-  const d = getUsageData();
-  if (d.count < FREE_LIMIT) {
-    // 무료 먼저 차감
+  if (isFreeLeft()) {
+    // 1순위: 무료 차감
+    const d = getUsageData();
     d.count++;
     saveUsageData(d);
+  } else if (getAdExtraCount() > 0) {
+    // 2순위: 광고 적립분 차감 (자정 리셋)
+    const d = getAdExtraData();
+    d.count--;
+    saveAdExtraData(d);
   } else {
-    // 무료 소진 → 구매한 집필권 차감
+    // 3순위: 구매한 집필권 차감 (영구)
     saveExtraCount(getExtraCount() - 1);
   }
   updateUsageBadge();
 }
 
 function addExtraUsage(n) {
+  // 구매 집필권 충전 (영구 유지)
   saveExtraCount(getExtraCount() + (n || 1));
   updateUsageBadge();
 }
@@ -4598,20 +4589,21 @@ function addExtraUsage(n) {
 function updateUsageBadge() {
   const badge = document.getElementById('usage-badge');
   if (!badge) return;
-  const freeLeft = Math.max(0, FREE_LIMIT - getTodayCount());
-  const extra = getExtraCount();
+  const freeLeft  = Math.max(0, FREE_LIMIT - getTodayCount());
+  const adExtra   = getAdExtraCount();   // 오늘 광고 적립분 (자정 리셋)
+  const purchased = getExtraCount();     // 구매 집필권 (영구)
+  const totalExtra = adExtra + purchased;
 
-  // 항상 무료 / 유료 동시 표시
   const freeStyle = freeLeft > 0 ? 'color:var(--blue);' : 'color:var(--hint);text-decoration:line-through;';
-  const paidStyle = extra > 0 ? 'color:#C05000;' : 'color:var(--hint);';
+  const paidStyle = totalExtra > 0 ? 'color:#C05000;' : 'color:var(--hint);';
 
   badge.innerHTML =
     `<span style="${freeStyle}">무료 ${freeLeft}회</span>` +
     `<span style="color:var(--border);margin:0 4px;">|</span>` +
-    `<span style="${paidStyle}">보유 ${extra}회</span>`;
+    `<span style="${paidStyle}">보유 ${totalExtra}회</span>`;
 
   badge.style.color = '';
-  badge.style.background = freeLeft > 0 ? '#EBF3FF' : extra > 0 ? '#FFF3EB' : 'var(--bg)';
+  badge.style.background = freeLeft > 0 ? '#EBF3FF' : totalExtra > 0 ? '#FFF3EB' : 'var(--bg)';
 }
 
 // ── 일일 채팅 횟수 제한 (API 비용 관리) ──
@@ -4764,9 +4756,9 @@ function _onAdRewarded(callback) {
     // 검수 등 다른 기능을 위한 광고 → 집필권 추가 없음, 기능만 실행
     callback();
   } else {
-    // 집필권 충전 목적 → 광고 횟수 카운트 + 집필권 +1
+    // 집필권 충전 목적 → 광고 횟수 카운트 + 광고 적립분 +1 (자정 리셋)
     incrementAdCount();
-    addExtraUsage();
+    addAdExtraUsage();
     updateUsageBadge();
     updateMyCredits();
     const remaining = MAX_AD_COUNT - getTodayAdCount();
@@ -5592,13 +5584,23 @@ async function _execWritingAI(userMsg, isWrite = false) {
       save();
     }
 
-    const chatText = extractManuscript(reply);
-    const manuscriptGenerated = reply !== chatText; // [원고시작]태그가 있었으면 true
+    let chatText = extractManuscript(reply);
+    let manuscriptGenerated = reply !== chatText; // [원고시작]태그가 있었으면 true
+
+    // ── 폴백: 원고요청인데 태그 없이 응답한 경우 전체를 원고로 처리 ──
+    if (isWrite && !manuscriptGenerated) {
+      const wmText = document.getElementById('wm-text');
+      const current = wmText?.innerText?.trim() || '';
+      if (wmText) wmText.innerText = current ? current + '\n\n' + reply.trim() : reply.trim();
+      updateWmWc();
+      chatText = ''; // 채팅창엔 아무것도 표시 안 함
+      manuscriptGenerated = true;
+    }
 
     if (manuscriptGenerated) {
       // ✅ 원고 생성 → 집필 횟수 차감
       incrementUsage();
-      addWcMsgAnimated('ai', chatText);
+      if (chatText) addWcMsgAnimated('ai', chatText); // 태그 밖 텍스트만 표시 (없으면 생략)
       autoSaveEpisode();
       // 남은 집필 횟수 안내
       const ms = document.getElementById('wm-text')?.innerText?.trim() || '';
