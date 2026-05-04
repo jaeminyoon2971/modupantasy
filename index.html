@@ -5587,14 +5587,19 @@ async function _execWritingAI(userMsg, isWrite = false) {
     let chatText = extractManuscript(reply);
     let manuscriptGenerated = reply !== chatText; // [원고시작]태그가 있었으면 true
 
-    // ── 폴백: 원고요청인데 태그 없이 응답한 경우 전체를 원고로 처리 ──
+    // ── 폴백: 원고요청인데 태그 없이 응답한 경우 ──
+    // 조건: isWrite=true, 태그 없음, 응답이 충분히 길고(300자↑), 질문형이 아닌 경우만 원고로 처리
     if (isWrite && !manuscriptGenerated) {
-      const wmText = document.getElementById('wm-text');
-      const current = wmText?.innerText?.trim() || '';
-      if (wmText) wmText.innerText = current ? current + '\n\n' + reply.trim() : reply.trim();
-      updateWmWc();
-      chatText = ''; // 채팅창엔 아무것도 표시 안 함
-      manuscriptGenerated = true;
+      const looksLikeQuestion = (reply.match(/\?/g) || []).length >= 2 || reply.length < 300;
+      if (!looksLikeQuestion) {
+        const wmText = document.getElementById('wm-text');
+        const current = wmText?.innerText?.trim() || '';
+        if (wmText) wmText.innerText = current ? current + '\n\n' + reply.trim() : reply.trim();
+        updateWmWc();
+        chatText = '';
+        manuscriptGenerated = true;
+      }
+      // 질문형이면 채팅으로 처리 (횟수 차감 없음 — manuscriptGenerated=false 유지)
     }
 
     if (manuscriptGenerated) {
